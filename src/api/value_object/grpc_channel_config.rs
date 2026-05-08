@@ -33,8 +33,8 @@ pub struct GrpcChannelConfig {
     /// Optional retry + circuit breaker policy.
     ///
     /// When `Some`, [`crate::saf::create_transport_from_config`] wraps the
-    /// bare transport in a [`crate::ResilientGrpcClient`]. When `None` the
-    /// transport is returned unwrapped — no retry, no circuit breaker.
+    /// bare transport in a [`crate::ResilientGrpcClient`] (retry + circuit
+    /// breaker). When `None`, the transport is returned unwrapped.
     #[serde(default)]
     pub resilience: Option<ResilienceConfig>,
 }
@@ -84,9 +84,6 @@ impl GrpcChannelConfig {
     }
 
     /// Attach a resilience policy (retry + circuit breaker).
-    ///
-    /// When set, [`crate::saf::create_transport_from_config`] wraps the
-    /// channel transport in a [`crate::ResilientGrpcClient`] automatically.
     pub fn with_resilience(mut self, policy: ResilienceConfig) -> Self {
         self.resilience = Some(policy);
         self

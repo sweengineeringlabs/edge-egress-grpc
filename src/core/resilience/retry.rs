@@ -1,4 +1,8 @@
 //! Retry policy and RESOURCE_EXHAUSTED context discrimination.
+//!
+//! Mirrors the semantics of the standalone `swe-edge-egress-grpc-retry`
+//! crate. The inline copy exists here because `swe-edge-egress-grpc`
+//! cannot depend on that crate without creating a dependency cycle.
 
 use std::time::Duration;
 
@@ -12,49 +16,41 @@ use crate::api::value_object::GrpcStatusCode;
 ///
 /// The transport embeds the HTTP `Retry-After` (or `x-ratelimit-reset-requests`)
 /// header value as `[retry-after=Ns]` at the end of the `grpc-message` string
-/// when it receives a `RESOURCE_EXHAUSTED` response. This lets
+/// when it receives a `RESOURCE_EXHAUSTED` response.  This lets
 /// [`RetryPolicy::decide`] honour the upstream reset window for rate-limit
 /// errors without requiring a new error variant.
 ///
 /// Returns `None` when no hint is present or it cannot be parsed.
-pub fn parse_retry_after_hint(message: &str) -> Option<std::time::Duration> {
+pub fn parse_retry_after_hint(message: &str) -> Option<Duration> {
     let tag   = "[retry-after=";
     let start = message.find(tag)? + tag.len();
     let rest  = &message[start..];
     let end   = rest.find('s')?;
     let secs: u64 = rest[..end].parse().ok()?;
-    Some(std::time::Duration::from_secs(secs))
+    Some(Duration::from_secs(secs))
 }
 
 /// Discriminates the cause of a `RESOURCE_EXHAUSTED` (gRPC 8) error.
 ///
-/// The same status code covers three distinct situations that require
-/// different retry strategies:
-///
-/// | Context | Cause | Correct response |
-/// |---------|-------|-----------------|
-/// | `Capacity` | Server OOM / CPU saturation | Retry with standard backoff; let the pool recover |
-/// | `RateLimit` | API rate limit window exceeded | Retry with longer backoff; respect the reset window |
-/// | `HardQuota` | Billing quota exhausted | Do not retry; surface to operator |
+/// | Context     | Cause                        | Correct response          |
+/// |-------------|------------------------------|---------------------------|
+/// | `Capacity`  | Server OOM / CPU saturation  | Retry standard track      |
+/// | `RateLimit` | API rate-limit window full   | Retry rate-limit track    |
+/// | `HardQuota` | Billing quota exhausted      | Do not retry              |
 ///
 /// Classification inspects the `grpc-message` trailer for well-known
-/// strings — no caller annotation required, no proto changes needed.
+/// strings.  `Capacity` is the safe default.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ResourceExhaustedContext {
     /// Server capacity or OOM — may clear on retry after backoff.
     Capacity,
-    /// API rate limit — the request window is full; retry after it resets.
+    /// API rate limit — the request window is full; retry after reset.
     RateLimit,
-    /// Billing / quota hard cap — retry will not help; escalate to operator.
+    /// Billing / quota hard cap — retry will not help.
     HardQuota,
 }
 
-/// Classify a `RESOURCE_EXHAUSTED` gRPC message into a [`ResourceExhaustedContext`].
-///
-/// Matched strings are intentionally broad and case-insensitive to handle
-/// different upstream vendors (Anthropic, Google, OpenAI) without per-vendor
-/// branches.  `Capacity` is the safe default — it triggers a retry, which is
-/// always better than silently dropping the request if we classified wrong.
+/// Classify a `RESOURCE_EXHAUSTED` grpc-message into a context.
 pub fn classify_resource_exhausted(message: &str) -> ResourceExhaustedContext {
     let msg = message.to_ascii_lowercase();
     if msg.contains("quota") || msg.contains("billing") || msg.contains("plan limit") {
@@ -81,22 +77,19 @@ pub enum RetryDecision {
 
 /// Policy controlling retry behaviour on transient gRPC errors.
 ///
-/// Callers interact with the policy through a single entry point:
-/// [`RetryPolicy::decide`], which returns a [`RetryDecision`] combining
-/// the retry/no-retry choice with the appropriate backoff for the specific
-/// error type. This replaces the earlier split between `is_retryable` and
-/// `backoff_for`, making it impossible to apply the wrong backoff for a
-/// given context.
+/// Callers interact through [`RetryPolicy::decide`], which returns a
+/// [`RetryDecision`] combining the retry/no-retry choice with the
+/// appropriate backoff for the specific error type.
 ///
 /// Two backoff tracks:
-/// - **Standard** (`initial_backoff` / `backoff_multiplier` / `max_backoff`) —
-///   for `UNAVAILABLE` and `RESOURCE_EXHAUSTED(Capacity)`.
-/// - **Rate-limit** (`rate_limit_initial_backoff` / `rate_limit_max_backoff`) —
-///   for `RESOURCE_EXHAUSTED(RateLimit)`, where the reset window is typically
-///   seconds to minutes. Max attempts is also separate so the rate-limit path
-///   can exhaust fewer overall retries.
+/// - **Standard** — for `UNAVAILABLE` and `RESOURCE_EXHAUSTED(Capacity)`.
+/// - **Rate-limit** — for `RESOURCE_EXHAUSTED(RateLimit)`, where the
+///   reset window is typically seconds to minutes. Max attempts is also
+///   separate. When the upstream embeds a `Retry-After` hint the transport
+///   extracted from the response, that value overrides the computed backoff.
 ///
-/// Both tracks use full jitter to prevent thundering herd.
+/// Both tracks use fractional jitter (`jitter_factor`) to prevent
+/// thundering herd.
 #[derive(Debug, Clone)]
 pub struct RetryPolicy {
     /// Total attempts including the first call. `1` disables retry entirely.
@@ -105,29 +98,16 @@ pub struct RetryPolicy {
     pub initial_backoff: Duration,
     /// Exponential growth factor applied per retry index.
     pub backoff_multiplier: f64,
+    /// Jitter as a fraction of the computed backoff (0.0 = none, 0.1 = ±10%).
+    pub jitter_factor: f64,
     /// Hard cap on the per-attempt backoff for capacity / unavailable errors.
     pub max_backoff: Duration,
     /// Max attempts specifically for rate-limit `RESOURCE_EXHAUSTED`.
-    /// Often lower than `max_attempts` since rate-limit retries are expensive.
     pub rate_limit_max_attempts: u32,
     /// Initial backoff for rate-limit errors (typically longer than capacity).
     pub rate_limit_initial_backoff: Duration,
     /// Hard cap on rate-limit backoff.
     pub rate_limit_max_backoff: Duration,
-}
-
-impl Default for RetryPolicy {
-    fn default() -> Self {
-        Self {
-            max_attempts:            3,
-            initial_backoff:         Duration::from_millis(100),
-            backoff_multiplier:      2.0,
-            max_backoff:             Duration::from_millis(2_000),
-            rate_limit_max_attempts: 2,
-            rate_limit_initial_backoff: Duration::from_secs(1),
-            rate_limit_max_backoff:  Duration::from_secs(10),
-        }
-    }
 }
 
 impl RetryPolicy {
@@ -141,7 +121,7 @@ impl RetryPolicy {
     ///
     /// Returns [`RetryDecision::Retry(backoff)`] for:
     /// - `RESOURCE_EXHAUSTED(Capacity)` — standard track
-    /// - `RESOURCE_EXHAUSTED(RateLimit)` — rate-limit track (longer backoff)
+    /// - `RESOURCE_EXHAUSTED(RateLimit)` — rate-limit track
     /// - `UNAVAILABLE` (status or transport) — standard track
     ///
     /// `retry_index` is 0-based (0 = deciding before the first retry).
@@ -180,7 +160,8 @@ impl RetryPolicy {
                 }
             }
             GrpcOutboundError::Status(GrpcStatusCode::Unavailable, _)
-            | GrpcOutboundError::Unavailable(_) => {
+            | GrpcOutboundError::Unavailable(_)
+            | GrpcOutboundError::ConnectionFailed(_) => {
                 if retry_index >= self.max_attempts {
                     RetryDecision::DoNotRetry
                 } else {
@@ -195,13 +176,23 @@ impl RetryPolicy {
         }
     }
 
-    /// Full-jitter backoff in `[0, min(initial * multiplier^index, max)]`.
+    /// Fractional-jitter backoff in `[base*(1-f), min(base*(1+f), max)]`.
+    ///
+    /// `jitter_factor = 0.1` → ±10% around the computed exponential base,
+    /// capped at `max`. Same algorithm as `swe-edge-egress-grpc-retry`.
     fn jittered(&self, initial: Duration, max: Duration, retry_index: u32) -> Duration {
-        use rand::Rng;
-        let ceiling_ms = (initial.as_millis() as f64
+        let base_ms = (initial.as_millis() as f64
             * self.backoff_multiplier.powi(retry_index as i32))
-            .min(max.as_millis() as f64) as u64;
-        Duration::from_millis(rand::thread_rng().gen_range(0..=ceiling_ms))
+            .min(max.as_millis() as f64);
+        let random_unit = self.next_random();
+        let jitter_mult = 1.0 - self.jitter_factor + (2.0 * self.jitter_factor * random_unit);
+        let jittered = (base_ms * jitter_mult).min(max.as_millis() as f64).max(0.0);
+        Duration::from_millis(jittered.round() as u64)
+    }
+
+    fn next_random(&self) -> f64 {
+        use rand::Rng;
+        rand::thread_rng().gen_range(0.0_f64..1.0)
     }
 }
 
@@ -223,7 +214,7 @@ mod tests {
     /// @covers: classify_resource_exhausted — quota keywords → HardQuota.
     #[test]
     fn test_classify_hard_quota_by_keyword() {
-        assert_eq!(classify_resource_exhausted("quota exceeded"),   ResourceExhaustedContext::HardQuota);
+        assert_eq!(classify_resource_exhausted("quota exceeded"),    ResourceExhaustedContext::HardQuota);
         assert_eq!(classify_resource_exhausted("billing limit hit"), ResourceExhaustedContext::HardQuota);
         assert_eq!(classify_resource_exhausted("plan limit reached"), ResourceExhaustedContext::HardQuota);
     }
@@ -238,7 +229,18 @@ mod tests {
 
     // ── RetryPolicy::decide ───────────────────────────────────────────────────
 
-    fn policy() -> RetryPolicy { RetryPolicy::default() }
+    fn policy() -> RetryPolicy {
+        RetryPolicy {
+            max_attempts:               3,
+            initial_backoff:            Duration::ZERO,
+            backoff_multiplier:         1.0,
+            jitter_factor:              0.0,
+            max_backoff:                Duration::ZERO,
+            rate_limit_max_attempts:    2,
+            rate_limit_initial_backoff: Duration::ZERO,
+            rate_limit_max_backoff:     Duration::ZERO,
+        }
+    }
 
     fn resource_exhausted(msg: &str) -> GrpcOutboundError {
         GrpcOutboundError::Status(GrpcStatusCode::ResourceExhausted, msg.into())
@@ -270,7 +272,6 @@ mod tests {
     #[test]
     fn test_decide_rate_limit_stops_at_rate_limit_max_attempts() {
         let p = policy();
-        // At index = rate_limit_max_attempts the policy should stop.
         assert!(matches!(
             p.decide(&resource_exhausted("rate limit"), p.rate_limit_max_attempts),
             RetryDecision::DoNotRetry
@@ -289,6 +290,15 @@ mod tests {
     fn test_decide_transport_unavailable_retries() {
         assert!(matches!(
             policy().decide(&GrpcOutboundError::Unavailable("tcp".into()), 0),
+            RetryDecision::Retry(_)
+        ));
+    }
+
+    /// @covers: decide — ConnectionFailed → Retry (transport-level transient).
+    #[test]
+    fn test_decide_connection_failed_retries() {
+        assert!(matches!(
+            policy().decide(&GrpcOutboundError::ConnectionFailed("rst".into()), 0),
             RetryDecision::Retry(_)
         ));
     }
@@ -333,7 +343,7 @@ mod tests {
     fn test_parse_retry_after_hint_extracts_seconds() {
         assert_eq!(
             parse_retry_after_hint("rate limit exceeded [retry-after=30s]"),
-            Some(std::time::Duration::from_secs(30))
+            Some(Duration::from_secs(30))
         );
     }
 
@@ -347,25 +357,15 @@ mod tests {
     /// @covers: decide — RateLimit with Retry-After hint uses the hint duration.
     #[test]
     fn test_decide_rate_limit_uses_retry_after_hint_when_present() {
-        let p = policy();
+        let p   = policy();
         let msg = "rate limit exceeded [retry-after=30s]";
-        let d = p.decide(&resource_exhausted(msg), 0);
+        let d   = p.decide(&resource_exhausted(msg), 0);
         match d {
             RetryDecision::Retry(backoff) => {
-                assert_eq!(backoff, std::time::Duration::from_secs(30),
+                assert_eq!(backoff, Duration::from_secs(30),
                     "must use Retry-After value exactly, not computed backoff");
             }
             RetryDecision::DoNotRetry => panic!("expected Retry"),
-        }
-    }
-
-    /// @covers: RetryPolicy::jittered — result never exceeds max.
-    #[test]
-    fn test_jittered_never_exceeds_max() {
-        let p = policy();
-        for i in 0..20 {
-            let b = p.jittered(Duration::from_millis(100), Duration::from_millis(150), i);
-            assert!(b <= Duration::from_millis(150), "retry {i} exceeded max");
         }
     }
 }

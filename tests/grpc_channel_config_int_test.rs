@@ -47,6 +47,9 @@ fn tonic_grpc_client_struct_from_config_rejects_plaintext_int_test() {
         Err(GrpcChannelConfigError::PlaintextRejected(endpoint)) => {
             assert!(endpoint.contains("localhost"), "endpoint in error: {endpoint}");
         }
+        Err(GrpcChannelConfigError::Config(msg)) => {
+            panic!("unexpected Config error: {msg}");
+        }
         Ok(_) => panic!("must reject plaintext when tls_required=true"),
     }
 }

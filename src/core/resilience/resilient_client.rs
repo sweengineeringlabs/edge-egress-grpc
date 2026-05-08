@@ -12,15 +12,16 @@ use super::retry::{RetryDecision, RetryPolicy};
 
 /// Retry + circuit breaker decorator over any [`GrpcOutbound`] transport.
 ///
-/// Construct via [`crate::saf::create_resilient_transport`].
+/// Construct via [`crate::saf::create_transport_from_config`].
 ///
 /// On each `call_unary`:
 /// 1. If the circuit is open, fail fast with `Unavailable`.
 /// 2. Call the inner transport. On success, record success and return.
-/// 3. On error, ask [`RetryPolicy::decide`] — retry with the given backoff,
-///    or propagate immediately.
-/// 4. Before sleeping, verify enough deadline budget remains; skip sleep if not.
-/// 5. After all attempts exhausted, record a circuit-breaker failure.
+/// 3. On error, ask [`RetryPolicy::decide`] — retry with the given backoff
+///    (deadline-aware), or propagate immediately.
+/// 4. After all attempts exhausted, record a circuit-breaker failure.
+///
+/// Streaming calls and health checks are passed through without retrying.
 pub struct ResilientGrpcClient {
     inner:   Arc<dyn GrpcOutbound>,
     retry:   RetryPolicy,
@@ -189,19 +190,24 @@ mod tests {
         GrpcRequest::new("svc/Method", vec![], Duration::from_secs(5))
     }
 
+    fn zero_backoff_policy(max_attempts: u32, rate_limit_max_attempts: u32) -> RetryPolicy {
+        RetryPolicy {
+            max_attempts,
+            initial_backoff:            Duration::ZERO,
+            backoff_multiplier:         1.0,
+            jitter_factor:              0.0,
+            max_backoff:                Duration::ZERO,
+            rate_limit_max_attempts,
+            rate_limit_initial_backoff: Duration::ZERO,
+            rate_limit_max_backoff:     Duration::ZERO,
+        }
+    }
+
     fn client(inner: Arc<dyn GrpcOutbound>, max_attempts: u32, cb_threshold: u32) -> ResilientGrpcClient {
         ResilientGrpcClient::new(
             inner,
-            RetryPolicy {
-                max_attempts,
-                initial_backoff:            Duration::ZERO,
-                backoff_multiplier:         1.0,
-                max_backoff:                Duration::ZERO,
-                rate_limit_max_attempts:    1,
-                rate_limit_initial_backoff: Duration::ZERO,
-                rate_limit_max_backoff:     Duration::ZERO,
-            },
-            CircuitBreaker::new(cb_threshold, Duration::from_secs(60)),
+            zero_backoff_policy(max_attempts, 1),
+            CircuitBreaker::new(cb_threshold, Duration::from_secs(60), 1),
         )
     }
 
@@ -221,7 +227,7 @@ mod tests {
         assert_eq!(inner.call_count.load(Ordering::SeqCst), 3);
     }
 
-    /// @covers: ResilientGrpcClient — RESOURCE_EXHAUSTED(HardQuota) propagates immediately, no retry.
+    /// @covers: ResilientGrpcClient — RESOURCE_EXHAUSTED(HardQuota) propagates immediately.
     #[tokio::test]
     async fn test_hard_quota_does_not_retry() {
         let inner = FailThenSucceed::with_msg(5, GrpcStatusCode::ResourceExhausted, "quota exceeded");
@@ -250,8 +256,7 @@ mod tests {
         assert_eq!(inner.call_count.load(Ordering::SeqCst), 1, "INTERNAL must not retry");
     }
 
-    /// @covers: ResilientGrpcClient — circuit opens after threshold failures and
-    /// subsequent calls fail fast.
+    /// @covers: ResilientGrpcClient — circuit opens after threshold failures.
     #[tokio::test]
     async fn test_circuit_opens_and_fails_fast() {
         let inner: Arc<dyn GrpcOutbound> = Arc::new(AlwaysFail {

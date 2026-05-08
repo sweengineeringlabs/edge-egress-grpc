@@ -8,34 +8,12 @@ pub use crate::api::value_object::{
 };
 pub use crate::api::value_object::ResilienceConfig;
 pub use crate::core::{
-    from_tonic_code, from_wire, to_tonic_code, to_wire, CircuitBreaker, GrpcChannelConfigError,
-    ResilientGrpcClient, RetryPolicy, TonicGrpcClient, TraceContextInterceptor,
-};
-pub use crate::core::resilience::{
-    classify_resource_exhausted, parse_retry_after_hint,
-    ResourceExhaustedContext, RetryDecision,
+    from_tonic_code, from_wire, to_tonic_code, to_wire,
+    CircuitBreaker, GrpcChannelConfigError, ResilientGrpcClient,
+    RetryDecision, RetryPolicy, TonicGrpcClient, TraceContextInterceptor,
+    classify_resource_exhausted, parse_retry_after_hint, ResourceExhaustedContext,
 };
 
-/// Wrap `inner` with retry and circuit breaker behaviour.
-///
-/// The returned transport applies [`RetryPolicy`] on every `call_unary` —
-/// retrying [`GrpcStatusCode::ResourceExhausted`] and
-/// [`GrpcStatusCode::Unavailable`] with exponential backoff, bounded by
-/// the caller's per-call deadline budget. After `failure_threshold`
-/// consecutive failures that survive all retry attempts, the
-/// [`CircuitBreaker`] opens and subsequent calls fail fast with
-/// `Unavailable` until `open_duration` has elapsed and a probe succeeds.
-///
-/// # Example
-///
-/// ```ignore
-/// let transport = create_resilient_transport(
-///     create_grpc_transport("http://localhost:8082", deadline),
-///     RetryPolicy { max_attempts: 3, ..Default::default() },
-///     5,                           // open after 5 consecutive final failures
-///     Duration::from_secs(10),     // stay open for 10 s before probing
-/// );
-/// ```
 /// Build an outbound transport from a [`GrpcChannelConfig`].
 ///
 /// When `config.resilience` is `Some`, the bare [`TonicGrpcClient`] is
@@ -61,29 +39,33 @@ pub fn create_transport_from_config(
         Some(r) => create_resilient_transport(
             base,
             RetryPolicy {
-                max_attempts:                  r.max_attempts,
-                initial_backoff:               Duration::from_millis(r.initial_backoff_ms),
-                backoff_multiplier:            r.backoff_multiplier,
-                max_backoff:                   Duration::from_millis(r.max_backoff_ms),
-                rate_limit_max_attempts:       r.rate_limit_max_attempts,
-                rate_limit_initial_backoff:    Duration::from_millis(r.rate_limit_initial_backoff_ms),
-                rate_limit_max_backoff:        Duration::from_millis(r.rate_limit_max_backoff_ms),
+                max_attempts:               r.max_attempts,
+                initial_backoff:            Duration::from_millis(r.initial_backoff_ms),
+                backoff_multiplier:         r.backoff_multiplier,
+                jitter_factor:              r.jitter_factor,
+                max_backoff:                Duration::from_millis(r.max_backoff_ms),
+                rate_limit_max_attempts:    r.rate_limit_max_attempts,
+                rate_limit_initial_backoff: Duration::from_millis(r.rate_limit_initial_backoff_ms),
+                rate_limit_max_backoff:     Duration::from_millis(r.rate_limit_max_backoff_ms),
             },
             r.failure_threshold,
-            Duration::from_millis(r.open_duration_ms),
+            Duration::from_secs(r.cool_down_seconds),
+            r.half_open_probe_count,
         ),
     })
 }
 
+/// Wrap `inner` with retry and circuit breaker behaviour.
 pub fn create_resilient_transport(
-    inner:             std::sync::Arc<dyn crate::api::port::GrpcOutbound>,
-    retry:             RetryPolicy,
-    failure_threshold: u32,
-    open_duration:     std::time::Duration,
+    inner:                  std::sync::Arc<dyn crate::api::port::GrpcOutbound>,
+    retry:                  RetryPolicy,
+    failure_threshold:      u32,
+    cool_down:              std::time::Duration,
+    half_open_probe_count:  u32,
 ) -> std::sync::Arc<dyn crate::api::port::GrpcOutbound> {
     std::sync::Arc::new(ResilientGrpcClient::new(
         inner,
         retry,
-        CircuitBreaker::new(failure_threshold, open_duration),
+        CircuitBreaker::new(failure_threshold, cool_down, half_open_probe_count),
     ))
 }
