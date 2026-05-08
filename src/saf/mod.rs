@@ -10,6 +10,7 @@ pub use crate::core::{
     from_tonic_code, from_wire, to_tonic_code, to_wire, CircuitBreaker, GrpcChannelConfigError,
     ResilientGrpcClient, RetryPolicy, TonicGrpcClient, TraceContextInterceptor,
 };
+pub use crate::core::resilience::retry::{classify_resource_exhausted, ResourceExhaustedContext, RetryDecision};
 
 /// Wrap `inner` with retry and circuit breaker behaviour.
 ///
@@ -37,9 +38,9 @@ pub fn create_resilient_transport(
     failure_threshold: u32,
     open_duration:     std::time::Duration,
 ) -> std::sync::Arc<dyn crate::api::port::GrpcOutbound> {
-    std::sync::Arc::new(ResilientGrpcClient {
+    std::sync::Arc::new(ResilientGrpcClient::new(
         inner,
         retry,
-        breaker: CircuitBreaker::new(failure_threshold, open_duration),
-    })
+        CircuitBreaker::new(failure_threshold, open_duration),
+    ))
 }

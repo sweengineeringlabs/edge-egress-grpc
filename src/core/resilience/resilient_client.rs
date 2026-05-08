@@ -1,15 +1,4 @@
 //! `ResilientGrpcClient` — retry + circuit breaker decorator for `GrpcOutbound`.
-//!
-//! Wraps any `Arc<dyn GrpcOutbound>` and transparently applies:
-//!
-//! 1. **Circuit breaker** — if the circuit is open, fail fast with `Unavailable`
-//!    rather than attempting the downstream call.
-//! 2. **Retry with budget-aware exponential backoff** — on retryable errors
-//!    (see [`RetryPolicy::is_retryable`]), sleep and retry, reducing the per-
-//!    attempt deadline by elapsed time so the total wall-clock cost never
-//!    exceeds the caller's original deadline.
-//! 3. **Circuit breaker feedback** — a call that exhausts all retry attempts
-//!    records a failure; a successful call resets the consecutive-failure count.
 
 use std::sync::Arc;
 use std::time::{Duration, Instant};
@@ -17,18 +6,36 @@ use std::time::{Duration, Instant};
 use futures::future::BoxFuture;
 
 use crate::api::port::{GrpcMessageStream, GrpcOutbound, GrpcOutboundError, GrpcOutboundResult};
-use crate::api::value_object::{GrpcRequest, GrpcResponse};
+use crate::api::value_object::{GrpcMetadata, GrpcRequest, GrpcResponse};
 use super::circuit_breaker::CircuitBreaker;
-use super::retry::RetryPolicy;
+use super::retry::{RetryDecision, RetryPolicy};
 
 /// Retry + circuit breaker decorator over any [`GrpcOutbound`] transport.
 ///
-/// Construct via [`crate::saf::create_resilient_transport`]; do not build
-/// directly in application code — the SAF factory is the stable API.
+/// Construct via [`crate::saf::create_resilient_transport`].
+///
+/// On each `call_unary`:
+/// 1. If the circuit is open, fail fast with `Unavailable`.
+/// 2. Call the inner transport. On success, record success and return.
+/// 3. On error, ask [`RetryPolicy::decide`] — retry with the given backoff,
+///    or propagate immediately.
+/// 4. Before sleeping, verify enough deadline budget remains; skip sleep if not.
+/// 5. After all attempts exhausted, record a circuit-breaker failure.
 pub struct ResilientGrpcClient {
-    pub(crate) inner:   Arc<dyn GrpcOutbound>,
-    pub(crate) retry:   RetryPolicy,
-    pub(crate) breaker: CircuitBreaker,
+    inner:   Arc<dyn GrpcOutbound>,
+    retry:   RetryPolicy,
+    breaker: CircuitBreaker,
+}
+
+impl ResilientGrpcClient {
+    /// Construct a resilient client wrapping `inner`.
+    pub fn new(
+        inner:   Arc<dyn GrpcOutbound>,
+        retry:   RetryPolicy,
+        breaker: CircuitBreaker,
+    ) -> Self {
+        Self { inner, retry, breaker }
+    }
 }
 
 impl std::fmt::Debug for ResilientGrpcClient {
@@ -59,54 +66,51 @@ impl GrpcOutbound for ResilientGrpcClient {
             let original_deadline = request.deadline;
             let start             = Instant::now();
             let mut last_err: Option<GrpcOutboundError> = None;
+            let mut retry_index   = 0u32;
 
-            for retry_index in 0..self.retry.max_attempts {
+            loop {
                 let elapsed   = start.elapsed();
                 let remaining = match original_deadline.checked_sub(elapsed) {
                     Some(r) if r > Duration::ZERO => r,
-                    _ => {
-                        // Deadline already consumed — stop immediately.
-                        break;
-                    }
+                    _ => break, // deadline consumed
                 };
 
-                let mut req     = request.clone();
-                req.deadline    = remaining;
-                let is_last     = retry_index + 1 == self.retry.max_attempts;
+                let mut req  = request.clone();
+                req.deadline = remaining;
 
                 match self.inner.call_unary(req).await {
                     Ok(resp) => {
                         self.breaker.record_success();
                         return Ok(resp);
                     }
-                    Err(e) if RetryPolicy::is_retryable(&e) && !is_last => {
-                        let backoff = self.retry.backoff_for(retry_index);
-                        let after_backoff = start.elapsed() + backoff;
-                        if after_backoff >= original_deadline {
-                            // No budget left after sleeping — give up now.
-                            last_err = Some(e);
-                            break;
-                        }
-                        tracing::warn!(
-                            method    = %request.method,
-                            attempt   = retry_index + 1,
-                            max       = self.retry.max_attempts,
-                            backoff_ms = backoff.as_millis(),
-                            error     = %e,
-                            "retryable gRPC error — backing off"
-                        );
-                        tokio::time::sleep(backoff).await;
-                        last_err = Some(e);
-                    }
                     Err(e) => {
-                        // Non-retryable, or last attempt — record and surface.
-                        self.breaker.record_failure();
-                        return Err(e);
+                        match self.retry.decide(&e, retry_index) {
+                            RetryDecision::DoNotRetry => {
+                                self.breaker.record_failure();
+                                return Err(e);
+                            }
+                            RetryDecision::Retry(backoff) => {
+                                let budget_after_sleep = start.elapsed() + backoff;
+                                if budget_after_sleep >= original_deadline {
+                                    last_err = Some(e);
+                                    break;
+                                }
+                                tracing::warn!(
+                                    method      = %request.method,
+                                    retry_index,
+                                    backoff_ms  = backoff.as_millis(),
+                                    error       = %e,
+                                    "retryable gRPC error — backing off"
+                                );
+                                tokio::time::sleep(backoff).await;
+                                last_err     = Some(e);
+                                retry_index += 1;
+                            }
+                        }
                     }
                 }
             }
 
-            // All retries exhausted.
             self.breaker.record_failure();
             Err(last_err.unwrap_or_else(|| {
                 GrpcOutboundError::Timeout("deadline exhausted across retry attempts".into())
@@ -121,7 +125,7 @@ impl GrpcOutbound for ResilientGrpcClient {
     fn call_stream(
         &self,
         method:   String,
-        metadata: crate::api::value_object::GrpcMetadata,
+        metadata: GrpcMetadata,
         messages: GrpcMessageStream,
     ) -> BoxFuture<'_, GrpcOutboundResult<GrpcMessageStream>> {
         // Streaming calls are not retried — partial state makes retry unsafe.
@@ -132,25 +136,23 @@ impl GrpcOutbound for ResilientGrpcClient {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::api::value_object::{GrpcMetadata, GrpcResponse, GrpcStatusCode};
+    use crate::api::value_object::{GrpcMetadata, GrpcStatusCode};
     use futures::future::BoxFuture;
     use std::sync::atomic::{AtomicU32, Ordering};
 
-    /// Stub transport that fails the first `fail_count` calls with the given
-    /// error code, then succeeds.
     struct FailThenSucceed {
         call_count: AtomicU32,
         fail_count: u32,
         fail_code:  GrpcStatusCode,
+        fail_msg:   &'static str,
     }
 
     impl FailThenSucceed {
         fn new(fail_count: u32, fail_code: GrpcStatusCode) -> Arc<Self> {
-            Arc::new(Self {
-                call_count: AtomicU32::new(0),
-                fail_count,
-                fail_code,
-            })
+            Arc::new(Self { call_count: AtomicU32::new(0), fail_count, fail_code, fail_msg: "oom" })
+        }
+        fn with_msg(fail_count: u32, fail_code: GrpcStatusCode, msg: &'static str) -> Arc<Self> {
+            Arc::new(Self { call_count: AtomicU32::new(0), fail_count, fail_code, fail_msg: msg })
         }
     }
 
@@ -159,13 +161,11 @@ mod tests {
             let n = self.call_count.fetch_add(1, Ordering::SeqCst);
             if n < self.fail_count {
                 let code = self.fail_code;
-                Box::pin(futures::future::ready(Err(GrpcOutboundError::Status(
-                    code, format!("fail #{n}"),
-                ))))
+                let msg  = self.fail_msg.to_string();
+                Box::pin(futures::future::ready(Err(GrpcOutboundError::Status(code, msg))))
             } else {
                 Box::pin(futures::future::ready(Ok(GrpcResponse {
-                    body:     vec![],
-                    metadata: GrpcMetadata::default(),
+                    body: vec![], metadata: GrpcMetadata::default(),
                 })))
             }
         }
@@ -174,14 +174,11 @@ mod tests {
         }
     }
 
-    /// Always-fail transport.
-    struct AlwaysFail(GrpcStatusCode);
+    struct AlwaysFail { code: GrpcStatusCode, msg: &'static str }
     impl GrpcOutbound for AlwaysFail {
         fn call_unary(&self, _: GrpcRequest) -> BoxFuture<'_, GrpcOutboundResult<GrpcResponse>> {
-            let code = self.0;
-            Box::pin(futures::future::ready(Err(GrpcOutboundError::Status(
-                code, "always fail".into(),
-            ))))
+            let (code, msg) = (self.code, self.msg.to_string());
+            Box::pin(futures::future::ready(Err(GrpcOutboundError::Status(code, msg))))
         }
         fn health_check(&self) -> BoxFuture<'_, GrpcOutboundResult<()>> {
             Box::pin(futures::future::ready(Ok(())))
@@ -192,75 +189,78 @@ mod tests {
         GrpcRequest::new("svc/Method", vec![], Duration::from_secs(5))
     }
 
-    fn client_with(
-        inner:       Arc<dyn GrpcOutbound>,
-        max_attempts: u32,
-        cb_threshold: u32,
-    ) -> ResilientGrpcClient {
-        ResilientGrpcClient {
+    fn client(inner: Arc<dyn GrpcOutbound>, max_attempts: u32, cb_threshold: u32) -> ResilientGrpcClient {
+        ResilientGrpcClient::new(
             inner,
-            retry: RetryPolicy {
+            RetryPolicy {
                 max_attempts,
-                initial_backoff:    Duration::ZERO,
-                backoff_multiplier: 1.0,
-                max_backoff:        Duration::ZERO,
+                initial_backoff:            Duration::ZERO,
+                backoff_multiplier:         1.0,
+                max_backoff:                Duration::ZERO,
+                rate_limit_max_attempts:    1,
+                rate_limit_initial_backoff: Duration::ZERO,
+                rate_limit_max_backoff:     Duration::ZERO,
             },
-            breaker: CircuitBreaker::new(cb_threshold, Duration::from_secs(60)),
-        }
+            CircuitBreaker::new(cb_threshold, Duration::from_secs(60)),
+        )
     }
 
-    /// @covers: ResilientGrpcClient — succeeds on first attempt, no retry needed.
+    /// @covers: ResilientGrpcClient — succeeds on first attempt.
     #[tokio::test]
     async fn test_succeeds_on_first_attempt() {
         let inner = FailThenSucceed::new(0, GrpcStatusCode::Ok);
-        let c = client_with(inner.clone(), 3, 10);
-        assert!(c.call_unary(req()).await.is_ok());
+        assert!(client(inner.clone(), 3, 10).call_unary(req()).await.is_ok());
         assert_eq!(inner.call_count.load(Ordering::SeqCst), 1);
     }
 
-    /// @covers: ResilientGrpcClient — retries RESOURCE_EXHAUSTED and succeeds.
+    /// @covers: ResilientGrpcClient — retries RESOURCE_EXHAUSTED(Capacity) and succeeds.
     #[tokio::test]
-    async fn test_retries_resource_exhausted_and_succeeds() {
+    async fn test_retries_capacity_exhausted_and_succeeds() {
         let inner = FailThenSucceed::new(2, GrpcStatusCode::ResourceExhausted);
-        let c = client_with(inner.clone(), 3, 10);
-        assert!(c.call_unary(req()).await.is_ok());
+        assert!(client(inner.clone(), 3, 10).call_unary(req()).await.is_ok());
         assert_eq!(inner.call_count.load(Ordering::SeqCst), 3);
     }
 
-    /// @covers: ResilientGrpcClient — exhausts retries and returns last error.
+    /// @covers: ResilientGrpcClient — RESOURCE_EXHAUSTED(HardQuota) propagates immediately, no retry.
     #[tokio::test]
-    async fn test_exhausts_retries_and_returns_error() {
-        let inner: Arc<dyn GrpcOutbound> = Arc::new(AlwaysFail(GrpcStatusCode::ResourceExhausted));
-        let c = client_with(inner, 3, 10);
-        let err = c.call_unary(req()).await.unwrap_err();
-        assert!(matches!(
-            err,
-            GrpcOutboundError::Status(GrpcStatusCode::ResourceExhausted, _)
-        ));
+    async fn test_hard_quota_does_not_retry() {
+        let inner = FailThenSucceed::with_msg(5, GrpcStatusCode::ResourceExhausted, "quota exceeded");
+        let c = client(inner.clone(), 5, 99);
+        assert!(c.call_unary(req()).await.is_err());
+        assert_eq!(inner.call_count.load(Ordering::SeqCst), 1, "hard quota must not retry");
     }
 
-    /// @covers: ResilientGrpcClient — non-retryable errors propagate immediately.
+    /// @covers: ResilientGrpcClient — RESOURCE_EXHAUSTED(RateLimit) uses rate-limit track.
     #[tokio::test]
-    async fn test_non_retryable_error_propagates_without_retry() {
-        let inner = FailThenSucceed::new(1, GrpcStatusCode::Internal);
-        let c = client_with(inner.clone(), 3, 10);
+    async fn test_rate_limit_uses_rate_limit_track() {
+        // rate_limit_max_attempts=1 → retries once then stops
+        let inner = FailThenSucceed::with_msg(5, GrpcStatusCode::ResourceExhausted, "rate limit exceeded");
+        let c = client(inner.clone(), 5, 99);
         assert!(c.call_unary(req()).await.is_err());
-        assert_eq!(inner.call_count.load(Ordering::SeqCst), 1, "must not retry INTERNAL");
+        // 1 original + 1 rate-limit retry = 2 calls
+        assert_eq!(inner.call_count.load(Ordering::SeqCst), 2, "rate-limit track: 1 original + 1 retry");
+    }
+
+    /// @covers: ResilientGrpcClient — INTERNAL propagates immediately without retry.
+    #[tokio::test]
+    async fn test_internal_does_not_retry() {
+        let inner = FailThenSucceed::new(1, GrpcStatusCode::Internal);
+        let c = client(inner.clone(), 3, 10);
+        assert!(c.call_unary(req()).await.is_err());
+        assert_eq!(inner.call_count.load(Ordering::SeqCst), 1, "INTERNAL must not retry");
     }
 
     /// @covers: ResilientGrpcClient — circuit opens after threshold failures and
-    /// subsequent calls fail fast without hitting the inner transport.
+    /// subsequent calls fail fast.
     #[tokio::test]
     async fn test_circuit_opens_and_fails_fast() {
-        let inner: Arc<dyn GrpcOutbound> = Arc::new(AlwaysFail(GrpcStatusCode::Internal));
-        let c = client_with(inner.clone(), 1, 2);
-
-        // Two failures open the circuit.
+        let inner: Arc<dyn GrpcOutbound> = Arc::new(AlwaysFail {
+            code: GrpcStatusCode::Internal, msg: "bug",
+        });
+        let c = client(inner, 1, 2);
         let _ = c.call_unary(req()).await;
         let _ = c.call_unary(req()).await;
         assert!(c.breaker.is_open());
-
-        // Third call fails fast — inner is not contacted.
         let err = c.call_unary(req()).await.unwrap_err();
         assert!(
             matches!(err, GrpcOutboundError::Unavailable(ref m) if m.contains("circuit open")),
@@ -272,7 +272,6 @@ mod tests {
     #[tokio::test]
     async fn test_health_check_delegates_to_inner() {
         let inner = FailThenSucceed::new(0, GrpcStatusCode::Ok);
-        let c = client_with(inner, 1, 5);
-        assert!(c.health_check().await.is_ok());
+        assert!(client(inner, 1, 5).health_check().await.is_ok());
     }
 }
