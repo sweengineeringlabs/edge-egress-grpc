@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use super::compression_mode::CompressionMode;
 use super::keep_alive_config::KeepAliveConfig;
 use super::mtls_config::MtlsConfig;
+use super::resilience_config::ResilienceConfig;
 
 /// Default ceiling for inbound message bytes (4 MiB).
 pub const DEFAULT_MAX_MESSAGE_BYTES: usize = 4 * 1024 * 1024;
@@ -29,6 +30,13 @@ pub struct GrpcChannelConfig {
     pub max_message_bytes: usize,
     /// Compression mode for outbound payloads.
     pub compression: CompressionMode,
+    /// Optional retry + circuit breaker policy.
+    ///
+    /// When `Some`, [`crate::saf::create_transport_from_config`] wraps the
+    /// bare transport in a [`crate::ResilientGrpcClient`]. When `None` the
+    /// transport is returned unwrapped — no retry, no circuit breaker.
+    #[serde(default)]
+    pub resilience: Option<ResilienceConfig>,
 }
 
 impl GrpcChannelConfig {
@@ -41,6 +49,7 @@ impl GrpcChannelConfig {
             keep_alive:        None,
             max_message_bytes: DEFAULT_MAX_MESSAGE_BYTES,
             compression:       CompressionMode::None,
+            resilience:        None,
         }
     }
 
@@ -73,6 +82,15 @@ impl GrpcChannelConfig {
         self.compression = mode;
         self
     }
+
+    /// Attach a resilience policy (retry + circuit breaker).
+    ///
+    /// When set, [`crate::saf::create_transport_from_config`] wraps the
+    /// channel transport in a [`crate::ResilientGrpcClient`] automatically.
+    pub fn with_resilience(mut self, policy: ResilienceConfig) -> Self {
+        self.resilience = Some(policy);
+        self
+    }
 }
 
 impl Default for GrpcChannelConfig {
@@ -86,6 +104,7 @@ impl Default for GrpcChannelConfig {
             keep_alive:        None,
             max_message_bytes: DEFAULT_MAX_MESSAGE_BYTES,
             compression:       CompressionMode::None,
+            resilience:        None,
         }
     }
 }

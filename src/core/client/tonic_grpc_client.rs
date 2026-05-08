@@ -186,9 +186,17 @@ fn header_map_to_hash(map: Option<&http::HeaderMap>) -> std::collections::HashMa
 
 /// Check the `grpc-status` trailer value; return `Err(Status(...))` for anything != "0".
 ///
+/// When the status is `RESOURCE_EXHAUSTED` and the response headers carry a
+/// `retry-after` value (seconds), the value is embedded into the error message
+/// as `[retry-after=Ns]`. [`crate::core::resilience::retry::RetryPolicy::decide`]
+/// parses this hint to honour the upstream reset window rather than guessing.
+///
 /// `grpc-message` is a *server-supplied* sanitized message that the gRPC spec
 /// already requires not to contain server internals.  We pass it through as-is.
-fn check_grpc_status(trailers: Option<&http::HeaderMap>) -> GrpcOutboundResult<()> {
+fn check_grpc_status(
+    trailers:         Option<&http::HeaderMap>,
+    response_headers: Option<&http::HeaderMap>,
+) -> GrpcOutboundResult<()> {
     let code_str = trailers
         .and_then(|m| m.get("grpc-status"))
         .and_then(|v| v.to_str().ok())
@@ -200,11 +208,25 @@ fn check_grpc_status(trailers: Option<&http::HeaderMap>) -> GrpcOutboundResult<(
 
     let wire: i32 = code_str.parse().unwrap_or(2 /* Unknown */);
     let code      = from_wire(wire);
-    let message   = trailers
+    let mut message = trailers
         .and_then(|m| m.get("grpc-message"))
         .and_then(|v| v.to_str().ok())
         .unwrap_or("")
         .to_owned();
+
+    // Embed Retry-After hint for RESOURCE_EXHAUSTED so the resilient client
+    // can honour the upstream reset window. Only integer seconds are supported
+    // (the HTTP-date form is uncommon in gRPC contexts).
+    if code == GrpcStatusCode::ResourceExhausted {
+        if let Some(secs) = response_headers
+            .and_then(|h| h.get("retry-after").or_else(|| h.get("x-ratelimit-reset-requests")))
+            .and_then(|v| v.to_str().ok())
+            .and_then(|s| s.parse::<u64>().ok())
+        {
+            message = format!("{message} [retry-after={secs}s]");
+        }
+    }
+
     Err(GrpcOutboundError::Status(code, message))
 }
 
@@ -371,7 +393,8 @@ impl GrpcOutbound for TonicGrpcClient {
                 GrpcOutboundError::ConnectionFailed("transport error".into())
             })?;
 
-            check_grpc_status(Some(resp.headers()))?;
+            let response_headers = resp.headers().clone();
+            check_grpc_status(Some(&response_headers), Some(&response_headers))?;
 
             // Bound the response body; oversize returns ResourceExhausted.
             let limited = http_body_util::Limited::new(resp.into_body(), max_bytes + 5);
@@ -389,7 +412,7 @@ impl GrpcOutbound for TonicGrpcClient {
                 )
             })?;
 
-            check_grpc_status(collected.trailers())?;
+            check_grpc_status(collected.trailers(), Some(&response_headers))?;
 
             let trailer_headers = header_map_to_hash(collected.trailers());
             let data            = collected.to_bytes();
@@ -456,7 +479,7 @@ impl GrpcOutbound for TonicGrpcClient {
                 })?;
 
             // Check grpc-status in the initial response headers first.
-            check_grpc_status(Some(resp.headers()))?;
+            check_grpc_status(Some(resp.headers()), Some(resp.headers()))?;
 
             let collected = resp
                 .into_body()
@@ -468,7 +491,7 @@ impl GrpcOutbound for TonicGrpcClient {
                 })?;
 
             // Also check trailers.
-            check_grpc_status(collected.trailers())?;
+            check_grpc_status(collected.trailers(), None)?;
 
             let data   = collected.to_bytes();
             let frames = decode_grpc_frames(data)?;

@@ -4,4 +4,7 @@ pub(crate) mod retry;
 
 pub use circuit_breaker::CircuitBreaker;
 pub use resilient_client::ResilientGrpcClient;
-pub use retry::{classify_resource_exhausted, ResourceExhaustedContext, RetryDecision, RetryPolicy};
+pub use retry::{
+    classify_resource_exhausted, parse_retry_after_hint,
+    ResourceExhaustedContext, RetryDecision, RetryPolicy,
+};

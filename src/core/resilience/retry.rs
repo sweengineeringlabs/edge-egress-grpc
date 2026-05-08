@@ -7,6 +7,25 @@ use crate::api::value_object::GrpcStatusCode;
 
 // ── RESOURCE_EXHAUSTED context ────────────────────────────────────────────────
 
+/// Extract a `Retry-After` hint embedded in a gRPC error message by
+/// the transport layer.
+///
+/// The transport embeds the HTTP `Retry-After` (or `x-ratelimit-reset-requests`)
+/// header value as `[retry-after=Ns]` at the end of the `grpc-message` string
+/// when it receives a `RESOURCE_EXHAUSTED` response. This lets
+/// [`RetryPolicy::decide`] honour the upstream reset window for rate-limit
+/// errors without requiring a new error variant.
+///
+/// Returns `None` when no hint is present or it cannot be parsed.
+pub fn parse_retry_after_hint(message: &str) -> Option<std::time::Duration> {
+    let tag   = "[retry-after=";
+    let start = message.find(tag)? + tag.len();
+    let rest  = &message[start..];
+    let end   = rest.find('s')?;
+    let secs: u64 = rest[..end].parse().ok()?;
+    Some(std::time::Duration::from_secs(secs))
+}
+
 /// Discriminates the cause of a `RESOURCE_EXHAUSTED` (gRPC 8) error.
 ///
 /// The same status code covers three distinct situations that require
@@ -135,11 +154,16 @@ impl RetryPolicy {
                         if retry_index >= self.rate_limit_max_attempts {
                             RetryDecision::DoNotRetry
                         } else {
-                            RetryDecision::Retry(self.jittered(
-                                self.rate_limit_initial_backoff,
-                                self.rate_limit_max_backoff,
-                                retry_index,
-                            ))
+                            // Honour Retry-After header embedded by the transport;
+                            // fall back to computed backoff when absent.
+                            let backoff = parse_retry_after_hint(msg).unwrap_or_else(|| {
+                                self.jittered(
+                                    self.rate_limit_initial_backoff,
+                                    self.rate_limit_max_backoff,
+                                    retry_index,
+                                )
+                            });
+                            RetryDecision::Retry(backoff)
                         }
                     }
                     ResourceExhaustedContext::Capacity => {
@@ -302,6 +326,37 @@ mod tests {
             p.decide(&resource_exhausted("oom"), p.max_attempts),
             RetryDecision::DoNotRetry
         ));
+    }
+
+    /// @covers: parse_retry_after_hint — extracts seconds from embedded tag.
+    #[test]
+    fn test_parse_retry_after_hint_extracts_seconds() {
+        assert_eq!(
+            parse_retry_after_hint("rate limit exceeded [retry-after=30s]"),
+            Some(std::time::Duration::from_secs(30))
+        );
+    }
+
+    /// @covers: parse_retry_after_hint — returns None when tag absent.
+    #[test]
+    fn test_parse_retry_after_hint_returns_none_when_absent() {
+        assert_eq!(parse_retry_after_hint("rate limit exceeded"), None);
+        assert_eq!(parse_retry_after_hint(""), None);
+    }
+
+    /// @covers: decide — RateLimit with Retry-After hint uses the hint duration.
+    #[test]
+    fn test_decide_rate_limit_uses_retry_after_hint_when_present() {
+        let p = policy();
+        let msg = "rate limit exceeded [retry-after=30s]";
+        let d = p.decide(&resource_exhausted(msg), 0);
+        match d {
+            RetryDecision::Retry(backoff) => {
+                assert_eq!(backoff, std::time::Duration::from_secs(30),
+                    "must use Retry-After value exactly, not computed backoff");
+            }
+            RetryDecision::DoNotRetry => panic!("expected Retry"),
+        }
     }
 
     /// @covers: RetryPolicy::jittered — result never exceeds max.
