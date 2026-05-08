@@ -29,6 +29,7 @@ hyper-util       = { version = "0.1", features = ["client-legacy", "tokio", "htt
 hyper-rustls     = { version = "0.27", features = ["http2", "webpki-tokio"] }
 tokio            = { version = "1", features = ["rt", "net", "time", "macros"] }
 tokio-util       = { version = "0.7", default-features = false }
+rand             = { version = "0.8", default-features = false, features = ["std", "std_rng"] }
 tonic            = { version = "0.12", default-features = false }
 tracing          = { workspace = true }
 

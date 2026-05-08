@@ -57,11 +57,17 @@ impl RetryPolicy {
     }
 
     /// Backoff duration before attempt number `retry_index` (0-based: 0 = first retry).
+    ///
+    /// Uses full jitter — a random value in `[0, min(base^n, max_backoff)]` —
+    /// so concurrent callers spread their retries across the window rather than
+    /// all hitting the downstream at exactly the same moment (thundering herd).
     pub fn backoff_for(&self, retry_index: u32) -> Duration {
-        let ms = self.initial_backoff.as_millis() as f64
-            * self.backoff_multiplier.powi(retry_index as i32);
-        let capped = ms.min(self.max_backoff.as_millis() as f64) as u64;
-        Duration::from_millis(capped)
+        use rand::Rng;
+        let ceiling_ms = (self.initial_backoff.as_millis() as f64
+            * self.backoff_multiplier.powi(retry_index as i32))
+            .min(self.max_backoff.as_millis() as f64) as u64;
+        let jittered_ms = rand::thread_rng().gen_range(0..=ceiling_ms);
+        Duration::from_millis(jittered_ms)
     }
 }
 
@@ -108,39 +114,44 @@ mod tests {
         assert!(!RetryPolicy::is_retryable(&GrpcOutboundError::Cancelled("user".into())));
     }
 
-    /// @covers: RetryPolicy::backoff_for — first retry uses initial_backoff.
+    /// @covers: RetryPolicy::backoff_for — result is within [0, initial_backoff] on first retry.
     #[test]
-    fn test_backoff_for_zero_returns_initial_backoff() {
+    fn test_backoff_for_zero_is_within_initial_backoff_ceiling() {
         let p = RetryPolicy {
             initial_backoff:    Duration::from_millis(100),
             backoff_multiplier: 2.0,
             max_backoff:        Duration::from_secs(10),
             ..Default::default()
         };
-        assert_eq!(p.backoff_for(0), Duration::from_millis(100));
+        let b = p.backoff_for(0);
+        assert!(b <= Duration::from_millis(100), "jittered backoff must not exceed ceiling");
     }
 
-    /// @covers: RetryPolicy::backoff_for — second retry doubles the backoff.
+    /// @covers: RetryPolicy::backoff_for — ceiling grows with retry index.
     #[test]
-    fn test_backoff_for_one_doubles() {
+    fn test_backoff_for_ceiling_grows_with_retry_index() {
         let p = RetryPolicy {
             initial_backoff:    Duration::from_millis(100),
             backoff_multiplier: 2.0,
             max_backoff:        Duration::from_secs(10),
             ..Default::default()
         };
-        assert_eq!(p.backoff_for(1), Duration::from_millis(200));
+        // Ceiling at index 1 = 200ms; result must be in [0, 200ms].
+        let b = p.backoff_for(1);
+        assert!(b <= Duration::from_millis(200));
     }
 
-    /// @covers: RetryPolicy::backoff_for — backoff is capped at max_backoff.
+    /// @covers: RetryPolicy::backoff_for — result never exceeds max_backoff.
     #[test]
-    fn test_backoff_for_caps_at_max() {
+    fn test_backoff_for_never_exceeds_max_backoff() {
         let p = RetryPolicy {
             initial_backoff:    Duration::from_millis(100),
             backoff_multiplier: 2.0,
             max_backoff:        Duration::from_millis(150),
             ..Default::default()
         };
-        assert_eq!(p.backoff_for(5), Duration::from_millis(150));
+        for i in 0..20 {
+            assert!(p.backoff_for(i) <= Duration::from_millis(150), "retry {i} exceeded max");
+        }
     }
 }
