@@ -5,8 +5,6 @@ pub mod grpc;
 pub mod keep_alive_config;
 pub mod mtls_config;
 pub mod resilience;
-pub mod resource_exhausted_context;
-
 pub use compression_mode::CompressionMode;
 pub use grpc::{
     GrpcChannelConfig, GrpcChannelConfigBuilder,
@@ -17,6 +15,3 @@ pub use grpc::{
 pub use keep_alive_config::KeepAliveConfig;
 pub use mtls_config::MtlsConfig;
 pub use resilience::{ResilienceConfig, ResilienceConfigBuilder};
-pub use resource_exhausted_context::{
-    classify_resource_exhausted, parse_retry_after_hint, ResourceExhaustedContext,
-};

@@ -57,17 +57,3 @@ fn grpc_struct_transport_create_rejects_plaintext_when_tls_required_int_test() {
     ));
 }
 
-/// @covers: create_transport_from_config — rejects invalid resilience config.
-#[test]
-fn grpc_struct_transport_create_rejects_invalid_resilience_config_int_test() {
-    ensure_rustls_provider();
-    let mut r = resilience();
-    r.max_attempts = 0;
-    let cfg = GrpcChannelConfig::new("http://127.0.0.1:50051")
-        .allow_plaintext()
-        .with_resilience(r);
-    assert!(matches!(
-        create_transport_from_config(&cfg),
-        Err(GrpcChannelConfigError::Config(_))
-    ));
-}

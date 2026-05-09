@@ -13,8 +13,7 @@ pub use crate::api::port::{
     GrpcChannelConfigError, GrpcMessageStream, GrpcOutbound, GrpcOutboundError, GrpcOutboundResult,
 };
 pub use crate::api::value_object::{
-    classify_resource_exhausted, parse_retry_after_hint,
     CompressionMode, GrpcChannelConfig, GrpcMetadata, GrpcRequest, GrpcResponse,
-    GrpcStatusCode, KeepAliveConfig, MtlsConfig, ResilienceConfig, ResilienceConfigBuilder, ResourceExhaustedContext,
+    GrpcStatusCode, KeepAliveConfig, MtlsConfig, ResilienceConfig, ResilienceConfigBuilder,
     DEFAULT_MAX_MESSAGE_BYTES,
 };
