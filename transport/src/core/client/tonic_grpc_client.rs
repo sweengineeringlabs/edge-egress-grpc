@@ -37,7 +37,7 @@ const SANITIZED_INTERNAL_MSG: &str = "internal client error";
 ///
 /// Suitable for connections to gRPC servers that accept plain-text HTTP/2 (no TLS).
 /// Each instance re-uses a single connection pool via `hyper_util::client::legacy::Client`.
-pub(crate) struct TonicGrpcClient {
+pub struct TonicGrpcClient {
     base_uri: String,
     client:   HyperClient,
     /// Fallback timeout used by [`call_stream`] and [`health_check`] only.
