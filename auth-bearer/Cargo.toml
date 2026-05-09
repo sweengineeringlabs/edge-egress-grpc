@@ -19,7 +19,7 @@ path = "src/lib.rs"
 
 [dependencies]
 swe-edge-egress-grpc  = { workspace = true }
-swe-edge-ingress-grpc = { package = "swe-edge-ingress-grpc-transport", path = "../../../ingress/grpc/transport" }
+swe-edge-ingress-grpc.workspace = true
 thiserror     = { workspace = true }
 async-trait   = { workspace = true }
 futures       = { workspace = true }
