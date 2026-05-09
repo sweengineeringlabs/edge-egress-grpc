@@ -12,7 +12,7 @@ use bytes::{BufMut, Bytes, BytesMut};
 use http_body::Frame;
 use http_body_util::{BodyExt as _, StreamBody};
 
-use swe_edge_egress_grpc::{
+use swe_edge_egress_grpc_transport::{
     create_transport_from_config, CompressionMode, GrpcChannelConfig, GrpcOutbound, GrpcRequest,
 };
 

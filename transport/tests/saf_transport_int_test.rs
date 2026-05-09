@@ -1,6 +1,6 @@
 //! SAF-level integration tests for `create_transport_from_config`.
 
-use swe_edge_egress_grpc::{
+use swe_edge_egress_grpc_transport::{
     GrpcChannelConfig, GrpcChannelConfigError, ResilienceConfig, create_transport_from_config,
 };
 

@@ -1,5 +1,5 @@
 [package]
-name         = "swe-edge-egress-grpc"
+name         = "swe-edge-egress-grpc-transport"
 version.workspace      = true
 edition.workspace      = true
 license.workspace      = true

@@ -13,7 +13,7 @@ use futures::stream;
 use http_body::Frame;
 use http_body_util::{BodyExt as _, Full, StreamBody};
 
-use swe_edge_egress_grpc::{
+use swe_edge_egress_grpc_transport::{
     create_transport_from_config, GrpcChannelConfig, GrpcMessageStream, GrpcMetadata,
     GrpcOutbound, GrpcOutboundError, GrpcRequest, GrpcResponse, GrpcStatusCode,
 };

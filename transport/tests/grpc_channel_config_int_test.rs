@@ -5,7 +5,7 @@
 
 use std::sync::Arc;
 
-use swe_edge_egress_grpc::{
+use swe_edge_egress_grpc_transport::{
     CompressionMode, GrpcChannelConfig, GrpcChannelConfigError, GrpcOutbound,
     GrpcOutboundError, GrpcOutboundInterceptor, GrpcOutboundInterceptorChain,
     GrpcRequest, GrpcResponse, GrpcStatusCode, TraceContextInterceptor,
@@ -87,13 +87,13 @@ async fn grpc_struct_channel_config_interceptor_short_circuits_int_test() {
 
     struct WithChain { inner: Arc<dyn GrpcOutbound>, chain: GrpcOutboundInterceptorChain }
     impl GrpcOutbound for WithChain {
-        fn call_unary(&self, mut req: GrpcRequest) -> futures::future::BoxFuture<'_, swe_edge_egress_grpc::GrpcOutboundResult<GrpcResponse>> {
+        fn call_unary(&self, mut req: GrpcRequest) -> futures::future::BoxFuture<'_, swe_edge_egress_grpc_transport::GrpcOutboundResult<GrpcResponse>> {
             Box::pin(async move {
                 self.chain.run_before(&mut req)?;
                 self.inner.call_unary(req).await
             })
         }
-        fn health_check(&self) -> futures::future::BoxFuture<'_, swe_edge_egress_grpc::GrpcOutboundResult<()>> {
+        fn health_check(&self) -> futures::future::BoxFuture<'_, swe_edge_egress_grpc_transport::GrpcOutboundResult<()>> {
             self.inner.health_check()
         }
     }

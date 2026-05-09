@@ -1,6 +1,6 @@
 //! Integration tests for `validate_resilience_config` (the `Validator` SAF wrapper).
 
-use swe_edge_egress_grpc::{ResilienceConfig, validate_resilience_config};
+use swe_edge_egress_grpc_transport::{ResilienceConfig, validate_resilience_config};
 
 fn valid() -> ResilienceConfig {
     ResilienceConfig {
