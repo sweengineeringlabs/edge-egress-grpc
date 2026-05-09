@@ -104,7 +104,6 @@ mod tests {
         }
     }
 
-    /// @covers: ResilienceConfig — round-trips through serde (TOML).
     #[test]
     fn test_round_trips_through_toml() {
         let original = sample();
@@ -117,7 +116,6 @@ mod tests {
         assert_eq!(restored.rate_limit_max_attempts, original.rate_limit_max_attempts);
     }
 
-    /// @covers: ResilienceConfig — all fields are preserved in a TOML round-trip.
     #[test]
     fn test_all_fields_survive_round_trip() {
         let s = sample();

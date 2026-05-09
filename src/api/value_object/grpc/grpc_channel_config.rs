@@ -2,10 +2,10 @@
 
 use serde::{Deserialize, Serialize};
 
-use super::compression_mode::CompressionMode;
-use super::keep_alive_config::KeepAliveConfig;
-use super::mtls_config::MtlsConfig;
-use super::resilience_config::ResilienceConfig;
+use crate::api::value_object::compression_mode::CompressionMode;
+use crate::api::value_object::keep_alive_config::KeepAliveConfig;
+use crate::api::value_object::mtls_config::MtlsConfig;
+use crate::api::value_object::resilience::resilience_config::ResilienceConfig;
 
 /// Default ceiling for inbound message bytes (4 MiB).
 pub const DEFAULT_MAX_MESSAGE_BYTES: usize = 4 * 1024 * 1024;
@@ -110,7 +110,6 @@ impl Default for GrpcChannelConfig {
 mod tests {
     use super::*;
 
-    /// @covers: GrpcChannelConfig::default — `tls_required` is true.
     /// Issue #5 acceptance gate.
     #[test]
     fn test_default_sets_tls_required_to_true() {
@@ -118,21 +117,18 @@ mod tests {
         assert!(cfg.tls_required, "TLS-by-default invariant broken");
     }
 
-    /// @covers: GrpcChannelConfig::default — message cap defaults to 4 MiB.
     #[test]
     fn test_default_max_message_bytes_is_four_mib() {
         let cfg = GrpcChannelConfig::default();
         assert_eq!(cfg.max_message_bytes, 4 * 1024 * 1024);
     }
 
-    /// @covers: GrpcChannelConfig::default — compression defaults to None.
     #[test]
     fn test_default_compression_is_none() {
         let cfg = GrpcChannelConfig::default();
         assert_eq!(cfg.compression, CompressionMode::None);
     }
 
-    /// @covers: GrpcChannelConfig::new — sets endpoint and keeps TLS.
     #[test]
     fn test_new_sets_endpoint_and_keeps_tls_required() {
         let cfg = GrpcChannelConfig::new("https://x.example.com:443");
@@ -140,14 +136,14 @@ mod tests {
         assert!(cfg.tls_required);
     }
 
-    /// @covers: GrpcChannelConfig::allow_plaintext — only way to relax TLS.
+    /// @covers: allow_plaintext
     #[test]
     fn test_allow_plaintext_relaxes_tls_requirement() {
         let cfg = GrpcChannelConfig::new("http://localhost:50051").allow_plaintext();
         assert!(!cfg.tls_required);
     }
 
-    /// @covers: GrpcChannelConfig::with_mtls — stores mTLS identity.
+    /// @covers: with_mtls
     #[test]
     fn test_with_mtls_stores_identity() {
         let cfg = GrpcChannelConfig::new("https://x")
@@ -156,10 +152,52 @@ mod tests {
         assert_eq!(mtls.cert_pem_path, "c.pem");
     }
 
-    /// @covers: GrpcChannelConfig::with_compression — switches mode.
+    /// @covers: with_compression
     #[test]
     fn test_with_compression_switches_mode() {
         let cfg = GrpcChannelConfig::new("https://x").with_compression(CompressionMode::Gzip);
         assert_eq!(cfg.compression, CompressionMode::Gzip);
+    }
+
+    /// @covers: with_keep_alive
+    #[test]
+    fn test_with_keep_alive_stores_config() {
+        use std::time::Duration;
+        let ka  = KeepAliveConfig {
+            interval:             Duration::from_secs(5),
+            timeout:              Duration::from_secs(10),
+            permit_without_calls: true,
+        };
+        let cfg = GrpcChannelConfig::new("https://x").with_keep_alive(ka);
+        let stored = cfg.keep_alive.expect("keep_alive must be Some");
+        assert_eq!(stored.interval, Duration::from_secs(5));
+    }
+
+    /// @covers: with_max_message_bytes
+    #[test]
+    fn test_with_max_message_bytes_overrides_default() {
+        let cfg = GrpcChannelConfig::new("https://x").with_max_message_bytes(8 * 1024 * 1024);
+        assert_eq!(cfg.max_message_bytes, 8 * 1024 * 1024);
+    }
+
+    /// @covers: with_resilience
+    #[test]
+    fn test_with_resilience_stores_policy() {
+        use crate::api::value_object::resilience::resilience_config::ResilienceConfig;
+        let r = ResilienceConfig {
+            max_attempts:                  3,
+            initial_backoff_ms:            100,
+            backoff_multiplier:            2.0,
+            jitter_factor:                 0.1,
+            max_backoff_ms:                2_000,
+            rate_limit_max_attempts:       2,
+            rate_limit_initial_backoff_ms: 1_000,
+            rate_limit_max_backoff_ms:     10_000,
+            failure_threshold:             5,
+            cool_down_seconds:             10,
+            half_open_probe_count:         1,
+        };
+        let cfg = GrpcChannelConfig::new("https://x").with_resilience(r);
+        assert!(cfg.resilience.is_some());
     }
 }

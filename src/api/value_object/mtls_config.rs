@@ -42,7 +42,7 @@ impl MtlsConfig {
 mod tests {
     use super::*;
 
-    /// @covers: MtlsConfig::new — pinned CA is None.
+    
     #[test]
     fn test_new_leaves_pinned_ca_unset() {
         let cfg = MtlsConfig::new("c.pem", "k.pem");
@@ -51,7 +51,7 @@ mod tests {
         assert_eq!(cfg.key_pem_path, "k.pem");
     }
 
-    /// @covers: MtlsConfig::with_pinned_ca — stores all three.
+    /// @covers: with_pinned_ca
     #[test]
     fn test_with_pinned_ca_stores_all_three_paths() {
         let cfg = MtlsConfig::with_pinned_ca("c.pem", "k.pem", "ca.pem");

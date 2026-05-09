@@ -80,7 +80,6 @@ impl GrpcRequest {
 mod tests {
     use super::*;
 
-    /// @covers: GrpcRequest::new — deadline is stored.
     #[test]
     fn test_new_stores_method_body_and_deadline() {
         let d   = Duration::from_secs(5);
@@ -92,7 +91,7 @@ mod tests {
         assert!(req.cancellation.is_none());
     }
 
-    /// @covers: GrpcRequest::with_header — single header insertion.
+    /// @covers: with_header
     #[test]
     fn test_with_header_inserts_single_metadata_entry() {
         let req = GrpcRequest::new("svc/M", vec![], Duration::from_secs(1))
@@ -103,7 +102,7 @@ mod tests {
         );
     }
 
-    /// @covers: GrpcRequest::with_metadata — full metadata replacement.
+    /// @covers: with_metadata
     #[test]
     fn test_with_metadata_replaces_metadata_entirely() {
         let meta = GrpcMetadata {
@@ -114,7 +113,7 @@ mod tests {
         assert_eq!(req.metadata.headers.get("k").map(String::as_str), Some("v"));
     }
 
-    /// @covers: GrpcRequest::with_cancellation — token is stored.
+    /// @covers: with_cancellation
     #[test]
     fn test_with_cancellation_attaches_token() {
         let token = CancellationToken::new();
@@ -126,7 +125,6 @@ mod tests {
         assert!(stored.is_cancelled(), "stored token must observe cancellation");
     }
 
-    /// @covers: GrpcRequest — fields hold what was assigned.
     #[test]
     fn test_grpc_request_holds_method_body_and_deadline_via_struct_init() {
         let req = GrpcRequest {

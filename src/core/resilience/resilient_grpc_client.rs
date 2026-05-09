@@ -6,9 +6,11 @@ use std::time::{Duration, Instant};
 use futures::future::BoxFuture;
 
 use crate::api::port::{GrpcMessageStream, GrpcOutbound, GrpcOutboundError, GrpcOutboundResult};
+use crate::api::resilience::circuit_breaker::CircuitBreaker as _;
 use crate::api::value_object::{GrpcMetadata, GrpcRequest, GrpcResponse};
 use super::circuit_breaker::CircuitBreaker;
-use super::retry::{RetryDecision, RetryPolicy};
+use super::retry::RetryDecision;
+use super::retry::RetryPolicy;
 
 /// Retry + circuit breaker decorator over any [`GrpcOutbound`] transport.
 ///
@@ -22,7 +24,7 @@ use super::retry::{RetryDecision, RetryPolicy};
 /// 4. After all attempts exhausted, record a circuit-breaker failure.
 ///
 /// Streaming calls and health checks are passed through without retrying.
-pub struct ResilientGrpcClient {
+pub(crate) struct ResilientGrpcClient {
     inner:   Arc<dyn GrpcOutbound>,
     retry:   RetryPolicy,
     breaker: CircuitBreaker,
@@ -30,7 +32,7 @@ pub struct ResilientGrpcClient {
 
 impl ResilientGrpcClient {
     /// Construct a resilient client wrapping `inner`.
-    pub fn new(
+    pub(crate) fn new(
         inner:   Arc<dyn GrpcOutbound>,
         retry:   RetryPolicy,
         breaker: CircuitBreaker,
@@ -46,6 +48,10 @@ impl std::fmt::Debug for ResilientGrpcClient {
             .field("breaker", &self.breaker)
             .finish_non_exhaustive()
     }
+}
+
+impl crate::api::traits::Processor for ResilientGrpcClient {
+    fn describe(&self) -> &'static str { "resilient-grpc-client" }
 }
 
 impl GrpcOutbound for ResilientGrpcClient {
@@ -141,14 +147,14 @@ mod tests {
     use futures::future::BoxFuture;
     use std::sync::atomic::{AtomicU32, Ordering};
 
-    struct FailThenSucceed {
+    struct ResilientGrpcClientFakeSuccess {
         call_count: AtomicU32,
         fail_count: u32,
         fail_code:  GrpcStatusCode,
         fail_msg:   &'static str,
     }
 
-    impl FailThenSucceed {
+    impl ResilientGrpcClientFakeSuccess {
         fn new(fail_count: u32, fail_code: GrpcStatusCode) -> Arc<Self> {
             Arc::new(Self { call_count: AtomicU32::new(0), fail_count, fail_code, fail_msg: "oom" })
         }
@@ -157,7 +163,7 @@ mod tests {
         }
     }
 
-    impl GrpcOutbound for FailThenSucceed {
+    impl GrpcOutbound for ResilientGrpcClientFakeSuccess {
         fn call_unary(&self, _: GrpcRequest) -> BoxFuture<'_, GrpcOutboundResult<GrpcResponse>> {
             let n = self.call_count.fetch_add(1, Ordering::SeqCst);
             if n < self.fail_count {
@@ -175,8 +181,8 @@ mod tests {
         }
     }
 
-    struct AlwaysFail { code: GrpcStatusCode, msg: &'static str }
-    impl GrpcOutbound for AlwaysFail {
+    struct ResilientGrpcClientFakeAlwaysFail { code: GrpcStatusCode, msg: &'static str }
+    impl GrpcOutbound for ResilientGrpcClientFakeAlwaysFail {
         fn call_unary(&self, _: GrpcRequest) -> BoxFuture<'_, GrpcOutboundResult<GrpcResponse>> {
             let (code, msg) = (self.code, self.msg.to_string());
             Box::pin(futures::future::ready(Err(GrpcOutboundError::Status(code, msg))))
@@ -211,55 +217,49 @@ mod tests {
         )
     }
 
-    /// @covers: ResilientGrpcClient — succeeds on first attempt.
     #[tokio::test]
     async fn test_succeeds_on_first_attempt() {
-        let inner = FailThenSucceed::new(0, GrpcStatusCode::Ok);
+        let inner = ResilientGrpcClientFakeSuccess::new(0, GrpcStatusCode::Ok);
         assert!(client(inner.clone(), 3, 10).call_unary(req()).await.is_ok());
         assert_eq!(inner.call_count.load(Ordering::SeqCst), 1);
     }
 
-    /// @covers: ResilientGrpcClient — retries RESOURCE_EXHAUSTED(Capacity) and succeeds.
     #[tokio::test]
     async fn test_retries_capacity_exhausted_and_succeeds() {
-        let inner = FailThenSucceed::new(2, GrpcStatusCode::ResourceExhausted);
+        let inner = ResilientGrpcClientFakeSuccess::new(2, GrpcStatusCode::ResourceExhausted);
         assert!(client(inner.clone(), 3, 10).call_unary(req()).await.is_ok());
         assert_eq!(inner.call_count.load(Ordering::SeqCst), 3);
     }
 
-    /// @covers: ResilientGrpcClient — RESOURCE_EXHAUSTED(HardQuota) propagates immediately.
     #[tokio::test]
     async fn test_hard_quota_does_not_retry() {
-        let inner = FailThenSucceed::with_msg(5, GrpcStatusCode::ResourceExhausted, "quota exceeded");
+        let inner = ResilientGrpcClientFakeSuccess::with_msg(5, GrpcStatusCode::ResourceExhausted, "quota exceeded");
         let c = client(inner.clone(), 5, 99);
         assert!(c.call_unary(req()).await.is_err());
         assert_eq!(inner.call_count.load(Ordering::SeqCst), 1, "hard quota must not retry");
     }
 
-    /// @covers: ResilientGrpcClient — RESOURCE_EXHAUSTED(RateLimit) uses rate-limit track.
     #[tokio::test]
     async fn test_rate_limit_uses_rate_limit_track() {
         // rate_limit_max_attempts=1 → retries once then stops
-        let inner = FailThenSucceed::with_msg(5, GrpcStatusCode::ResourceExhausted, "rate limit exceeded");
+        let inner = ResilientGrpcClientFakeSuccess::with_msg(5, GrpcStatusCode::ResourceExhausted, "rate limit exceeded");
         let c = client(inner.clone(), 5, 99);
         assert!(c.call_unary(req()).await.is_err());
         // 1 original + 1 rate-limit retry = 2 calls
         assert_eq!(inner.call_count.load(Ordering::SeqCst), 2, "rate-limit track: 1 original + 1 retry");
     }
 
-    /// @covers: ResilientGrpcClient — INTERNAL propagates immediately without retry.
     #[tokio::test]
     async fn test_internal_does_not_retry() {
-        let inner = FailThenSucceed::new(1, GrpcStatusCode::Internal);
+        let inner = ResilientGrpcClientFakeSuccess::new(1, GrpcStatusCode::Internal);
         let c = client(inner.clone(), 3, 10);
         assert!(c.call_unary(req()).await.is_err());
         assert_eq!(inner.call_count.load(Ordering::SeqCst), 1, "INTERNAL must not retry");
     }
 
-    /// @covers: ResilientGrpcClient — circuit opens after threshold failures.
     #[tokio::test]
     async fn test_circuit_opens_and_fails_fast() {
-        let inner: Arc<dyn GrpcOutbound> = Arc::new(AlwaysFail {
+        let inner: Arc<dyn GrpcOutbound> = Arc::new(ResilientGrpcClientFakeAlwaysFail {
             code: GrpcStatusCode::Internal, msg: "bug",
         });
         let c = client(inner, 1, 2);
@@ -273,10 +273,19 @@ mod tests {
         );
     }
 
-    /// @covers: ResilientGrpcClient::health_check — delegates to inner.
     #[tokio::test]
     async fn test_health_check_delegates_to_inner() {
-        let inner = FailThenSucceed::new(0, GrpcStatusCode::Ok);
+        let inner = ResilientGrpcClientFakeSuccess::new(0, GrpcStatusCode::Ok);
         assert!(client(inner, 1, 5).health_check().await.is_ok());
+    }
+
+    #[test]
+    fn test_new_constructs_without_panic() {
+        let inner: Arc<dyn GrpcOutbound> = ResilientGrpcClientFakeSuccess::new(0, GrpcStatusCode::Ok);
+        let _ = ResilientGrpcClient::new(
+            inner,
+            zero_backoff_policy(3, 1),
+            CircuitBreaker::new(5, Duration::from_secs(60), 1),
+        );
     }
 }

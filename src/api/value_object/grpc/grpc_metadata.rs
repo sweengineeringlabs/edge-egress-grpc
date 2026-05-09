@@ -21,18 +21,21 @@ impl GrpcMetadata {
 mod tests {
     use super::*;
 
+    /// @covers: with_header
     #[test]
     fn test_grpc_metadata_default_has_empty_headers() {
         let m = GrpcMetadata::default();
         assert!(m.headers.is_empty());
     }
 
+    /// @covers: with_header
     #[test]
     fn test_with_header_inserts_entry_into_headers_map() {
         let m = GrpcMetadata::default().with_header("x-request-id", "req-1");
         assert_eq!(m.headers.get("x-request-id").map(String::as_str), Some("req-1"));
     }
 
+    /// @covers: with_header
     #[test]
     fn test_with_header_chaining_accumulates_entries() {
         let m = GrpcMetadata::default()

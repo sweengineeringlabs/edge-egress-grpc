@@ -10,7 +10,7 @@ use hyper_util::client::legacy::connect::HttpConnector;
 use tokio_util::sync::CancellationToken;
 
 use crate::api::interceptor::GrpcOutboundInterceptorChain;
-use crate::api::port::{GrpcMessageStream, GrpcOutbound, GrpcOutboundError, GrpcOutboundResult};
+use crate::api::port::{GrpcChannelConfigError, GrpcMessageStream, GrpcOutbound, GrpcOutboundError, GrpcOutboundResult};
 use crate::api::value_object::{
     CompressionMode, GrpcChannelConfig, GrpcMetadata, GrpcRequest, GrpcResponse, GrpcStatusCode,
     DEFAULT_MAX_MESSAGE_BYTES,
@@ -37,7 +37,7 @@ const SANITIZED_INTERNAL_MSG: &str = "internal client error";
 ///
 /// Suitable for connections to gRPC servers that accept plain-text HTTP/2 (no TLS).
 /// Each instance re-uses a single connection pool via `hyper_util::client::legacy::Client`.
-pub struct TonicGrpcClient {
+pub(crate) struct TonicGrpcClient {
     base_uri: String,
     client:   HyperClient,
     /// Fallback timeout used by [`call_stream`] and [`health_check`] only.
@@ -49,18 +49,6 @@ pub struct TonicGrpcClient {
     max_message_bytes: usize,
     /// Negotiated compression mode.
     compression: CompressionMode,
-}
-
-/// Error returned by [`TonicGrpcClient::from_config`] when the supplied
-/// channel configuration violates a fail-closed invariant.
-#[derive(Debug, thiserror::Error)]
-pub enum GrpcChannelConfigError {
-    /// `tls_required` is set but the endpoint scheme is plaintext.
-    #[error("plaintext endpoint '{0}' rejected — tls_required is set; use .allow_plaintext() to opt out")]
-    PlaintextRejected(String),
-    /// A resilience config field is invalid (e.g. `max_attempts = 0`).
-    #[error("invalid resilience config: {0}")]
-    Config(String),
 }
 
 // ── internal helpers ─────────────────────────────────────────────────────────
@@ -239,12 +227,12 @@ impl TonicGrpcClient {
     /// Create a client with a 30-second fallback timeout for `call_stream` and
     /// `health_check` (per-call deadlines on `GrpcRequest` always take precedence
     /// for unary calls).
-    pub fn new(base_uri: impl Into<String>) -> Self {
+    pub(crate) fn new(base_uri: impl Into<String>) -> Self {
         Self::with_timeout(base_uri, Duration::from_secs(30))
     }
 
     /// Create a client with an explicit fallback timeout.
-    pub fn with_timeout(base_uri: impl Into<String>, timeout: Duration) -> Self {
+    pub(crate) fn with_timeout(base_uri: impl Into<String>, timeout: Duration) -> Self {
         let connector = hyper_rustls::HttpsConnectorBuilder::new()
             .with_webpki_roots()
             .https_or_http()
@@ -270,7 +258,7 @@ impl TonicGrpcClient {
     /// endpoint URL has an `http://` scheme, returns
     /// [`GrpcChannelConfigError::PlaintextRejected`] before any
     /// transport setup.
-    pub fn from_config(
+    pub(crate) fn from_config(
         config: &GrpcChannelConfig,
     ) -> Result<Self, GrpcChannelConfigError> {
         if config.tls_required && is_plaintext_endpoint(&config.endpoint) {
@@ -283,19 +271,19 @@ impl TonicGrpcClient {
     }
 
     /// Attach an interceptor chain to the client.  Replaces any previous chain.
-    pub fn with_interceptors(mut self, chain: GrpcOutboundInterceptorChain) -> Self {
+    pub(crate) fn with_interceptors(mut self, chain: GrpcOutboundInterceptorChain) -> Self {
         self.interceptors = chain;
         self
     }
 
     /// Override the max-message-bytes cap.
-    pub fn with_max_message_bytes(mut self, bytes: usize) -> Self {
+    pub(crate) fn with_max_message_bytes(mut self, bytes: usize) -> Self {
         self.max_message_bytes = bytes;
         self
     }
 
     /// Override the compression mode.
-    pub fn with_compression(mut self, mode: CompressionMode) -> Self {
+    pub(crate) fn with_compression(mut self, mode: CompressionMode) -> Self {
         self.compression = mode;
         self
     }
@@ -336,6 +324,12 @@ where
             "request deadline exceeded".into(),
         )),
     }
+}
+
+// ── Processor impl ───────────────────────────────────────────────────────────
+
+impl crate::api::traits::Processor for TonicGrpcClient {
+    fn describe(&self) -> &'static str { "tonic-grpc-client" }
 }
 
 // ── GrpcOutbound impl ─────────────────────────────────────────────────────────
@@ -529,7 +523,7 @@ impl GrpcOutbound for TonicGrpcClient {
 /// regresses to 2 args this fails to build, which is the gate.
 #[doc(hidden)]
 #[allow(dead_code)]
-pub fn _grpc_request_new_requires_deadline_compile_check() -> GrpcRequest {
+pub(crate) fn _grpc_request_new_requires_deadline_compile_check() -> GrpcRequest {
     GrpcRequest::new("svc/Method", Vec::new(), Duration::from_secs(1))
 }
 
@@ -594,7 +588,6 @@ mod tests {
         assert_eq!(decoded[2], b"three");
     }
 
-    /// @covers: decode_grpc_frames — sanitized error on truncated frames.
     #[test]
     fn test_decode_grpc_frames_returns_internal_error_on_truncated_data() {
         // 5-byte header says length=100 but only 3 bytes of payload follow.
@@ -612,14 +605,12 @@ mod tests {
         }
     }
 
-    /// @covers: encode_grpc_timeout — sub-second values use nanos.
     #[test]
     fn test_encode_grpc_timeout_uses_nanos_for_small_values() {
         assert_eq!(encode_grpc_timeout(Duration::from_nanos(1)),       "1n");
         assert_eq!(encode_grpc_timeout(Duration::from_micros(1)),      "1000n");
     }
 
-    /// @covers: encode_grpc_timeout — millisecond range.
     #[test]
     fn test_encode_grpc_timeout_uses_millis_or_higher_for_seconds() {
         // 30s = 30_000_000_000 ns — too big for nanos, fits microseconds (3e10).
@@ -630,9 +621,45 @@ mod tests {
         assert!("nuMSmH".contains(last), "unexpected unit suffix in {s}");
     }
 
-    /// @covers: encode_grpc_timeout — zero duration is encoded as 0n.
     #[test]
     fn test_encode_grpc_timeout_handles_zero_duration() {
         assert_eq!(encode_grpc_timeout(Duration::ZERO), "0n");
+    }
+
+    #[test]
+    fn test_grpc_request_new_requires_deadline_compile_check() {
+        let _r = _grpc_request_new_requires_deadline_compile_check();
+    }
+
+    #[test]
+    fn test_from_config_builds_client_from_channel_config() {
+        rustls::crypto::aws_lc_rs::default_provider().install_default().ok();
+        let cfg = crate::api::value_object::GrpcChannelConfig::new("http://localhost:50051")
+            .allow_plaintext();
+        assert!(TonicGrpcClient::from_config(&cfg).is_ok());
+    }
+
+    #[test]
+    fn test_with_interceptors_attaches_chain() {
+        rustls::crypto::aws_lc_rs::default_provider().install_default().ok();
+        let client = TonicGrpcClient::new("http://localhost:50051")
+            .with_interceptors(GrpcOutboundInterceptorChain::new());
+        assert_eq!(client.interceptors.len(), 0);
+    }
+
+    #[test]
+    fn test_with_max_message_bytes_overrides_default_cap() {
+        rustls::crypto::aws_lc_rs::default_provider().install_default().ok();
+        let client = TonicGrpcClient::new("http://localhost:50051")
+            .with_max_message_bytes(16 * 1024 * 1024);
+        assert_eq!(client.max_message_bytes, 16 * 1024 * 1024);
+    }
+
+    #[test]
+    fn test_with_compression_sets_mode() {
+        rustls::crypto::aws_lc_rs::default_provider().install_default().ok();
+        let client = TonicGrpcClient::new("http://localhost:50051")
+            .with_compression(CompressionMode::Gzip);
+        assert_eq!(client.compression, CompressionMode::Gzip);
     }
 }

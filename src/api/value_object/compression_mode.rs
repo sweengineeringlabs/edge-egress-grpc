@@ -29,19 +29,19 @@ impl CompressionMode {
 mod tests {
     use super::*;
 
-    /// @covers: CompressionMode::default — defaults to None.
+    /// @covers: header_value
     #[test]
     fn test_default_is_none_compression() {
         assert_eq!(CompressionMode::default(), CompressionMode::None);
     }
 
-    /// @covers: CompressionMode::header_value — None returns None.
+    /// @covers: header_value
     #[test]
     fn test_header_value_for_none_returns_none() {
         assert_eq!(CompressionMode::None.header_value(), None);
     }
 
-    /// @covers: CompressionMode::header_value — canonical names.
+    /// @covers: header_value
     #[test]
     fn test_header_value_for_gzip_and_zstd_uses_canonical_names() {
         assert_eq!(CompressionMode::Gzip.header_value(), Some("gzip"));

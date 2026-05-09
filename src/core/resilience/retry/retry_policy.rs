@@ -1,79 +1,17 @@
-//! Retry policy and RESOURCE_EXHAUSTED context discrimination.
+//! `RetryPolicy` — inline retry implementation for `swe-edge-egress-grpc`.
 //!
 //! Mirrors the semantics of the standalone `swe-edge-egress-grpc-retry`
-//! crate. The inline copy exists here because `swe-edge-egress-grpc`
-//! cannot depend on that crate without creating a dependency cycle.
+//! crate. The inline copy exists because adding that crate as a dep would
+//! create a circular dependency (grpc-retry depends on grpc).
 
 use std::time::Duration;
 
 use crate::api::port::GrpcOutboundError;
-use crate::api::value_object::GrpcStatusCode;
-
-// ── RESOURCE_EXHAUSTED context ────────────────────────────────────────────────
-
-/// Extract a `Retry-After` hint embedded in a gRPC error message by
-/// the transport layer.
-///
-/// The transport embeds the HTTP `Retry-After` (or `x-ratelimit-reset-requests`)
-/// header value as `[retry-after=Ns]` at the end of the `grpc-message` string
-/// when it receives a `RESOURCE_EXHAUSTED` response.  This lets
-/// [`RetryPolicy::decide`] honour the upstream reset window for rate-limit
-/// errors without requiring a new error variant.
-///
-/// Returns `None` when no hint is present or it cannot be parsed.
-pub fn parse_retry_after_hint(message: &str) -> Option<Duration> {
-    let tag   = "[retry-after=";
-    let start = message.find(tag)? + tag.len();
-    let rest  = &message[start..];
-    let end   = rest.find('s')?;
-    let secs: u64 = rest[..end].parse().ok()?;
-    Some(Duration::from_secs(secs))
-}
-
-/// Discriminates the cause of a `RESOURCE_EXHAUSTED` (gRPC 8) error.
-///
-/// | Context     | Cause                        | Correct response          |
-/// |-------------|------------------------------|---------------------------|
-/// | `Capacity`  | Server OOM / CPU saturation  | Retry standard track      |
-/// | `RateLimit` | API rate-limit window full   | Retry rate-limit track    |
-/// | `HardQuota` | Billing quota exhausted      | Do not retry              |
-///
-/// Classification inspects the `grpc-message` trailer for well-known
-/// strings.  `Capacity` is the safe default.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum ResourceExhaustedContext {
-    /// Server capacity or OOM — may clear on retry after backoff.
-    Capacity,
-    /// API rate limit — the request window is full; retry after reset.
-    RateLimit,
-    /// Billing / quota hard cap — retry will not help.
-    HardQuota,
-}
-
-/// Classify a `RESOURCE_EXHAUSTED` grpc-message into a context.
-pub fn classify_resource_exhausted(message: &str) -> ResourceExhaustedContext {
-    let msg = message.to_ascii_lowercase();
-    if msg.contains("quota") || msg.contains("billing") || msg.contains("plan limit") {
-        ResourceExhaustedContext::HardQuota
-    } else if msg.contains("rate") || msg.contains("too many requests") || msg.contains("throttl") {
-        ResourceExhaustedContext::RateLimit
-    } else {
-        ResourceExhaustedContext::Capacity
-    }
-}
-
-// ── RetryDecision ─────────────────────────────────────────────────────────────
-
-/// What the retry policy decided for one error on one attempt.
-#[derive(Debug)]
-pub enum RetryDecision {
-    /// Retry after sleeping for the given duration.
-    Retry(Duration),
-    /// Propagate the error immediately — do not retry.
-    DoNotRetry,
-}
-
-// ── RetryPolicy ───────────────────────────────────────────────────────────────
+use crate::api::value_object::{
+    classify_resource_exhausted, parse_retry_after_hint,
+    GrpcStatusCode, ResourceExhaustedContext,
+};
+use super::retry_decision::RetryDecision;
 
 /// Policy controlling retry behaviour on transient gRPC errors.
 ///
@@ -91,7 +29,7 @@ pub enum RetryDecision {
 /// Both tracks use fractional jitter (`jitter_factor`) to prevent
 /// thundering herd.
 #[derive(Debug, Clone)]
-pub struct RetryPolicy {
+pub(crate) struct RetryPolicy {
     /// Total attempts including the first call. `1` disables retry entirely.
     pub max_attempts: u32,
     /// Initial backoff for capacity / unavailable errors.
@@ -125,7 +63,7 @@ impl RetryPolicy {
     /// - `UNAVAILABLE` (status or transport) — standard track
     ///
     /// `retry_index` is 0-based (0 = deciding before the first retry).
-    pub fn decide(&self, err: &GrpcOutboundError, retry_index: u32) -> RetryDecision {
+    pub(crate) fn decide(&self, err: &GrpcOutboundError, retry_index: u32) -> RetryDecision {
         match err {
             GrpcOutboundError::Status(GrpcStatusCode::ResourceExhausted, msg) => {
                 match classify_resource_exhausted(msg) {
@@ -196,38 +134,20 @@ impl RetryPolicy {
     }
 }
 
+impl crate::api::resilience::RetryPolicyPort for RetryPolicy {
+    fn decide(&self, err: &GrpcOutboundError, retry_index: u32) -> crate::api::resilience::RetryOutcome {
+        use crate::api::resilience::RetryOutcome;
+        match self.decide(err, retry_index) {
+            RetryDecision::Retry(d) => RetryOutcome::Retry(d),
+            RetryDecision::DoNotRetry => RetryOutcome::DoNotRetry,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    // ── classify_resource_exhausted ───────────────────────────────────────────
-
-    /// @covers: classify_resource_exhausted — rate-limit keywords → RateLimit.
-    #[test]
-    fn test_classify_rate_limit_by_keyword() {
-        assert_eq!(classify_resource_exhausted("rate limit exceeded"), ResourceExhaustedContext::RateLimit);
-        assert_eq!(classify_resource_exhausted("too many requests"),   ResourceExhaustedContext::RateLimit);
-        assert_eq!(classify_resource_exhausted("throttled"),           ResourceExhaustedContext::RateLimit);
-        assert_eq!(classify_resource_exhausted("RATE_LIMIT_ERROR"),    ResourceExhaustedContext::RateLimit);
-    }
-
-    /// @covers: classify_resource_exhausted — quota keywords → HardQuota.
-    #[test]
-    fn test_classify_hard_quota_by_keyword() {
-        assert_eq!(classify_resource_exhausted("quota exceeded"),    ResourceExhaustedContext::HardQuota);
-        assert_eq!(classify_resource_exhausted("billing limit hit"), ResourceExhaustedContext::HardQuota);
-        assert_eq!(classify_resource_exhausted("plan limit reached"), ResourceExhaustedContext::HardQuota);
-    }
-
-    /// @covers: classify_resource_exhausted — unknown message defaults to Capacity.
-    #[test]
-    fn test_classify_unknown_defaults_to_capacity() {
-        assert_eq!(classify_resource_exhausted("out of memory"),   ResourceExhaustedContext::Capacity);
-        assert_eq!(classify_resource_exhausted("server overloaded"), ResourceExhaustedContext::Capacity);
-        assert_eq!(classify_resource_exhausted(""),                ResourceExhaustedContext::Capacity);
-    }
-
-    // ── RetryPolicy::decide ───────────────────────────────────────────────────
+    use crate::api::value_object::GrpcStatusCode;
 
     fn policy() -> RetryPolicy {
         RetryPolicy {
@@ -246,20 +166,39 @@ mod tests {
         GrpcOutboundError::Status(GrpcStatusCode::ResourceExhausted, msg.into())
     }
 
-    /// @covers: decide — RESOURCE_EXHAUSTED(Capacity) → Retry on first attempt.
+    #[test]
+    fn test_classify_rate_limit_by_keyword() {
+        assert_eq!(classify_resource_exhausted("rate limit exceeded"), ResourceExhaustedContext::RateLimit);
+        assert_eq!(classify_resource_exhausted("too many requests"),   ResourceExhaustedContext::RateLimit);
+        assert_eq!(classify_resource_exhausted("throttled"),           ResourceExhaustedContext::RateLimit);
+        assert_eq!(classify_resource_exhausted("RATE_LIMIT_ERROR"),    ResourceExhaustedContext::RateLimit);
+    }
+
+    #[test]
+    fn test_classify_hard_quota_by_keyword() {
+        assert_eq!(classify_resource_exhausted("quota exceeded"),    ResourceExhaustedContext::HardQuota);
+        assert_eq!(classify_resource_exhausted("billing limit hit"), ResourceExhaustedContext::HardQuota);
+        assert_eq!(classify_resource_exhausted("plan limit reached"), ResourceExhaustedContext::HardQuota);
+    }
+
+    #[test]
+    fn test_classify_unknown_defaults_to_capacity() {
+        assert_eq!(classify_resource_exhausted("out of memory"),   ResourceExhaustedContext::Capacity);
+        assert_eq!(classify_resource_exhausted("server overloaded"), ResourceExhaustedContext::Capacity);
+        assert_eq!(classify_resource_exhausted(""),                ResourceExhaustedContext::Capacity);
+    }
+
     #[test]
     fn test_decide_capacity_exhausted_retries() {
         assert!(matches!(policy().decide(&resource_exhausted("oom"), 0), RetryDecision::Retry(_)));
     }
 
-    /// @covers: decide — RESOURCE_EXHAUSTED(RateLimit) → Retry with rate-limit track.
     #[test]
     fn test_decide_rate_limit_retries_on_rate_limit_track() {
         let d = policy().decide(&resource_exhausted("rate limit exceeded"), 0);
         assert!(matches!(d, RetryDecision::Retry(_)), "rate-limit should retry");
     }
 
-    /// @covers: decide — RESOURCE_EXHAUSTED(HardQuota) → DoNotRetry immediately.
     #[test]
     fn test_decide_hard_quota_does_not_retry() {
         assert!(matches!(
@@ -268,7 +207,6 @@ mod tests {
         ));
     }
 
-    /// @covers: decide — RESOURCE_EXHAUSTED(RateLimit) stops after rate_limit_max_attempts.
     #[test]
     fn test_decide_rate_limit_stops_at_rate_limit_max_attempts() {
         let p = policy();
@@ -278,14 +216,12 @@ mod tests {
         ));
     }
 
-    /// @covers: decide — UNAVAILABLE → Retry on standard track.
     #[test]
     fn test_decide_unavailable_retries() {
         let err = GrpcOutboundError::Status(GrpcStatusCode::Unavailable, "down".into());
         assert!(matches!(policy().decide(&err, 0), RetryDecision::Retry(_)));
     }
 
-    /// @covers: decide — transport Unavailable → Retry.
     #[test]
     fn test_decide_transport_unavailable_retries() {
         assert!(matches!(
@@ -294,7 +230,6 @@ mod tests {
         ));
     }
 
-    /// @covers: decide — ConnectionFailed → Retry (transport-level transient).
     #[test]
     fn test_decide_connection_failed_retries() {
         assert!(matches!(
@@ -303,14 +238,12 @@ mod tests {
         ));
     }
 
-    /// @covers: decide — INTERNAL → DoNotRetry.
     #[test]
     fn test_decide_internal_does_not_retry() {
         let err = GrpcOutboundError::Status(GrpcStatusCode::Internal, "bug".into());
         assert!(matches!(policy().decide(&err, 0), RetryDecision::DoNotRetry));
     }
 
-    /// @covers: decide — Timeout → DoNotRetry.
     #[test]
     fn test_decide_timeout_does_not_retry() {
         assert!(matches!(
@@ -319,7 +252,6 @@ mod tests {
         ));
     }
 
-    /// @covers: decide — Cancelled → DoNotRetry.
     #[test]
     fn test_decide_cancelled_does_not_retry() {
         assert!(matches!(
@@ -328,7 +260,6 @@ mod tests {
         ));
     }
 
-    /// @covers: decide — capacity retry stops at max_attempts.
     #[test]
     fn test_decide_capacity_stops_at_max_attempts() {
         let p = policy();
@@ -338,7 +269,6 @@ mod tests {
         ));
     }
 
-    /// @covers: parse_retry_after_hint — extracts seconds from embedded tag.
     #[test]
     fn test_parse_retry_after_hint_extracts_seconds() {
         assert_eq!(
@@ -347,14 +277,12 @@ mod tests {
         );
     }
 
-    /// @covers: parse_retry_after_hint — returns None when tag absent.
     #[test]
     fn test_parse_retry_after_hint_returns_none_when_absent() {
         assert_eq!(parse_retry_after_hint("rate limit exceeded"), None);
         assert_eq!(parse_retry_after_hint(""), None);
     }
 
-    /// @covers: decide — RateLimit with Retry-After hint uses the hint duration.
     #[test]
     fn test_decide_rate_limit_uses_retry_after_hint_when_present() {
         let p   = policy();

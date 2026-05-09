@@ -1,20 +1,22 @@
 //! gRPC value objects.
+
 pub mod compression_mode;
-pub mod grpc_channel_config;
-pub mod grpc_metadata;
-pub mod grpc_request;
-pub mod grpc_response;
-pub mod grpc_status_code;
+pub mod grpc;
 pub mod keep_alive_config;
 pub mod mtls_config;
-pub mod resilience_config;
+pub mod resilience;
+pub mod resource_exhausted_context;
 
 pub use compression_mode::CompressionMode;
-pub use grpc_channel_config::{GrpcChannelConfig, DEFAULT_MAX_MESSAGE_BYTES};
-pub use grpc_metadata::GrpcMetadata;
-pub use grpc_request::GrpcRequest;
-pub use grpc_response::GrpcResponse;
-pub use grpc_status_code::GrpcStatusCode;
+pub use grpc::{
+    GrpcChannelConfig, GrpcChannelConfigBuilder,
+    GrpcMetadata,
+    GrpcRequest, GrpcRequestBuilder,
+    GrpcResponse, GrpcStatusCode, DEFAULT_MAX_MESSAGE_BYTES,
+};
 pub use keep_alive_config::KeepAliveConfig;
 pub use mtls_config::MtlsConfig;
-pub use resilience_config::ResilienceConfig;
+pub use resilience::{ResilienceConfig, ResilienceConfigBuilder};
+pub use resource_exhausted_context::{
+    classify_resource_exhausted, parse_retry_after_hint, ResourceExhaustedContext,
+};

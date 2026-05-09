@@ -1,46 +1,29 @@
-//! W3C Trace Context propagation for outbound gRPC calls.
-//!
-//! Implements the [W3C Trace Context](https://www.w3.org/TR/trace-context/)
-//! `traceparent` header.  When a request already carries a `traceparent`,
-//! the interceptor preserves it.  Otherwise it can inject a static one.
-//!
-//! Propagation-only — does not start spans or sample.
+//! W3C Trace Context outbound interceptor — declaration and implementation.
 
-use crate::api::interceptor::GrpcOutboundInterceptor;
+use crate::api::interceptor::grpc_outbound::GrpcOutboundInterceptor;
+use crate::api::interceptor::TraceContextSource;
 use crate::api::port::GrpcOutboundError;
 use crate::api::value_object::{GrpcRequest, GrpcResponse};
 
-pub(crate) const TRACEPARENT: &str = "traceparent";
-pub(crate) const TRACESTATE: &str = "tracestate";
-
-/// Source of the trace context the interceptor will inject.
-#[derive(Clone)]
-pub enum TraceContextSource {
-    /// No automatic injection.
-    PassThrough,
-    /// Inject a static `traceparent` (and optional `tracestate`).
-    Static {
-        /// Verbatim `traceparent` header value.
-        traceparent: String,
-        /// Optional `tracestate` header value.
-        tracestate:  Option<String>,
-    },
-}
+const TRACEPARENT: &str = "traceparent";
+const TRACESTATE: &str  = "tracestate";
 
 /// W3C Trace Context propagation interceptor for outbound gRPC.
+///
+/// Construct via [`TraceContextInterceptor::pass_through`] or
+/// [`TraceContextInterceptor::with_static`].
 #[derive(Clone)]
 pub struct TraceContextInterceptor {
-    source: TraceContextSource,
+    pub(crate) source: TraceContextSource,
 }
 
 impl TraceContextInterceptor {
-    /// Construct a passthrough interceptor — never injects.
+    /// Propagates an upstream `traceparent` only — does not inject.
     pub fn pass_through() -> Self {
         Self { source: TraceContextSource::PassThrough }
     }
 
-    /// Construct an interceptor that injects a fixed `traceparent`
-    /// when none is present.
+    /// Inject a fixed `traceparent` when none is already present.
     pub fn with_static(traceparent: impl Into<String>, tracestate: Option<String>) -> Self {
         Self {
             source: TraceContextSource::Static {
@@ -76,65 +59,74 @@ impl GrpcOutboundInterceptor for TraceContextInterceptor {
 #[cfg(test)]
 mod tests {
     use std::time::Duration;
-
     use crate::api::value_object::{GrpcMetadata, GrpcRequest, GrpcResponse};
-
     use super::*;
 
-    fn req() -> GrpcRequest {
-        GrpcRequest::new("svc/M", vec![], Duration::from_secs(1))
+    fn req() -> GrpcRequest { GrpcRequest::new("svc/M", vec![], Duration::from_secs(1)) }
+
+    /// @covers: pass_through
+    #[test]
+    fn test_pass_through_constructs_without_panic() {
+        let _ = TraceContextInterceptor::pass_through();
     }
 
-    /// @covers: pass_through — never injects.
+    /// @covers: with_static
+    #[test]
+    fn test_with_static_stores_traceparent() {
+        let interceptor = TraceContextInterceptor::with_static("00-abc-01", None);
+        match &interceptor.source {
+            TraceContextSource::Static { traceparent, .. } => assert_eq!(traceparent, "00-abc-01"),
+            _ => panic!("expected Static source"),
+        }
+    }
+
+    /// @covers: pass_through
     #[test]
     fn test_pass_through_does_not_inject_traceparent_when_absent() {
-        let interceptor = TraceContextInterceptor::pass_through();
+        let ic = TraceContextInterceptor::pass_through();
         let mut r = req();
-        interceptor.before_call(&mut r).expect("before_call");
-        assert!(r.metadata.headers.get(TRACEPARENT).is_none());
+        ic.before_call(&mut r).unwrap();
+        assert!(!r.metadata.headers.contains_key(TRACEPARENT));
     }
 
-    /// @covers: with_static — injects when absent.
+    /// @covers: with_static
     #[test]
     fn test_with_static_injects_traceparent_when_absent() {
         let tp = "00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01";
-        let interceptor = TraceContextInterceptor::with_static(tp, None);
+        let ic = TraceContextInterceptor::with_static(tp, None);
         let mut r = req();
-        interceptor.before_call(&mut r).expect("before_call");
+        ic.before_call(&mut r).unwrap();
         assert_eq!(r.metadata.headers.get(TRACEPARENT).map(String::as_str), Some(tp));
     }
 
-    /// @covers: with_static — injects tracestate too.
+    /// @covers: with_static
     #[test]
     fn test_with_static_injects_tracestate_when_configured() {
         let tp = "00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01";
-        let interceptor = TraceContextInterceptor::with_static(tp, Some("v=1".to_string()));
+        let ic = TraceContextInterceptor::with_static(tp, Some("v=1".into()));
         let mut r = req();
-        interceptor.before_call(&mut r).expect("before_call");
+        ic.before_call(&mut r).unwrap();
         assert_eq!(r.metadata.headers.get(TRACESTATE).map(String::as_str), Some("v=1"));
     }
 
-    /// @covers: upstream traceparent preserved.
+    /// @covers: with_static
     #[test]
     fn test_upstream_traceparent_is_preserved_and_not_overwritten() {
-        let upstream = "00-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-bbbbbbbbbbbbbbbb-01";
+        let upstream = "00-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1-bbbbbbbbbbbbbbbb-01";
         let injected = "00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01";
-        let interceptor = TraceContextInterceptor::with_static(injected, None);
+        let ic  = TraceContextInterceptor::with_static(injected, None);
         let mut r = req();
         r.metadata.headers.insert(TRACEPARENT.into(), upstream.into());
-        interceptor.before_call(&mut r).expect("before_call");
+        ic.before_call(&mut r).unwrap();
         assert_eq!(r.metadata.headers.get(TRACEPARENT).map(String::as_str), Some(upstream));
     }
 
-    /// @covers: after_call — no-op.
+    /// @covers: pass_through
     #[test]
     fn test_after_call_does_not_modify_response() {
-        let interceptor = TraceContextInterceptor::pass_through();
-        let mut resp = GrpcResponse {
-            body:     vec![],
-            metadata: GrpcMetadata::default(),
-        };
-        interceptor.after_call(&mut resp).expect("after_call");
+        let ic = TraceContextInterceptor::pass_through();
+        let mut resp = GrpcResponse { body: vec![], metadata: GrpcMetadata::default() };
+        ic.after_call(&mut resp).unwrap();
         assert!(resp.metadata.headers.is_empty());
     }
 }

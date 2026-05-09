@@ -10,11 +10,19 @@ description  = "edge — egress gRPC outbound domain: request/response types and
 keywords     = ["gateway", "egress", "grpc", "sea", "swe"]
 categories   = ["network-programming"]
 
+[package.metadata.struct-engine]
+application_type = "lib"
+service_type     = "processor"
+
 [lib]
 path = "src/lib.rs"
 
 [features]
 default = []
+
+[[example]]
+name = "basic_transport"
+path = "examples/basic_transport.rs"
 
 [dependencies]
 serde.workspace       = true
@@ -24,7 +32,6 @@ futures.workspace     = true
 bytes            = "1"
 http             = { workspace = true }
 http-body-util   = "0.1"
-hyper            = { version = "1", features = ["http2"] }
 hyper-util       = { version = "0.1", features = ["client-legacy", "tokio", "http2"] }
 hyper-rustls     = { version = "0.27", features = ["http2", "webpki-tokio"] }
 tokio            = { version = "1", features = ["rt", "net", "time", "macros"] }

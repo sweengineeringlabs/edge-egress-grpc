@@ -13,7 +13,7 @@ use http_body::Frame;
 use http_body_util::{BodyExt as _, StreamBody};
 
 use swe_edge_egress_grpc::{
-    CompressionMode, GrpcOutbound, GrpcRequest, TonicGrpcClient,
+    create_transport_from_config, CompressionMode, GrpcChannelConfig, GrpcOutbound, GrpcRequest,
 };
 
 /// Install rustls's aws-lc-rs CryptoProvider exactly once per process.
@@ -34,6 +34,7 @@ fn encode_frame(payload: &[u8]) -> Bytes {
     buf.freeze()
 }
 
+/// @covers: tonic_grpc_client_struct_advertises_grpc_encoding_when_gzip_set_int_test  coverage.
 #[tokio::test]
 async fn tonic_grpc_client_struct_advertises_grpc_encoding_when_gzip_set_int_test() {
     ensure_rustls_provider();
@@ -76,8 +77,11 @@ async fn tonic_grpc_client_struct_advertises_grpc_encoding_when_gzip_set_int_tes
     });
     tokio::time::sleep(Duration::from_millis(20)).await;
 
-    let client = TonicGrpcClient::new(format!("http://{addr}"))
-        .with_compression(CompressionMode::Gzip);
+    let client = create_transport_from_config(
+        &GrpcChannelConfig::new(format!("http://{addr}"))
+            .allow_plaintext()
+            .with_compression(CompressionMode::Gzip),
+    ).expect("transport");
     let req = GrpcRequest::new("svc/M", b"payload".to_vec(), Duration::from_secs(2));
     let _ = client.call_unary(req).await.expect("call_unary");
 
@@ -89,6 +93,7 @@ async fn tonic_grpc_client_struct_advertises_grpc_encoding_when_gzip_set_int_tes
     );
 }
 
+/// @covers: tonic_grpc_client_struct_does_not_set_grpc_encoding_when_none_int_test  coverage.
 #[tokio::test]
 async fn tonic_grpc_client_struct_does_not_set_grpc_encoding_when_none_int_test() {
     ensure_rustls_provider();
@@ -131,7 +136,9 @@ async fn tonic_grpc_client_struct_does_not_set_grpc_encoding_when_none_int_test(
     });
     tokio::time::sleep(Duration::from_millis(20)).await;
 
-    let client = TonicGrpcClient::new(format!("http://{addr}"));
+    let client = create_transport_from_config(
+        &GrpcChannelConfig::new(format!("http://{addr}")).allow_plaintext(),
+    ).expect("transport");
     let req = GrpcRequest::new("svc/M", b"payload".to_vec(), Duration::from_secs(2));
     let _ = client.call_unary(req).await.expect("call_unary");
 

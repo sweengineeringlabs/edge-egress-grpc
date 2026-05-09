@@ -32,7 +32,6 @@ impl Default for KeepAliveConfig {
 mod tests {
     use super::*;
 
-    /// @covers: KeepAliveConfig::default — interval 10s, timeout 20s.
     #[test]
     fn test_default_uses_recommended_grpc_intervals() {
         let cfg = KeepAliveConfig::default();

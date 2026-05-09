@@ -1,10 +1,9 @@
 pub(crate) mod circuit_breaker;
-pub(crate) mod resilient_client;
+pub(crate) mod resilience_validator;
+pub(crate) mod resilient_grpc_client;
 pub(crate) mod retry;
 
-pub use circuit_breaker::CircuitBreaker;
-pub use resilient_client::ResilientGrpcClient;
-pub use retry::{
-    classify_resource_exhausted, parse_retry_after_hint,
-    ResourceExhaustedContext, RetryDecision, RetryPolicy,
-};
+pub(crate) use circuit_breaker::CircuitBreaker;
+pub(crate) use resilient_grpc_client::ResilientGrpcClient;
+pub(crate) use retry::RetryDecision;
+pub(crate) use retry::RetryPolicy;

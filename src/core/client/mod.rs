@@ -1,4 +1,5 @@
 //! gRPC client adapter implementations.
 
+pub(crate) mod grpc_client_builder;
 pub(crate) mod tonic_grpc_client;
-pub use tonic_grpc_client::{GrpcChannelConfigError, TonicGrpcClient};
+pub(crate) use tonic_grpc_client::TonicGrpcClient;

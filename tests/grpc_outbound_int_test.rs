@@ -1,9 +1,11 @@
-//! Integration tests for `TonicGrpcClient` / `GrpcOutbound`.
+//! Integration tests for `GrpcOutbound` (via `create_transport_from_config`).
 //!
-//! Tests spin up a minimal in-process HTTP/2 echo server (no external process).
+//! Tests spin up a minimal in-process HTTP/2 echo server using `hyper_util`.
 
+use hyper_util::rt::{TokioExecutor, TokioIo};
 use std::convert::Infallible;
 use std::net::SocketAddr;
+use std::sync::Arc;
 use std::time::Duration;
 
 use bytes::{Buf, BufMut, Bytes, BytesMut};
@@ -12,9 +14,16 @@ use http_body::Frame;
 use http_body_util::{BodyExt as _, Full, StreamBody};
 
 use swe_edge_egress_grpc::{
-    GrpcMessageStream, GrpcMetadata, GrpcOutbound, GrpcOutboundError, GrpcRequest, GrpcResponse,
-    GrpcStatusCode, TonicGrpcClient,
+    create_transport_from_config, GrpcChannelConfig, GrpcMessageStream, GrpcMetadata,
+    GrpcOutbound, GrpcOutboundError, GrpcRequest, GrpcResponse, GrpcStatusCode,
 };
+
+fn make_client(addr: SocketAddr) -> Arc<dyn GrpcOutbound> {
+    create_transport_from_config(
+        &GrpcChannelConfig::new(format!("http://{addr}")).allow_plaintext(),
+    )
+    .expect("create_transport_from_config")
+}
 
 // ── gRPC frame helpers (duplicated here to keep test self-contained) ─────────
 
@@ -245,7 +254,7 @@ async fn test_call_unary_sends_request_and_receives_response() {
     let listener = bind_listener().await;
     let addr = spawn_echo_server(listener).await;
 
-    let client = TonicGrpcClient::new(format!("http://{addr}"));
+    let client = make_client(addr);
     let req = GrpcRequest::new("echo/Echo", b"hello".to_vec(), Duration::from_secs(5));
 
     let resp = client.call_unary(req).await.expect("call_unary should succeed");
@@ -259,7 +268,7 @@ async fn test_call_unary_propagates_grpc_error_status() {
     let addr = spawn_error_server(listener).await;
 
     ensure_rustls_provider();
-    let client = TonicGrpcClient::new(format!("http://{addr}"));
+    let client = make_client(addr);
     let req = GrpcRequest::new("echo/Echo", b"ping".to_vec(), Duration::from_secs(5));
 
     let result = client.call_unary(req).await;
@@ -283,7 +292,7 @@ async fn test_call_stream_sends_multiple_frames_and_receives_stream() {
     let addr = spawn_echo_server(listener).await;
 
     ensure_rustls_provider();
-    let client = TonicGrpcClient::new(format!("http://{addr}"));
+    let client = make_client(addr);
     let messages: GrpcMessageStream = Box::pin(stream::iter(vec![
         Ok(b"frame1".to_vec()),
         Ok(b"frame2".to_vec()),
@@ -316,7 +325,7 @@ async fn test_health_check_succeeds_when_server_is_listening() {
     let addr = spawn_echo_server(listener).await;
 
     ensure_rustls_provider();
-    let client = TonicGrpcClient::new(format!("http://{addr}"));
+    let client = make_client(addr);
     client.health_check().await.expect("health_check should succeed when port is open");
 }
 
@@ -331,7 +340,7 @@ async fn test_health_check_fails_when_no_server_is_listening() {
     drop(listener);
 
     ensure_rustls_provider();
-    let client = TonicGrpcClient::new(format!("http://{addr}"));
+    let client = make_client(addr);
     let result = client.health_check().await;
     assert!(
         result.is_err(),
@@ -386,7 +395,7 @@ async fn test_call_unary_receives_response_metadata_from_trailers() {
     let addr = spawn_metadata_server(listener).await;
 
     ensure_rustls_provider();
-    let client = TonicGrpcClient::new(format!("http://{addr}"));
+    let client = make_client(addr);
     let req = GrpcRequest::new("echo/Echo", b"hi".to_vec(), Duration::from_secs(5));
 
     let resp = client.call_unary(req).await.expect("call_unary should succeed");
@@ -407,7 +416,7 @@ async fn test_call_unary_returns_timeout_error_when_server_stalls() {
 
     // Per-call deadline drives the timeout for unary now.
     ensure_rustls_provider();
-    let client = TonicGrpcClient::new(format!("http://{addr}"));
+    let client = make_client(addr);
     let req = GrpcRequest::new("svc/Method", b"ping".to_vec(), Duration::from_millis(80));
     let result = client.call_unary(req).await;
     assert!(
@@ -427,7 +436,7 @@ async fn test_call_unary_returns_connection_failed_when_no_server_is_listening()
     };
 
     ensure_rustls_provider();
-    let client = TonicGrpcClient::new(format!("http://{addr}"));
+    let client = make_client(addr);
     let req = GrpcRequest::new("svc/Method", b"ping".to_vec(), Duration::from_secs(5));
     let result = client.call_unary(req).await;
     assert!(
@@ -438,7 +447,7 @@ async fn test_call_unary_returns_connection_failed_when_no_server_is_listening()
 
 // ── Phase 1 enrichment: deadlines, cancellation, status mapping ──────────────
 
-use std::sync::{Arc, Mutex};
+use std::sync::Mutex;
 
 /// Echo server that records the `grpc-timeout` header value of the most recent
 /// request, so tests can assert that the egress side really sent it.
@@ -504,7 +513,7 @@ async fn test_call_unary_sends_grpc_timeout_header_from_deadline() {
     let (addr, captured) = spawn_timeout_recording_server(listener).await;
 
     ensure_rustls_provider();
-    let client = TonicGrpcClient::new(format!("http://{addr}"));
+    let client = make_client(addr);
     let req    = GrpcRequest::new("svc/Method", b"x".to_vec(), Duration::from_secs(2));
     client.call_unary(req).await.expect("call_unary should succeed");
 
@@ -530,7 +539,7 @@ async fn test_call_unary_cancellation_token_aborts_in_flight_request() {
 
     // Long deadline so timeout doesn't beat us; cancellation must win.
     ensure_rustls_provider();
-    let client = TonicGrpcClient::new(format!("http://{addr}"));
+    let client = make_client(addr);
     let token  = CancellationToken::new();
     let req    = GrpcRequest::new("svc/Method", b"x".to_vec(), Duration::from_secs(60))
         .with_cancellation(token.clone());
@@ -628,7 +637,7 @@ async fn test_call_unary_sanitizes_internal_error_message_on_truncated_response(
     });
 
     ensure_rustls_provider();
-    let client = TonicGrpcClient::new(format!("http://{addr}"));
+    let client = make_client(addr);
     // call_stream is the path that decodes frames and surfaces the truncation.
     let messages: GrpcMessageStream = Box::pin(stream::iter(vec![Ok(b"x".to_vec())]));
     let result = client

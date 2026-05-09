@@ -7,9 +7,12 @@
 
 use crate::api::value_object::GrpcStatusCode;
 
+/// Zero-size marker identifying this as the status code conversion module.
+pub(crate) struct Conversions;
+
 /// Convert a [`tonic::Code`] (server-side / wire-side enum) into the
 /// crate-local [`GrpcStatusCode`].  Total — covers all 17 variants.
-pub fn from_tonic_code(code: tonic::Code) -> GrpcStatusCode {
+pub(crate) fn from_tonic_code(code: tonic::Code) -> GrpcStatusCode {
     match code {
         tonic::Code::Ok                 => GrpcStatusCode::Ok,
         tonic::Code::Cancelled          => GrpcStatusCode::Cancelled,
@@ -32,7 +35,7 @@ pub fn from_tonic_code(code: tonic::Code) -> GrpcStatusCode {
 }
 
 /// Convert a crate-local [`GrpcStatusCode`] into a [`tonic::Code`].  Total.
-pub fn to_tonic_code(code: GrpcStatusCode) -> tonic::Code {
+pub(crate) fn to_tonic_code(code: GrpcStatusCode) -> tonic::Code {
     match code {
         GrpcStatusCode::Ok                 => tonic::Code::Ok,
         GrpcStatusCode::Cancelled          => tonic::Code::Cancelled,
@@ -59,12 +62,12 @@ pub fn to_tonic_code(code: GrpcStatusCode) -> tonic::Code {
 /// Returns [`GrpcStatusCode::Unknown`] for any value outside the standard
 /// 0..=16 range — that matches the gRPC spec's "unrecognized code maps to Unknown"
 /// rule and ensures the parser never panics on malformed servers.
-pub fn from_wire(value: i32) -> GrpcStatusCode {
+pub(crate) fn from_wire(value: i32) -> GrpcStatusCode {
     from_tonic_code(tonic::Code::from(value))
 }
 
 /// Encode a [`GrpcStatusCode`] as the numeric `grpc-status` wire value.
-pub fn to_wire(code: GrpcStatusCode) -> i32 {
+pub(crate) fn to_wire(code: GrpcStatusCode) -> i32 {
     to_tonic_code(code) as i32
 }
 
@@ -93,7 +96,6 @@ mod tests {
         GrpcStatusCode::Unauthenticated,
     ];
 
-    /// @covers: from_tonic_code, to_tonic_code — round-trip fidelity for all 17 variants.
     #[test]
     fn test_round_trip_through_tonic_code_preserves_all_17_variants() {
         for code in ALL_17 {
@@ -102,7 +104,6 @@ mod tests {
         }
     }
 
-    /// @covers: to_wire, from_wire — round-trip via numeric wire value for all 17 variants.
     #[test]
     fn test_round_trip_through_wire_value_preserves_all_17_variants() {
         for code in ALL_17 {
@@ -112,7 +113,6 @@ mod tests {
         }
     }
 
-    /// @covers: from_wire — out-of-range values normalize to Unknown without panic.
     #[test]
     fn test_from_wire_returns_unknown_for_out_of_range_value() {
         // 99 is not a defined gRPC status code.
@@ -121,7 +121,6 @@ mod tests {
         assert_eq!(from_wire(-1), GrpcStatusCode::Unknown);
     }
 
-    /// @covers: to_wire — Ok maps to wire 0 and Unauthenticated to 16.
     #[test]
     fn test_to_wire_matches_canonical_grpc_codes() {
         assert_eq!(to_wire(GrpcStatusCode::Ok),               0);
@@ -130,5 +129,25 @@ mod tests {
         assert_eq!(to_wire(GrpcStatusCode::InvalidArgument),  3);
         assert_eq!(to_wire(GrpcStatusCode::DeadlineExceeded), 4);
         assert_eq!(to_wire(GrpcStatusCode::Unauthenticated),  16);
+    }
+
+    #[test]
+    fn test_from_tonic_code_maps_ok_to_ok() {
+        assert_eq!(from_tonic_code(tonic::Code::Ok), GrpcStatusCode::Ok);
+    }
+
+    #[test]
+    fn test_to_tonic_code_maps_internal_to_internal() {
+        assert_eq!(to_tonic_code(GrpcStatusCode::Internal), tonic::Code::Internal);
+    }
+
+    #[test]
+    fn test_from_wire_maps_zero_to_ok() {
+        assert_eq!(from_wire(0), GrpcStatusCode::Ok);
+    }
+
+    #[test]
+    fn test_to_wire_maps_internal_to_13() {
+        assert_eq!(to_wire(GrpcStatusCode::Internal), 13);
     }
 }
