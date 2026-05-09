@@ -9,6 +9,7 @@ use http_body_util::{BodyExt as _, Full};
 use hyper_util::client::legacy::connect::HttpConnector;
 use tokio_util::sync::CancellationToken;
 
+use crate::api::client::tonic_grpc_client::TonicGrpcClient;
 use crate::api::interceptor::GrpcOutboundInterceptorChain;
 use crate::api::port::{GrpcChannelConfigError, GrpcMessageStream, GrpcOutbound, GrpcOutboundError, GrpcOutboundResult};
 use crate::api::value_object::{
@@ -17,39 +18,7 @@ use crate::api::value_object::{
 };
 use crate::core::status_codes::from_wire;
 
-/// Hyper HTTP/2 client type alias.
-///
-/// `HttpsConnector<HttpConnector>` with `https_or_http()` transparently routes:
-/// - `http://` URIs → plain h2c (HTTP/2 clear text, prior knowledge)
-/// - `https://` URIs → HTTP/2 over TLS (standard gRPCS)
-type HyperClient =
-    hyper_util::client::legacy::Client<hyper_rustls::HttpsConnector<HttpConnector>, Full<Bytes>>;
-
-/// Sanitized message for unexpected internal client-side conditions.
-///
-/// We never propagate raw `e.to_string()` from inside the client crate to
-/// the response error — those messages can leak file paths, struct names,
-/// and other internals.  The full text goes to the tracing log; the wire
-/// error carries this static string.
 const SANITIZED_INTERNAL_MSG: &str = "internal client error";
-
-/// Concrete `GrpcOutbound` implementation using hyper HTTP/2 (h2c prior knowledge).
-///
-/// Suitable for connections to gRPC servers that accept plain-text HTTP/2 (no TLS).
-/// Each instance re-uses a single connection pool via `hyper_util::client::legacy::Client`.
-pub struct TonicGrpcClient {
-    base_uri: String,
-    client:   HyperClient,
-    /// Fallback timeout used by [`call_stream`] and [`health_check`] only.
-    /// Per-request unary calls use the deadline carried on `GrpcRequest`.
-    timeout:  Duration,
-    /// Outbound interceptor chain.  First failure short-circuits.
-    interceptors: GrpcOutboundInterceptorChain,
-    /// Cap on a single response message.  Oversize ⇒ `ResourceExhausted`.
-    max_message_bytes: usize,
-    /// Negotiated compression mode.
-    compression: CompressionMode,
-}
 
 // ── internal helpers ─────────────────────────────────────────────────────────
 
@@ -221,16 +190,9 @@ fn check_grpc_status(
     Err(GrpcOutboundError::Status(code, message))
 }
 
-// ── constructor ───────────────────────────────────────────────────────────────
+// ── constructor helpers ───────────────────────────────────────────────────────
 
 impl TonicGrpcClient {
-    /// Create a client with a 30-second fallback timeout for `call_stream` and
-    /// `health_check` (per-call deadlines on `GrpcRequest` always take precedence
-    /// for unary calls).
-    pub fn new(base_uri: impl Into<String>) -> Self {
-        Self::with_timeout(base_uri, Duration::from_secs(30))
-    }
-
     /// Create a client with an explicit fallback timeout.
     pub(crate) fn with_timeout(base_uri: impl Into<String>, timeout: Duration) -> Self {
         let connector = hyper_rustls::HttpsConnectorBuilder::new()

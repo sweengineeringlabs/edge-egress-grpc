@@ -5,7 +5,7 @@ mod validator;
 
 pub use factory::create_transport_from_config;
 pub use validator::validate_resilience_config;
-pub use crate::core::client::tonic_grpc_client::TonicGrpcClient;
+pub use crate::api::client::tonic_grpc_client::TonicGrpcClient;
 
 pub use crate::api::interceptor::{
     GrpcOutboundInterceptor, GrpcOutboundInterceptorChain, TraceContextInterceptor,

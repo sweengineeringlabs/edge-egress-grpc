@@ -3,7 +3,7 @@
 use std::sync::Arc;
 
 use crate::api::port::{GrpcChannelConfigError, GrpcOutbound};
-use crate::core::client::tonic_grpc_client::TonicGrpcClient;
+use crate::api::client::tonic_grpc_client::TonicGrpcClient;
 
 /// Build an outbound transport from a [`crate::api::value_object::GrpcChannelConfig`].
 ///
