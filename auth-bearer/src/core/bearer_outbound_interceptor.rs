@@ -9,20 +9,12 @@ use swe_edge_egress_grpc::{
 };
 
 use crate::api::{
-    bearer_auth_config::BearerSecret, BearerAuthError, BearerOutboundConfig, AUTHORIZATION_HEADER,
+    BearerOutboundInterceptor, bearer_auth_config::BearerSecret,
+    BearerAuthError, BearerOutboundConfig, AUTHORIZATION_HEADER,
 };
 use crate::core::jwt_claims::JwtClaims;
 
-/// `GrpcOutboundInterceptor` that signs and attaches a JWT bearer
-/// token to every outbound request.
-pub struct BearerOutboundInterceptor {
-    config: BearerOutboundConfig,
-}
-
 impl BearerOutboundInterceptor {
-    /// Construct from config.
-    pub fn from_config(config: BearerOutboundConfig) -> Self { Self { config } }
-
     fn sign_token(&self) -> Result<String, BearerAuthError> {
         let now = SystemTime::now()
             .duration_since(UNIX_EPOCH)

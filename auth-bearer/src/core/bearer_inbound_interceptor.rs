@@ -8,20 +8,12 @@ use swe_edge_ingress_grpc::{
 };
 
 use crate::api::{
-    bearer_auth_config::BearerSecret, BearerAuthError, BearerInboundConfig, AUTHORIZATION_HEADER,
-    EXTRACTED_BEARER_SUBJECT,
+    BearerInboundInterceptor, bearer_auth_config::BearerSecret,
+    BearerAuthError, BearerInboundConfig, AUTHORIZATION_HEADER, EXTRACTED_BEARER_SUBJECT,
 };
 use crate::core::jwt_claims::JwtClaims;
 
-/// `GrpcInboundInterceptor` that validates incoming JWT bearer tokens.
-pub struct BearerInboundInterceptor {
-    config: BearerInboundConfig,
-}
-
 impl BearerInboundInterceptor {
-    /// Construct from config.
-    pub fn from_config(config: BearerInboundConfig) -> Self { Self { config } }
-
     fn validate(&self, header_value: &str) -> Result<JwtClaims, BearerAuthError> {
         let token = header_value
             .strip_prefix("Bearer ")

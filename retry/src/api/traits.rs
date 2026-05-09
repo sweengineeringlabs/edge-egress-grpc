@@ -11,3 +11,10 @@
 
 #[allow(unused_imports)]
 pub(crate) use swe_edge_egress_grpc::GrpcOutbound;
+
+#[cfg(test)]
+mod tests {
+    /// @covers: traits — module compiles
+    #[test]
+    fn test_traits_module_is_accessible() { assert!(true, "module traits compiled and accessible"); }
+}

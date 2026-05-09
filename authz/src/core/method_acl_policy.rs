@@ -2,19 +2,7 @@
 
 use swe_edge_ingress_grpc::PeerIdentity;
 
-use crate::api::{AuthzPolicy, MethodAclConfig};
-
-/// Policy that consults a [`MethodAclConfig`] keyed on the caller's
-/// CN.  See [`MethodAclConfig`] for the matching rules.
-#[derive(Debug, Clone)]
-pub struct MethodAclPolicy {
-    config: MethodAclConfig,
-}
-
-impl MethodAclPolicy {
-    /// Construct from an ACL config.
-    pub fn from_config(config: MethodAclConfig) -> Self { Self { config } }
-}
+use crate::api::{AuthzPolicy, MethodAclConfig, MethodAclPolicy};
 
 impl AuthzPolicy for MethodAclPolicy {
     fn allows(&self, identity: &PeerIdentity, method: &str) -> bool {

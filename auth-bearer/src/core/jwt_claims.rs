@@ -13,3 +13,18 @@ pub(crate) struct JwtClaims {
     pub exp: u64,
     pub iat: u64,
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// @covers: JwtClaims
+    #[test]
+    fn test_jwt_claims_struct_is_constructible() {
+        let claims = JwtClaims {
+            iss: "issuer".into(), aud: "audience".into(), sub: "user".into(),
+            exp: 9999999999, iat: 0,
+        };
+        assert_eq!(claims.sub, "user");
+    }
+}

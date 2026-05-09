@@ -250,3 +250,34 @@ mod tests {
         }
     }
 }
+
+#[cfg(test)]
+mod dedicated_coverage {
+    use super::JitterRng;
+
+    /// @covers: new
+    #[test]
+    fn test_new_creates_rng_with_seed() {
+        let mut rng = JitterRng::new(42);
+        let v = rng.next_unit();
+        assert!(v >= 0.0 && v < 1.0);
+    }
+
+    /// @covers: from_clock
+    #[test]
+    fn test_from_clock_creates_rng() {
+        let mut rng = JitterRng::from_clock();
+        let v = rng.next_unit();
+        assert!(v >= 0.0 && v < 1.0);
+    }
+
+    /// @covers: next_unit
+    #[test]
+    fn test_next_unit_returns_value_in_range() {
+        let mut rng = JitterRng::new(1);
+        for _ in 0..10 {
+            let v = rng.next_unit();
+            assert!(v >= 0.0 && v < 1.0, "next_unit out of range: {v}");
+        }
+    }
+}

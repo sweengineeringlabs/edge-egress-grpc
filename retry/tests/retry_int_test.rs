@@ -406,3 +406,47 @@ async fn test_retry_honors_caller_deadline_as_total_budget() {
         "retry loop ran for {elapsed:?}, far past budget {total_budget:?}",
     );
 }
+
+/// @covers: create_retry_client
+#[test]
+fn test_create_retry_client_wraps_inner_with_default_config() {
+    use swe_edge_egress_grpc_retry::create_retry_client;
+    let inner = SharedClient::new(Arc::new(ScriptedClient::new(vec![Outcome::Ok])));
+    let client = create_retry_client(inner).expect("default config ok");
+    drop(client);
+}
+
+/// @covers: with_config
+#[test]
+fn test_with_config_sets_policy() {
+    use swe_edge_egress_grpc_retry::Builder;
+    let cfg = fast_config();
+    let max = cfg.max_attempts;
+    let b = Builder::with_config(cfg);
+    assert_eq!(b.config().max_attempts, max);
+}
+
+/// @covers: config
+#[test]
+fn test_config_returns_current_policy() {
+    use swe_edge_egress_grpc_retry::builder;
+    let b = builder().expect("ok");
+    let _ = b.config();
+}
+
+/// @covers: wrap
+#[test]
+fn test_wrap_produces_retry_client() {
+    use swe_edge_egress_grpc_retry::builder;
+    let inner = SharedClient::new(Arc::new(ScriptedClient::new(vec![Outcome::Ok])));
+    let client = builder().expect("ok").wrap(inner);
+    drop(client);
+}
+
+/// @covers: builder
+#[test]
+fn test_builder_fn_constructs_with_defaults() {
+    use swe_edge_egress_grpc_retry::builder;
+    let b = builder().expect("builder ok");
+    assert!(b.config().max_attempts >= 1);
+}

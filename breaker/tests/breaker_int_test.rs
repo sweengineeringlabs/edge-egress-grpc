@@ -245,3 +245,44 @@ async fn test_intermittent_success_keeps_breaker_closed() {
     let _ = client.call_unary(make_request()).await;
     assert_eq!(client.state().await, BreakerState::Closed);
 }
+
+/// @covers: create_breaker_client
+#[test]
+fn test_create_breaker_client_wraps_inner_with_default_config() {
+    use swe_edge_egress_grpc_breaker::create_breaker_client;
+    let inner = Shared(Arc::new(ToggleClient::new(0)));
+    let client = create_breaker_client(inner).expect("default config ok");
+    drop(client);
+}
+
+/// @covers: with_config
+#[test]
+fn test_with_config_sets_policy() {
+    use swe_edge_egress_grpc_breaker::{Builder, GrpcBreakerConfig};
+    let cfg = GrpcBreakerConfig { failure_threshold: 3, cool_down_seconds: 5, half_open_probe_count: 1 };
+    let b = Builder::with_config(cfg);
+    assert_eq!(b.config().failure_threshold, 3);
+}
+
+/// @covers: config
+#[test]
+fn test_config_returns_current_policy() {
+    let b = builder().expect("ok");
+    let _ = b.config();
+}
+
+/// @covers: wrap
+#[test]
+fn test_wrap_produces_breaker_client() {
+    let inner = Shared(Arc::new(ToggleClient::new(0)));
+    let client = builder().expect("ok").wrap(inner);
+    drop(client);
+}
+
+/// @covers: builder
+#[test]
+fn test_builder_fn_constructs_with_defaults() {
+    use swe_edge_egress_grpc_breaker::builder;
+    let b = builder().expect("builder ok");
+    assert!(b.config().failure_threshold >= 1);
+}

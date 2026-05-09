@@ -13,26 +13,7 @@ use swe_edge_ingress_grpc::{
     GrpcRequest, GrpcResponse, GrpcStatusCode, PeerIdentity, PEER_CN, PEER_SAN_DNS,
 };
 
-use crate::api::AuthzPolicy;
-
-/// Inbound interceptor that runs an [`AuthzPolicy`] against the
-/// authenticated caller's identity.
-pub struct AuthzInterceptor {
-    policy: Arc<dyn AuthzPolicy>,
-}
-
-impl AuthzInterceptor {
-    /// Construct from any policy.  Use `Arc::new(MyPolicy::new())`
-    /// when the policy is not already shared.
-    pub fn from_policy<P: AuthzPolicy + 'static>(policy: P) -> Self {
-        Self { policy: Arc::new(policy) }
-    }
-
-    /// Construct from an already-shared policy.
-    pub fn from_shared_policy(policy: Arc<dyn AuthzPolicy>) -> Self {
-        Self { policy }
-    }
-}
+use crate::api::{AuthzInterceptor, AuthzPolicy};
 
 impl AuthzInterceptor {
     /// Build a [`PeerIdentity`] from the metadata bag the upstream
