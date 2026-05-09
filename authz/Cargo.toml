@@ -18,7 +18,7 @@ service_type = "processor"
 path = "src/lib.rs"
 
 [dependencies]
-swe-edge-ingress-grpc = { path = "../../../ingress/grpc" }
+swe-edge-ingress-grpc = { package = "swe-edge-ingress-grpc-transport", path = "../../../ingress/grpc/transport" }
 thiserror   = { workspace = true }
 async-trait = { workspace = true }
 futures     = { workspace = true }

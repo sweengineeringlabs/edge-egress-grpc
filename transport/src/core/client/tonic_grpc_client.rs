@@ -227,7 +227,7 @@ impl TonicGrpcClient {
     /// Create a client with a 30-second fallback timeout for `call_stream` and
     /// `health_check` (per-call deadlines on `GrpcRequest` always take precedence
     /// for unary calls).
-    pub(crate) fn new(base_uri: impl Into<String>) -> Self {
+    pub fn new(base_uri: impl Into<String>) -> Self {
         Self::with_timeout(base_uri, Duration::from_secs(30))
     }
 

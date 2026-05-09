@@ -21,7 +21,7 @@ path = "src/lib.rs"
 # Cross-workspace path dep: this crate ships an inbound interceptor
 # for the ingress server.  The egress workspace doesn't otherwise
 # pull ingress in, so the path is direct.
-swe-edge-ingress-grpc = { path = "../../../ingress/grpc" }
+swe-edge-ingress-grpc = { package = "swe-edge-ingress-grpc-transport", path = "../../../ingress/grpc/transport" }
 thiserror = { workspace = true }
 async-trait = { workspace = true }
 futures = { workspace = true }
