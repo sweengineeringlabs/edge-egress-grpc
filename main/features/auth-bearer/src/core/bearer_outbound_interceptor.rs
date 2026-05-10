@@ -9,8 +9,8 @@ use swe_edge_egress_grpc::{
 };
 
 use crate::api::{
-    BearerOutboundInterceptor, bearer_auth_config::BearerSecret,
-    BearerAuthError, AUTHORIZATION_HEADER,
+    bearer_auth_config::BearerSecret, BearerAuthError, BearerOutboundInterceptor,
+    AUTHORIZATION_HEADER,
 };
 use crate::core::jwt_claims::JwtClaims;
 
@@ -28,18 +28,13 @@ impl BearerOutboundInterceptor {
             exp: now.saturating_add(self.config.lifetime_seconds),
         };
         let (alg, key) = match &self.config.secret {
-            BearerSecret::Hs256 { secret } => (
-                Algorithm::HS256,
-                EncodingKey::from_secret(secret),
-            ),
+            BearerSecret::Hs256 { secret } => (Algorithm::HS256, EncodingKey::from_secret(secret)),
             BearerSecret::Rs256 { private_pem, .. } => (
                 Algorithm::RS256,
-                EncodingKey::from_rsa_pem(private_pem)
-                    .map_err(BearerAuthError::SignFailed)?,
+                EncodingKey::from_rsa_pem(private_pem).map_err(BearerAuthError::SignFailed)?,
             ),
         };
-        jsonwebtoken::encode(&Header::new(alg), &claims, &key)
-            .map_err(BearerAuthError::SignFailed)
+        jsonwebtoken::encode(&Header::new(alg), &claims, &key).map_err(BearerAuthError::SignFailed)
     }
 }
 
@@ -52,10 +47,9 @@ impl GrpcOutboundInterceptor for BearerOutboundInterceptor {
                 "failed to mint bearer token".into(),
             )
         })?;
-        req.metadata.headers.insert(
-            AUTHORIZATION_HEADER.to_string(),
-            format!("Bearer {token}"),
-        );
+        req.metadata
+            .headers
+            .insert(AUTHORIZATION_HEADER.to_string(), format!("Bearer {token}"));
         Ok(())
     }
 
@@ -74,7 +68,9 @@ mod tests {
 
     fn hs256_config(secret: &[u8]) -> BearerOutboundConfig {
         BearerOutboundConfig {
-            secret: BearerSecret::Hs256 { secret: secret.to_vec() },
+            secret: BearerSecret::Hs256 {
+                secret: secret.to_vec(),
+            },
             issuer: "test-iss".into(),
             audience: "test-aud".into(),
             subject: "test-sub".into(),
@@ -114,12 +110,8 @@ mod tests {
         let mut validation = Validation::new(Algorithm::HS256);
         validation.set_audience(&["test-aud"]);
         validation.set_issuer(&["test-iss"]);
-        let decoded = decode::<JwtClaims>(
-            &token,
-            &DecodingKey::from_secret(b"sec"),
-            &validation,
-        )
-        .expect("verify");
+        let decoded = decode::<JwtClaims>(&token, &DecodingKey::from_secret(b"sec"), &validation)
+            .expect("verify");
         assert_eq!(decoded.claims.iss, "test-iss");
         assert_eq!(decoded.claims.aud, "test-aud");
         assert_eq!(decoded.claims.sub, "test-sub");

@@ -33,8 +33,7 @@ pub struct GrpcBreakerConfig {
 impl GrpcBreakerConfig {
     /// Parse a config from TOML text.
     pub fn from_config(toml_text: &str) -> Result<Self, Error> {
-        let cfg: Self =
-            toml::from_str(toml_text).map_err(|e| Error::ParseFailed(e.to_string()))?;
+        let cfg: Self = toml::from_str(toml_text).map_err(|e| Error::ParseFailed(e.to_string()))?;
         cfg.validate()?;
         Ok(cfg)
     }
@@ -92,7 +91,7 @@ mod tests {
             unknown = 99
         "#;
         let err = GrpcBreakerConfig::from_config(toml).unwrap_err();
-        let s   = err.to_string();
+        let s = err.to_string();
         assert!(
             s.contains("unknown") || s.contains("unknown field"),
             "expected error to name unknown field, got: {s}",

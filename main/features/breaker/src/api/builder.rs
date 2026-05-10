@@ -18,5 +18,7 @@ pub struct Builder {
 mod tests {
     /// @covers: builder — module compiles
     #[test]
-    fn test_builder_module_is_accessible() { assert!(true, "module builder compiled and accessible"); }
+    fn test_builder_module_is_accessible() {
+        assert!(true, "module builder compiled and accessible");
+    }
 }

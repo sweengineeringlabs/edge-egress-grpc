@@ -29,7 +29,9 @@ fn req_with_fingerprint_and_cn(cn: Option<&str>) -> GrpcRequest {
 fn mtls_struct_auth_interceptor_accepts_verified_peer_int_test() {
     let interceptor = MtlsAuthInterceptor::allow_any_verified_peer();
     let mut r = req_with_fingerprint_and_cn(Some("svc-a"));
-    interceptor.before_dispatch(&mut r).expect("verified peer must pass");
+    interceptor
+        .before_dispatch(&mut r)
+        .expect("verified peer must pass");
 }
 
 /// @covers: saf — empty metadata = Unauthenticated through the chain.

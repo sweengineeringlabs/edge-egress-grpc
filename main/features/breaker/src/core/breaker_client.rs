@@ -24,10 +24,7 @@ use crate::api::failure_kind::classify;
 use crate::core::transitions::{admit, record};
 
 impl<T: GrpcOutbound + Send + Sync + 'static> GrpcOutbound for GrpcBreakerClient<T> {
-    fn call_unary(
-        &self,
-        request: GrpcRequest,
-    ) -> BoxFuture<'_, GrpcOutboundResult<GrpcResponse>> {
+    fn call_unary(&self, request: GrpcRequest) -> BoxFuture<'_, GrpcOutboundResult<GrpcResponse>> {
         Box::pin(async move {
             // Admission decision under the lock.
             let decision = {
@@ -36,11 +33,9 @@ impl<T: GrpcOutbound + Send + Sync + 'static> GrpcOutbound for GrpcBreakerClient
             };
 
             match decision {
-                Admission::RejectOpen => {
-                    Err(GrpcOutboundError::Unavailable(
-                        "grpc-breaker: circuit open, request short-circuited".into(),
-                    ))
-                }
+                Admission::RejectOpen => Err(GrpcOutboundError::Unavailable(
+                    "grpc-breaker: circuit open, request short-circuited".into(),
+                )),
                 Admission::Proceed => {
                     let result = self.inner.call_unary(request).await;
                     let outcome = classify(&result);
@@ -56,7 +51,7 @@ impl<T: GrpcOutbound + Send + Sync + 'static> GrpcOutbound for GrpcBreakerClient
 
     fn call_stream(
         &self,
-        method:   String,
+        method: String,
         metadata: GrpcMetadata,
         messages: GrpcMessageStream,
     ) -> BoxFuture<'_, GrpcOutboundResult<GrpcMessageStream>> {
@@ -72,5 +67,7 @@ impl<T: GrpcOutbound + Send + Sync + 'static> GrpcOutbound for GrpcBreakerClient
 mod tests {
     /// @covers: breaker_client — module compiles
     #[test]
-    fn test_breaker_client_module_is_accessible() { assert!(true, "module breaker_client compiled and accessible"); }
+    fn test_breaker_client_module_is_accessible() {
+        assert!(true, "module breaker_client compiled and accessible");
+    }
 }

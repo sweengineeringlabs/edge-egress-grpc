@@ -32,7 +32,7 @@ use crate::api::breaker_state::Outcome;
 /// Classify an outbound result into the breaker's outcome.
 pub(crate) fn classify<T>(result: &Result<T, GrpcOutboundError>) -> Outcome {
     let err = match result {
-        Ok(_)  => return Outcome::Success,
+        Ok(_) => return Outcome::Success,
         Err(e) => e,
     };
     match err {
@@ -102,7 +102,8 @@ mod tests {
     #[test]
     fn test_classify_status_unavailable_is_failure() {
         let r: Result<(), _> = Err(GrpcOutboundError::Status(
-            GrpcStatusCode::Unavailable, "down".into(),
+            GrpcStatusCode::Unavailable,
+            "down".into(),
         ));
         assert_eq!(classify(&r), Outcome::Failure);
     }
@@ -111,7 +112,8 @@ mod tests {
     #[test]
     fn test_classify_status_internal_is_failure() {
         let r: Result<(), _> = Err(GrpcOutboundError::Status(
-            GrpcStatusCode::Internal, "bug".into(),
+            GrpcStatusCode::Internal,
+            "bug".into(),
         ));
         assert_eq!(classify(&r), Outcome::Failure);
     }
@@ -120,10 +122,12 @@ mod tests {
     #[test]
     fn test_classify_auth_failures_are_success() {
         let r1: Result<(), _> = Err(GrpcOutboundError::Status(
-            GrpcStatusCode::Unauthenticated, "x".into(),
+            GrpcStatusCode::Unauthenticated,
+            "x".into(),
         ));
         let r2: Result<(), _> = Err(GrpcOutboundError::Status(
-            GrpcStatusCode::PermissionDenied, "y".into(),
+            GrpcStatusCode::PermissionDenied,
+            "y".into(),
         ));
         assert_eq!(classify(&r1), Outcome::Success);
         assert_eq!(classify(&r2), Outcome::Success);
@@ -133,7 +137,8 @@ mod tests {
     #[test]
     fn test_classify_resource_exhausted_is_success() {
         let r: Result<(), _> = Err(GrpcOutboundError::Status(
-            GrpcStatusCode::ResourceExhausted, "quota".into(),
+            GrpcStatusCode::ResourceExhausted,
+            "quota".into(),
         ));
         assert_eq!(classify(&r), Outcome::Success);
     }

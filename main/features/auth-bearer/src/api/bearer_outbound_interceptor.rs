@@ -9,7 +9,9 @@ pub struct BearerOutboundInterceptor {
 
 impl BearerOutboundInterceptor {
     /// Construct from config.
-    pub fn from_config(config: BearerOutboundConfig) -> Self { Self { config } }
+    pub fn from_config(config: BearerOutboundConfig) -> Self {
+        Self { config }
+    }
 }
 
 #[cfg(test)]
@@ -19,7 +21,9 @@ mod tests {
 
     fn test_cfg() -> BearerOutboundConfig {
         BearerOutboundConfig {
-            secret: BearerSecret::Hs256 { secret: b"key".to_vec() },
+            secret: BearerSecret::Hs256 {
+                secret: b"key".to_vec(),
+            },
             issuer: "iss".into(),
             audience: "aud".into(),
             subject: "sub".into(),

@@ -39,10 +39,7 @@ impl Builder {
     }
 
     /// Wrap `inner` to produce a [`GrpcRetryClient`].
-    pub fn wrap<T: GrpcOutbound + Send + Sync + 'static>(
-        self,
-        inner: T,
-    ) -> GrpcRetryClient<T> {
+    pub fn wrap<T: GrpcOutbound + Send + Sync + 'static>(self, inner: T) -> GrpcRetryClient<T> {
         GrpcRetryClient::new(inner, self.config)
     }
 }

@@ -42,16 +42,13 @@ use crate::api::retry_policy::{classify, parse_retry_after_hint, RetryDecision};
 use crate::core::backoff::{next_backoff, rate_limit_backoff, JitterRng};
 
 impl<T: GrpcOutbound + Send + Sync + 'static> GrpcOutbound for GrpcRetryClient<T> {
-    fn call_unary(
-        &self,
-        request: GrpcRequest,
-    ) -> BoxFuture<'_, GrpcOutboundResult<GrpcResponse>> {
+    fn call_unary(&self, request: GrpcRequest) -> BoxFuture<'_, GrpcOutboundResult<GrpcResponse>> {
         Box::pin(self.run_with_retry(request))
     }
 
     fn call_stream(
         &self,
-        method:   String,
+        method: String,
         metadata: GrpcMetadata,
         messages: GrpcMessageStream,
     ) -> BoxFuture<'_, GrpcOutboundResult<GrpcMessageStream>> {
@@ -66,15 +63,12 @@ impl<T: GrpcOutbound + Send + Sync + 'static> GrpcOutbound for GrpcRetryClient<T
 }
 
 impl<T: GrpcOutbound + Send + Sync + 'static> GrpcRetryClient<T> {
-    async fn run_with_retry(
-        &self,
-        request: GrpcRequest,
-    ) -> GrpcOutboundResult<GrpcResponse> {
-        let started              = Instant::now();
-        let total_budget         = request.deadline;
-        let max_attempts         = self.config.max_attempts;
-        let rate_limit_max       = self.config.rate_limit_max_attempts;
-        let mut rng              = JitterRng::from_clock();
+    async fn run_with_retry(&self, request: GrpcRequest) -> GrpcOutboundResult<GrpcResponse> {
+        let started = Instant::now();
+        let total_budget = request.deadline;
+        let max_attempts = self.config.max_attempts;
+        let rate_limit_max = self.config.rate_limit_max_attempts;
+        let mut rng = JitterRng::from_clock();
         let mut standard_attempt = 0u32;
         let mut rate_lim_attempt = 0u32;
         let mut last_error: Option<GrpcOutboundError> = None;
@@ -88,7 +82,7 @@ impl<T: GrpcOutbound + Send + Sync + 'static> GrpcRetryClient<T> {
                     warn!(
                         attempt,
                         elapsed_ms = elapsed.as_millis() as u64,
-                        budget_ms  = total_budget.as_millis() as u64,
+                        budget_ms = total_budget.as_millis() as u64,
                         "grpc-retry: deadline exhausted before attempt",
                     );
                     return Err(last_error.unwrap_or_else(|| {
@@ -99,14 +93,14 @@ impl<T: GrpcOutbound + Send + Sync + 'static> GrpcRetryClient<T> {
                 }
             };
 
-            let mut req_for_attempt  = request.clone();
+            let mut req_for_attempt = request.clone();
             req_for_attempt.deadline = remaining;
 
-            let result   = self.inner.call_unary(req_for_attempt).await;
+            let result = self.inner.call_unary(req_for_attempt).await;
             let decision = classify(&result);
 
             match decision {
-                RetryDecision::Success  => return result,
+                RetryDecision::Success => return result,
                 RetryDecision::Terminal => {
                     debug!(
                         attempt,
@@ -133,7 +127,8 @@ impl<T: GrpcOutbound + Send + Sync + 'static> GrpcRetryClient<T> {
                         break;
                     }
                     trace!(
-                        attempt, sleep_ms = sleep_for.as_millis() as u64,
+                        attempt,
+                        sleep_ms = sleep_for.as_millis() as u64,
                         "grpc-retry: standard backoff before next attempt",
                     );
                     tokio::time::sleep(sleep_for).await;
@@ -142,10 +137,7 @@ impl<T: GrpcOutbound + Send + Sync + 'static> GrpcRetryClient<T> {
                     last_error = result.err();
                     let next_rl = rate_lim_attempt + 1;
                     if next_rl > rate_limit_max {
-                        debug!(
-                            attempt,
-                            "grpc-retry: rate_limit_max_attempts reached",
-                        );
+                        debug!(attempt, "grpc-retry: rate_limit_max_attempts reached",);
                         break;
                     }
 
@@ -158,9 +150,8 @@ impl<T: GrpcOutbound + Send + Sync + 'static> GrpcRetryClient<T> {
                         }
                     });
 
-                    let sleep_for = rate_limit_backoff(
-                        &self.config, rate_lim_attempt, hint, rng.next_unit(),
-                    );
+                    let sleep_for =
+                        rate_limit_backoff(&self.config, rate_lim_attempt, hint, rng.next_unit());
                     rate_lim_attempt += 1;
 
                     if !self.budget_allows_sleep(started, total_budget, sleep_for, attempt) {
@@ -168,7 +159,7 @@ impl<T: GrpcOutbound + Send + Sync + 'static> GrpcRetryClient<T> {
                     }
                     trace!(
                         attempt,
-                        sleep_ms     = sleep_for.as_millis() as u64,
+                        sleep_ms = sleep_for.as_millis() as u64,
                         hint_present = hint.is_some(),
                         "grpc-retry: rate-limit backoff before next attempt",
                     );
@@ -186,10 +177,10 @@ impl<T: GrpcOutbound + Send + Sync + 'static> GrpcRetryClient<T> {
 
     fn budget_allows_sleep(
         &self,
-        started:      Instant,
+        started: Instant,
         total_budget: std::time::Duration,
-        sleep_for:    std::time::Duration,
-        attempt:      u32,
+        sleep_for: std::time::Duration,
+        attempt: u32,
     ) -> bool {
         let elapsed_after = started.elapsed();
         let fits = elapsed_after
@@ -198,9 +189,9 @@ impl<T: GrpcOutbound + Send + Sync + 'static> GrpcRetryClient<T> {
         if !fits {
             debug!(
                 attempt,
-                sleep_ms   = sleep_for.as_millis() as u64,
+                sleep_ms = sleep_for.as_millis() as u64,
                 elapsed_ms = elapsed_after.as_millis() as u64,
-                budget_ms  = total_budget.as_millis() as u64,
+                budget_ms = total_budget.as_millis() as u64,
                 "grpc-retry: backoff would exceed deadline, abandoning",
             );
         }
@@ -212,5 +203,7 @@ impl<T: GrpcOutbound + Send + Sync + 'static> GrpcRetryClient<T> {
 mod tests {
     /// @covers: retry_client — module compiles
     #[test]
-    fn test_retry_client_module_is_accessible() { assert!(true, "module retry_client compiled and accessible"); }
+    fn test_retry_client_module_is_accessible() {
+        assert!(true, "module retry_client compiled and accessible");
+    }
 }

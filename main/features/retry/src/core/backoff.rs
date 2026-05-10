@@ -24,11 +24,7 @@ use crate::api::retry_config::GrpcRetryConfig;
 /// Uses the standard exponential schedule (`initial_backoff_ms`,
 /// `max_backoff_ms`).  For the rate-limit track, use
 /// [`rate_limit_backoff`] instead.
-pub(crate) fn next_backoff(
-    config:      &GrpcRetryConfig,
-    attempt:     u32,
-    random_unit: f64,
-) -> Duration {
+pub(crate) fn next_backoff(config: &GrpcRetryConfig, attempt: u32, random_unit: f64) -> Duration {
     debug_assert!((0.0..1.0).contains(&random_unit));
     exponential_jitter(
         config.initial_backoff_ms,
@@ -47,10 +43,10 @@ pub(crate) fn next_backoff(
 /// we should honour it exactly.  Otherwise, the computed exponential
 /// schedule from the rate-limit config fields is used.
 pub(crate) fn rate_limit_backoff(
-    config:             &GrpcRetryConfig,
-    attempt:            u32,
-    retry_after_hint:   Option<Duration>,
-    random_unit:        f64,
+    config: &GrpcRetryConfig,
+    attempt: u32,
+    retry_after_hint: Option<Duration>,
+    random_unit: f64,
 ) -> Duration {
     if let Some(hint) = retry_after_hint {
         return hint;
@@ -67,14 +63,14 @@ pub(crate) fn rate_limit_backoff(
 }
 
 fn exponential_jitter(
-    initial_ms:   u64,
-    max_ms:       u64,
-    multiplier:   f64,
+    initial_ms: u64,
+    max_ms: u64,
+    multiplier: f64,
     jitter_factor: f64,
-    attempt:      u32,
-    random_unit:  f64,
+    attempt: u32,
+    random_unit: f64,
 ) -> Duration {
-    let base_ms   = (initial_ms as f64) * multiplier.powi(attempt as i32);
+    let base_ms = (initial_ms as f64) * multiplier.powi(attempt as i32);
     let capped_ms = base_ms.min(max_ms as f64);
 
     // Symmetric jitter: jitter_factor=0.1 → multiplier in [0.9, 1.1).
@@ -99,7 +95,9 @@ pub(crate) struct JitterRng {
 impl JitterRng {
     pub(crate) fn new(seed: u64) -> Self {
         // Avoid the all-zero state cycle.
-        Self { state: seed.wrapping_add(0x9E3779B97F4A7C15) }
+        Self {
+            state: seed.wrapping_add(0x9E3779B97F4A7C15),
+        }
     }
 
     /// Seed from the current wall clock — used as a default
@@ -186,7 +184,10 @@ mod tests {
         let lo = next_backoff(&c, 0, 0.0);
         let hi = next_backoff(&c, 0, 0.999);
         assert!(lo.as_millis() >= 90 && lo.as_millis() <= 100, "lo = {lo:?}");
-        assert!(hi.as_millis() >= 100 && hi.as_millis() <= 110, "hi = {hi:?}");
+        assert!(
+            hi.as_millis() >= 100 && hi.as_millis() <= 110,
+            "hi = {hi:?}"
+        );
     }
 
     /// @covers: next_backoff — jitter never exceeds the configured ceiling.
@@ -194,15 +195,21 @@ mod tests {
     fn test_next_backoff_jitter_cannot_overshoot_ceiling() {
         let c = cfg();
         let d = next_backoff(&c, 100, 0.999);
-        assert!(d.as_millis() <= c.max_backoff_ms as u128, "{d:?} above ceiling");
+        assert!(
+            d.as_millis() <= c.max_backoff_ms as u128,
+            "{d:?} above ceiling"
+        );
     }
 
     /// @covers: rate_limit_backoff — uses Retry-After hint when present.
     #[test]
     fn test_rate_limit_backoff_uses_hint_when_present() {
-        let c    = cfg_no_jitter();
+        let c = cfg_no_jitter();
         let hint = Some(Duration::from_secs(30));
-        assert_eq!(rate_limit_backoff(&c, 0, hint, 0.0), Duration::from_secs(30));
+        assert_eq!(
+            rate_limit_backoff(&c, 0, hint, 0.0),
+            Duration::from_secs(30)
+        );
     }
 
     /// @covers: rate_limit_backoff — computes from rate-limit fields when no hint.

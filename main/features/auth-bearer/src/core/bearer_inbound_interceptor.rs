@@ -8,8 +8,8 @@ use swe_edge_ingress_grpc::{
 };
 
 use crate::api::{
-    BearerInboundInterceptor, bearer_auth_config::BearerSecret,
-    BearerAuthError, AUTHORIZATION_HEADER, EXTRACTED_BEARER_SUBJECT,
+    bearer_auth_config::BearerSecret, BearerAuthError, BearerInboundInterceptor,
+    AUTHORIZATION_HEADER, EXTRACTED_BEARER_SUBJECT,
 };
 use crate::core::jwt_claims::JwtClaims;
 
@@ -25,9 +25,7 @@ impl BearerInboundInterceptor {
         }
 
         let (alg, key) = match &self.config.secret {
-            BearerSecret::Hs256 { secret } => {
-                (Algorithm::HS256, DecodingKey::from_secret(secret))
-            }
+            BearerSecret::Hs256 { secret } => (Algorithm::HS256, DecodingKey::from_secret(secret)),
             BearerSecret::Rs256 { public_pem, .. } => (
                 Algorithm::RS256,
                 DecodingKey::from_rsa_pem(public_pem).map_err(BearerAuthError::InvalidToken)?,
@@ -55,10 +53,12 @@ impl GrpcInboundInterceptor for BearerInboundInterceptor {
             .headers
             .get(AUTHORIZATION_HEADER)
             .cloned()
-            .ok_or_else(|| GrpcInboundError::Status(
-                GrpcStatusCode::Unauthenticated,
-                "missing authorization header".into(),
-            ))?;
+            .ok_or_else(|| {
+                GrpcInboundError::Status(
+                    GrpcStatusCode::Unauthenticated,
+                    "missing authorization header".into(),
+                )
+            })?;
 
         match self.validate(&header) {
             Ok(claims) => {
@@ -121,12 +121,19 @@ mod tests {
             iat: now,
             exp,
         };
-        encode(&Header::new(Algorithm::HS256), &claims, &EncodingKey::from_secret(secret)).unwrap()
+        encode(
+            &Header::new(Algorithm::HS256),
+            &claims,
+            &EncodingKey::from_secret(secret),
+        )
+        .unwrap()
     }
 
     fn config(secret: &[u8]) -> BearerInboundConfig {
         BearerInboundConfig {
-            secret: BearerSecret::Hs256 { secret: secret.to_vec() },
+            secret: BearerSecret::Hs256 {
+                secret: secret.to_vec(),
+            },
             expected_issuer: "iss".into(),
             expected_audience: "aud".into(),
             leeway_seconds: 0,
@@ -144,12 +151,15 @@ mod tests {
     #[test]
     fn test_before_dispatch_republishes_subject_on_valid_token() {
         let secret = b"verystrongsecret";
-        let token  = build_token(secret, "iss", "aud", "alice", 60);
+        let token = build_token(secret, "iss", "aud", "alice", 60);
         let interceptor = BearerInboundInterceptor::from_config(config(secret));
         let mut req = req_with_auth(&format!("Bearer {token}"));
         interceptor.before_dispatch(&mut req).expect("valid token");
         assert_eq!(
-            req.metadata.headers.get(EXTRACTED_BEARER_SUBJECT).map(String::as_str),
+            req.metadata
+                .headers
+                .get(EXTRACTED_BEARER_SUBJECT)
+                .map(String::as_str),
             Some("alice"),
         );
     }
@@ -181,7 +191,7 @@ mod tests {
     /// @covers: before_dispatch — wrong signature key returns Unauthenticated.
     #[test]
     fn test_before_dispatch_rejects_token_signed_with_wrong_secret() {
-        let bad   = build_token(b"otherkey", "iss", "aud", "alice", 60);
+        let bad = build_token(b"otherkey", "iss", "aud", "alice", 60);
         let interceptor = BearerInboundInterceptor::from_config(config(b"verystrongsecret"));
         let mut req = req_with_auth(&format!("Bearer {bad}"));
         match interceptor.before_dispatch(&mut req) {
@@ -194,7 +204,7 @@ mod tests {
     #[test]
     fn test_before_dispatch_rejects_token_with_wrong_audience() {
         let secret = b"sec";
-        let token  = build_token(secret, "iss", "wrong-aud", "alice", 60);
+        let token = build_token(secret, "iss", "wrong-aud", "alice", 60);
         let interceptor = BearerInboundInterceptor::from_config(config(secret));
         let mut req = req_with_auth(&format!("Bearer {token}"));
         match interceptor.before_dispatch(&mut req) {
@@ -207,7 +217,7 @@ mod tests {
     #[test]
     fn test_before_dispatch_rejects_expired_token() {
         let secret = b"sec";
-        let token  = build_token(secret, "iss", "aud", "alice", -10);
+        let token = build_token(secret, "iss", "aud", "alice", -10);
         let interceptor = BearerInboundInterceptor::from_config(config(secret));
         let mut req = req_with_auth(&format!("Bearer {token}"));
         match interceptor.before_dispatch(&mut req) {
@@ -220,7 +230,7 @@ mod tests {
     #[test]
     fn test_before_dispatch_strips_spoofed_subject_header_before_setting_verified_one() {
         let secret = b"sec";
-        let token  = build_token(secret, "iss", "aud", "alice", 60);
+        let token = build_token(secret, "iss", "aud", "alice", 60);
         let interceptor = BearerInboundInterceptor::from_config(config(secret));
         let mut req = req_with_auth(&format!("Bearer {token}"));
         // Spoof the subject before the interceptor runs.
@@ -229,7 +239,10 @@ mod tests {
             .insert(EXTRACTED_BEARER_SUBJECT.to_string(), "spoofed-admin".into());
         interceptor.before_dispatch(&mut req).expect("valid token");
         assert_eq!(
-            req.metadata.headers.get(EXTRACTED_BEARER_SUBJECT).map(String::as_str),
+            req.metadata
+                .headers
+                .get(EXTRACTED_BEARER_SUBJECT)
+                .map(String::as_str),
             Some("alice"),
             "interceptor must replace spoofed subject with verified one",
         );

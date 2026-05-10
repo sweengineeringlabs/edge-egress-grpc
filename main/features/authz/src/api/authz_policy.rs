@@ -35,11 +35,16 @@ mod tests {
     /// @covers: AuthzPolicy — implemented by any matching closure.
     #[test]
     fn test_closure_implementing_authz_policy_returns_decision() {
-        let policy = |identity: &PeerIdentity, _method: &str| {
-            identity.cn.as_deref() == Some("alice")
+        let policy =
+            |identity: &PeerIdentity, _method: &str| identity.cn.as_deref() == Some("alice");
+        let alice = PeerIdentity {
+            cn: Some("alice".into()),
+            ..Default::default()
         };
-        let alice = PeerIdentity { cn: Some("alice".into()), ..Default::default() };
-        let bob   = PeerIdentity { cn: Some("bob".into()),   ..Default::default() };
+        let bob = PeerIdentity {
+            cn: Some("bob".into()),
+            ..Default::default()
+        };
         assert!(AuthzPolicy::allows(&policy, &alice, "/svc/M"));
         assert!(!AuthzPolicy::allows(&policy, &bob, "/svc/M"));
     }

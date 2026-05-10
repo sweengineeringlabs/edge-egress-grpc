@@ -20,7 +20,10 @@ mod tests {
     fn test_allows_returns_true_when_config_grants_subject_method() {
         let cfg = MethodAclConfig::deny_all().allow("alice", ["/svc/Read".into()]);
         let policy = MethodAclPolicy::from_config(cfg);
-        let alice  = PeerIdentity { cn: Some("alice".into()), ..Default::default() };
+        let alice = PeerIdentity {
+            cn: Some("alice".into()),
+            ..Default::default()
+        };
         assert!(policy.allows(&alice, "/svc/Read"));
     }
 
@@ -29,7 +32,10 @@ mod tests {
     fn test_allows_returns_false_when_subject_not_in_acl() {
         let cfg = MethodAclConfig::deny_all().allow("alice", ["/svc/Read".into()]);
         let policy = MethodAclPolicy::from_config(cfg);
-        let bob   = PeerIdentity { cn: Some("bob".into()), ..Default::default() };
+        let bob = PeerIdentity {
+            cn: Some("bob".into()),
+            ..Default::default()
+        };
         assert!(!policy.allows(&bob, "/svc/Read"));
     }
 

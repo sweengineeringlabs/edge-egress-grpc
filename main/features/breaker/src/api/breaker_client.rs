@@ -17,25 +17,25 @@ use crate::api::breaker_state::BreakerState;
 /// baseline) or [`GrpcBreakerClient::new`] (caller-supplied
 /// config).
 pub struct GrpcBreakerClient<T> {
-    pub(crate) inner:  T,
+    pub(crate) inner: T,
     pub(crate) config: Arc<GrpcBreakerConfig>,
-    pub(crate) node:   Arc<Mutex<BreakerNode>>,
+    pub(crate) node: Arc<Mutex<BreakerNode>>,
 }
 
 /// Internal state container.  Crate-private; consumers observe
 /// state via [`GrpcBreakerClient::state`].
 #[derive(Debug)]
 pub(crate) struct BreakerNode {
-    pub(crate) state:                 BreakerState,
-    pub(crate) consecutive_failures:  u32,
+    pub(crate) state: BreakerState,
+    pub(crate) consecutive_failures: u32,
     pub(crate) consecutive_successes: u32,
 }
 
 impl BreakerNode {
     pub(crate) fn new() -> Self {
         Self {
-            state:                 BreakerState::Closed,
-            consecutive_failures:  0,
+            state: BreakerState::Closed,
+            consecutive_failures: 0,
             consecutive_successes: 0,
         }
     }
@@ -44,8 +44,8 @@ impl BreakerNode {
 impl<T> std::fmt::Debug for GrpcBreakerClient<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("GrpcBreakerClient")
-            .field("failure_threshold",     &self.config.failure_threshold)
-            .field("cool_down_seconds",     &self.config.cool_down_seconds)
+            .field("failure_threshold", &self.config.failure_threshold)
+            .field("cool_down_seconds", &self.config.cool_down_seconds)
             .field("half_open_probe_count", &self.config.half_open_probe_count)
             .finish()
     }
@@ -57,7 +57,7 @@ impl<T> GrpcBreakerClient<T> {
         Self {
             inner,
             config: Arc::new(config),
-            node:   Arc::new(Mutex::new(BreakerNode::new())),
+            node: Arc::new(Mutex::new(BreakerNode::new())),
         }
     }
 
@@ -77,5 +77,7 @@ impl<T> GrpcBreakerClient<T> {
 mod tests {
     /// @covers: breaker_client — module compiles
     #[test]
-    fn test_breaker_client_module_is_accessible() { assert!(true, "module breaker_client compiled and accessible"); }
+    fn test_breaker_client_module_is_accessible() {
+        assert!(true, "module breaker_client compiled and accessible");
+    }
 }

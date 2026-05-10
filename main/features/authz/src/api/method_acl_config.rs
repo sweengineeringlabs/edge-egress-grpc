@@ -20,10 +20,16 @@ pub struct MethodAclConfig {
 
 impl MethodAclConfig {
     /// Build an empty config — denies every authenticated caller.
-    pub fn deny_all() -> Self { Self::default() }
+    pub fn deny_all() -> Self {
+        Self::default()
+    }
 
     /// Allow `subject` to invoke each listed `method` path.
-    pub fn allow(mut self, subject: impl Into<String>, methods: impl IntoIterator<Item = String>) -> Self {
+    pub fn allow(
+        mut self,
+        subject: impl Into<String>,
+        methods: impl IntoIterator<Item = String>,
+    ) -> Self {
         self.by_subject
             .entry(subject.into())
             .or_default()
@@ -118,6 +124,6 @@ mod tests {
         "#;
         let cfg = MethodAclConfig::from_toml(toml_src).expect("toml parses");
         assert!(cfg.allows(Some("alice"), "/svc/Read"));
-        assert!(cfg.allows(Some("bob"),   "/health"));
+        assert!(cfg.allows(Some("bob"), "/health"));
     }
 }

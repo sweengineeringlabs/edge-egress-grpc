@@ -91,7 +91,7 @@ impl MtlsAuthInterceptor {
 impl GrpcInboundInterceptor for MtlsAuthInterceptor {
     fn before_dispatch(&self, req: &mut GrpcRequest) -> Result<(), GrpcInboundError> {
         match self.classify(req) {
-            Ok(())                       => Ok(()),
+            Ok(()) => Ok(()),
             Err(MtlsAuthError::MissingIdentity) => Err(GrpcInboundError::Status(
                 GrpcStatusCode::Unauthenticated,
                 "mTLS peer identity required".into(),
@@ -114,7 +114,9 @@ impl GrpcInboundInterceptor for MtlsAuthInterceptor {
 mod tests {
     use std::time::Duration;
 
-    use swe_edge_ingress_grpc::{GrpcMetadata, PEER_CERT_FINGERPRINT_SHA256, PEER_CN, PEER_SAN_DNS};
+    use swe_edge_ingress_grpc::{
+        GrpcMetadata, PEER_CERT_FINGERPRINT_SHA256, PEER_CN, PEER_SAN_DNS,
+    };
 
     use super::*;
 
@@ -238,10 +240,12 @@ mod tests {
     fn test_after_dispatch_does_not_modify_response() {
         let interceptor = MtlsAuthInterceptor::allow_any_verified_peer();
         let mut resp = GrpcResponse {
-            body:     vec![],
+            body: vec![],
             metadata: GrpcMetadata::default(),
         };
-        interceptor.after_dispatch(&mut resp).expect("after_dispatch no-op");
+        interceptor
+            .after_dispatch(&mut resp)
+            .expect("after_dispatch no-op");
         assert!(resp.metadata.headers.is_empty());
     }
 }

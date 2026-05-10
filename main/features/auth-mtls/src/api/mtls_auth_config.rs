@@ -33,7 +33,9 @@ pub struct MtlsAuthConfig {
 impl MtlsAuthConfig {
     /// Construct an empty config — any verified peer is accepted, no
     /// methods bypass auth.
-    pub fn allow_any_verified_peer() -> Self { Self::default() }
+    pub fn allow_any_verified_peer() -> Self {
+        Self::default()
+    }
 
     /// Restrict access to peers presenting one of `cns` as their CN.
     pub fn restrict_to_cns(cns: impl IntoIterator<Item = String>) -> Self {
@@ -69,7 +71,10 @@ mod tests {
     #[test]
     fn test_restrict_to_cns_populates_only_cn_allowlist() {
         let cfg = MtlsAuthConfig::restrict_to_cns(["alice".to_string(), "bob".to_string()]);
-        assert_eq!(cfg.allowed_cns, vec!["alice".to_string(), "bob".to_string()]);
+        assert_eq!(
+            cfg.allowed_cns,
+            vec!["alice".to_string(), "bob".to_string()]
+        );
         assert!(cfg.allowed_san_dns.is_empty());
     }
 

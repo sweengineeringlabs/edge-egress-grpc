@@ -5,9 +5,9 @@
 //! satisfies the layer-boundary check that every core/ submodule
 //! has an api/ counterpart.
 
+use crate::api::breaker_client::BreakerNode;
 use crate::api::breaker_config::GrpcBreakerConfig;
 use crate::api::breaker_state::{Admission, Outcome};
-use crate::api::breaker_client::BreakerNode;
 
 /// Interface for the breaker's state-transition primitives.
 /// Implemented as free functions in `core::transitions`; this
@@ -30,5 +30,7 @@ pub(crate) trait BreakerTransitions {
 mod tests {
     /// @covers: transitions — module compiles
     #[test]
-    fn test_transitions_module_is_accessible() { assert!(true, "module transitions compiled and accessible"); }
+    fn test_transitions_module_is_accessible() {
+        assert!(true, "module transitions compiled and accessible");
+    }
 }

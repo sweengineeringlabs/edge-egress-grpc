@@ -42,7 +42,6 @@ pub struct GrpcRetryConfig {
     // seconds to minutes, so the floor is much higher than the standard
     // track.  The Retry-After hint from the server overrides the computed
     // backoff when present.
-
     /// Max attempts specifically for rate-limit `RESOURCE_EXHAUSTED`.
     /// Often lower than `max_attempts` — rate-limit retries are expensive.
     pub rate_limit_max_attempts: u32,
@@ -64,8 +63,7 @@ impl GrpcRetryConfig {
     /// [`Error::InvalidConfig`] when a value is out of range
     /// (e.g. `backoff_multiplier <= 0.0`).
     pub fn from_config(toml_text: &str) -> Result<Self, Error> {
-        let cfg: Self =
-            toml::from_str(toml_text).map_err(|e| Error::ParseFailed(e.to_string()))?;
+        let cfg: Self = toml::from_str(toml_text).map_err(|e| Error::ParseFailed(e.to_string()))?;
         cfg.validate()?;
         Ok(cfg)
     }
@@ -99,9 +97,7 @@ impl GrpcRetryConfig {
 
     fn validate(&self) -> Result<(), Error> {
         if self.max_attempts == 0 {
-            return Err(Error::InvalidConfig(
-                "max_attempts must be >= 1".into(),
-            ));
+            return Err(Error::InvalidConfig("max_attempts must be >= 1".into()));
         }
         if self.backoff_multiplier <= 0.0 || !self.backoff_multiplier.is_finite() {
             return Err(Error::InvalidConfig(
@@ -177,7 +173,7 @@ mod tests {
             rate_limit_max_backoff_ms = 10000
         "#;
         let err = GrpcRetryConfig::from_config(toml).unwrap_err();
-        let s   = err.to_string();
+        let s = err.to_string();
         assert!(
             s.contains("jitter_factor") || s.contains("missing field"),
             "expected error to name the missing field, got: {s}",
@@ -190,7 +186,7 @@ mod tests {
         let mut toml = full_toml().to_string();
         toml.push_str("\nunknown_knob = 42");
         let err = GrpcRetryConfig::from_config(&toml).unwrap_err();
-        let s   = err.to_string();
+        let s = err.to_string();
         assert!(
             s.contains("unknown_knob") || s.contains("unknown field"),
             "expected error to name unknown field, got: {s}",
@@ -312,7 +308,10 @@ mod tests {
     #[test]
     fn test_initial_backoff_returns_duration_in_milliseconds() {
         let cfg = GrpcRetryConfig::swe_default().unwrap();
-        assert_eq!(cfg.initial_backoff(), Duration::from_millis(cfg.initial_backoff_ms));
+        assert_eq!(
+            cfg.initial_backoff(),
+            Duration::from_millis(cfg.initial_backoff_ms)
+        );
     }
 
     /// @covers: max_backoff
@@ -326,7 +325,13 @@ mod tests {
     #[test]
     fn test_rate_limit_duration_helpers_return_correct_durations() {
         let cfg = GrpcRetryConfig::swe_default().unwrap();
-        assert_eq!(cfg.rate_limit_initial_backoff(), Duration::from_millis(cfg.rate_limit_initial_backoff_ms));
-        assert_eq!(cfg.rate_limit_max_backoff(),     Duration::from_millis(cfg.rate_limit_max_backoff_ms));
+        assert_eq!(
+            cfg.rate_limit_initial_backoff(),
+            Duration::from_millis(cfg.rate_limit_initial_backoff_ms)
+        );
+        assert_eq!(
+            cfg.rate_limit_max_backoff(),
+            Duration::from_millis(cfg.rate_limit_max_backoff_ms)
+        );
     }
 }

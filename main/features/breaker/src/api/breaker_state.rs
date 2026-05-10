@@ -53,5 +53,7 @@ pub(crate) enum Outcome {
 mod tests {
     /// @covers: breaker_state — module compiles
     #[test]
-    fn test_breaker_state_module_is_accessible() { assert!(true, "module breaker_state compiled and accessible"); }
+    fn test_breaker_state_module_is_accessible() {
+        assert!(true, "module breaker_state compiled and accessible");
+    }
 }

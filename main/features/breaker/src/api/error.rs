@@ -24,7 +24,7 @@ mod tests {
     #[test]
     fn test_parse_failed_display_names_crate_and_reason() {
         let err = Error::ParseFailed("missing field `failure_threshold`".into());
-        let s   = err.to_string();
+        let s = err.to_string();
         assert!(s.contains("swe_edge_egress_grpc_breaker"));
         assert!(s.contains("failure_threshold"));
     }
@@ -33,7 +33,7 @@ mod tests {
     #[test]
     fn test_invalid_config_display_includes_crate_name() {
         let err = Error::InvalidConfig("failure_threshold must be >= 1".into());
-        let s   = err.to_string();
+        let s = err.to_string();
         assert!(s.contains("swe_edge_egress_grpc_breaker"));
         assert!(s.contains("failure_threshold"));
     }

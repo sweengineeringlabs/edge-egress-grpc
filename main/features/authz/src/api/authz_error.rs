@@ -23,7 +23,9 @@ mod tests {
     /// @covers: AuthzError::NoIdentity — Display naming.
     #[test]
     fn test_no_identity_display_mentions_ordering_invariant() {
-        assert!(AuthzError::NoIdentity.to_string().contains("authz must run after authn"));
+        assert!(AuthzError::NoIdentity
+            .to_string()
+            .contains("authz must run after authn"));
     }
 
     /// @covers: AuthzError::Denied — Display is caller-safe.

@@ -22,8 +22,11 @@ mod tests {
     #[test]
     fn test_jwt_claims_struct_is_constructible() {
         let claims = JwtClaims {
-            iss: "issuer".into(), aud: "audience".into(), sub: "user".into(),
-            exp: 9999999999, iat: 0,
+            iss: "issuer".into(),
+            aud: "audience".into(),
+            sub: "user".into(),
+            exp: 9999999999,
+            iat: 0,
         };
         assert_eq!(claims.sub, "user");
     }

@@ -15,12 +15,9 @@ use crate::api::breaker_state::{Admission, BreakerState, Outcome};
 
 /// Decide whether to admit a new request.  May promote
 /// Open → HalfOpen if the cool-down has elapsed.
-pub(crate) fn admit(
-    node:   &mut BreakerNode,
-    config: &GrpcBreakerConfig,
-) -> Admission {
+pub(crate) fn admit(node: &mut BreakerNode, config: &GrpcBreakerConfig) -> Admission {
     match node.state {
-        BreakerState::Closed   => Admission::Proceed,
+        BreakerState::Closed => Admission::Proceed,
         BreakerState::HalfOpen => Admission::Proceed,
         BreakerState::Open { since } => {
             if since.elapsed() >= config.cool_down() {
@@ -42,11 +39,7 @@ pub(crate) fn admit(
 ///
 /// Called only when [`admit`] returned [`Admission::Proceed`] —
 /// i.e. we actually called the inner client.
-pub(crate) fn record(
-    node:    &mut BreakerNode,
-    config:  &GrpcBreakerConfig,
-    outcome: Outcome,
-) {
+pub(crate) fn record(node: &mut BreakerNode, config: &GrpcBreakerConfig, outcome: Outcome) {
     match (node.state, outcome) {
         (BreakerState::Closed, Outcome::Success) => {
             node.consecutive_failures = 0;
@@ -59,7 +52,9 @@ pub(crate) fn record(
                     threshold = config.failure_threshold,
                     "grpc-breaker: failure threshold reached, opening",
                 );
-                node.state = BreakerState::Open { since: Instant::now() };
+                node.state = BreakerState::Open {
+                    since: Instant::now(),
+                };
             }
         }
         (BreakerState::HalfOpen, Outcome::Success) => {
@@ -70,13 +65,15 @@ pub(crate) fn record(
                     "grpc-breaker: probe successful, closing",
                 );
                 node.state = BreakerState::Closed;
-                node.consecutive_failures  = 0;
+                node.consecutive_failures = 0;
                 node.consecutive_successes = 0;
             }
         }
         (BreakerState::HalfOpen, Outcome::Failure) => {
             warn!("grpc-breaker: probe failed, returning to Open");
-            node.state = BreakerState::Open { since: Instant::now() };
+            node.state = BreakerState::Open {
+                since: Instant::now(),
+            };
             node.consecutive_successes = 0;
         }
         (BreakerState::Open { .. }, _) => {

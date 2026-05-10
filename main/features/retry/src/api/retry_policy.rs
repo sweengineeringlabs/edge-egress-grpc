@@ -73,10 +73,10 @@ pub fn classify_resource_exhausted(message: &str) -> ResourceExhaustedContext {
 /// Returns `None` when no hint is present or when the value cannot
 /// be parsed as a whole number of seconds.
 pub fn parse_retry_after_hint(message: &str) -> Option<Duration> {
-    let tag   = "[retry-after=";
+    let tag = "[retry-after=";
     let start = message.find(tag)? + tag.len();
-    let rest  = &message[start..];
-    let end   = rest.find('s')?;
+    let rest = &message[start..];
+    let end = rest.find('s')?;
     let secs: u64 = rest[..end].parse().ok()?;
     Some(Duration::from_secs(secs))
 }
@@ -132,19 +132,17 @@ impl RetryDecision {
 /// deploy) matching canonical `Unavailable` gRPC semantics.
 pub fn classify<T>(result: &Result<T, GrpcOutboundError>) -> RetryDecision {
     let err = match result {
-        Ok(_)  => return RetryDecision::Success,
+        Ok(_) => return RetryDecision::Success,
         Err(e) => e,
     };
     match err {
         GrpcOutboundError::Status(code, msg) => match code {
             GrpcStatusCode::Unavailable => RetryDecision::Retry,
-            GrpcStatusCode::ResourceExhausted => {
-                match classify_resource_exhausted(msg) {
-                    ResourceExhaustedContext::HardQuota => RetryDecision::Terminal,
-                    ResourceExhaustedContext::RateLimit  => RetryDecision::RetryRateLimit,
-                    ResourceExhaustedContext::Capacity   => RetryDecision::Retry,
-                }
-            }
+            GrpcStatusCode::ResourceExhausted => match classify_resource_exhausted(msg) {
+                ResourceExhaustedContext::HardQuota => RetryDecision::Terminal,
+                ResourceExhaustedContext::RateLimit => RetryDecision::RetryRateLimit,
+                ResourceExhaustedContext::Capacity => RetryDecision::Retry,
+            },
             // Explicit non-retryable variants — listed here so
             // adding a new variant on `GrpcStatusCode` surfaces
             // as a missing arm, not a silent default.
@@ -165,7 +163,7 @@ pub fn classify<T>(result: &Result<T, GrpcOutboundError>) -> RetryDecision {
             | GrpcStatusCode::DataLoss => RetryDecision::Terminal,
         },
         GrpcOutboundError::ConnectionFailed(_) => RetryDecision::Retry,
-        GrpcOutboundError::Unavailable(_)      => RetryDecision::Retry,
+        GrpcOutboundError::Unavailable(_) => RetryDecision::Retry,
         GrpcOutboundError::Timeout(_)
         | GrpcOutboundError::Internal(_)
         | GrpcOutboundError::Cancelled(_) => RetryDecision::Terminal,
@@ -181,26 +179,56 @@ mod tests {
     /// @covers: classify_resource_exhausted — rate-limit keywords → RateLimit.
     #[test]
     fn test_classify_resource_exhausted_rate_limit_keywords() {
-        assert_eq!(classify_resource_exhausted("rate limit exceeded"), ResourceExhaustedContext::RateLimit);
-        assert_eq!(classify_resource_exhausted("too many requests"),   ResourceExhaustedContext::RateLimit);
-        assert_eq!(classify_resource_exhausted("throttled"),           ResourceExhaustedContext::RateLimit);
-        assert_eq!(classify_resource_exhausted("RATE_LIMIT_ERROR"),    ResourceExhaustedContext::RateLimit);
+        assert_eq!(
+            classify_resource_exhausted("rate limit exceeded"),
+            ResourceExhaustedContext::RateLimit
+        );
+        assert_eq!(
+            classify_resource_exhausted("too many requests"),
+            ResourceExhaustedContext::RateLimit
+        );
+        assert_eq!(
+            classify_resource_exhausted("throttled"),
+            ResourceExhaustedContext::RateLimit
+        );
+        assert_eq!(
+            classify_resource_exhausted("RATE_LIMIT_ERROR"),
+            ResourceExhaustedContext::RateLimit
+        );
     }
 
     /// @covers: classify_resource_exhausted — quota keywords → HardQuota.
     #[test]
     fn test_classify_resource_exhausted_quota_keywords() {
-        assert_eq!(classify_resource_exhausted("quota exceeded"),    ResourceExhaustedContext::HardQuota);
-        assert_eq!(classify_resource_exhausted("billing limit hit"), ResourceExhaustedContext::HardQuota);
-        assert_eq!(classify_resource_exhausted("plan limit reached"), ResourceExhaustedContext::HardQuota);
+        assert_eq!(
+            classify_resource_exhausted("quota exceeded"),
+            ResourceExhaustedContext::HardQuota
+        );
+        assert_eq!(
+            classify_resource_exhausted("billing limit hit"),
+            ResourceExhaustedContext::HardQuota
+        );
+        assert_eq!(
+            classify_resource_exhausted("plan limit reached"),
+            ResourceExhaustedContext::HardQuota
+        );
     }
 
     /// @covers: classify_resource_exhausted — unknown message defaults to Capacity.
     #[test]
     fn test_classify_resource_exhausted_unknown_defaults_to_capacity() {
-        assert_eq!(classify_resource_exhausted("out of memory"),     ResourceExhaustedContext::Capacity);
-        assert_eq!(classify_resource_exhausted("server overloaded"), ResourceExhaustedContext::Capacity);
-        assert_eq!(classify_resource_exhausted(""),                  ResourceExhaustedContext::Capacity);
+        assert_eq!(
+            classify_resource_exhausted("out of memory"),
+            ResourceExhaustedContext::Capacity
+        );
+        assert_eq!(
+            classify_resource_exhausted("server overloaded"),
+            ResourceExhaustedContext::Capacity
+        );
+        assert_eq!(
+            classify_resource_exhausted(""),
+            ResourceExhaustedContext::Capacity
+        );
     }
 
     // ── parse_retry_after_hint ────────────────────────────────────────────────
@@ -227,7 +255,8 @@ mod tests {
     #[test]
     fn test_classify_status_unavailable_returns_retry() {
         let r: Result<(), _> = Err(GrpcOutboundError::Status(
-            GrpcStatusCode::Unavailable, "lb".into(),
+            GrpcStatusCode::Unavailable,
+            "lb".into(),
         ));
         assert_eq!(classify(&r), RetryDecision::Retry);
     }
@@ -236,7 +265,8 @@ mod tests {
     #[test]
     fn test_classify_resource_exhausted_rate_limit_returns_retry_rate_limit() {
         let r: Result<(), _> = Err(GrpcOutboundError::Status(
-            GrpcStatusCode::ResourceExhausted, "rate limit exceeded".into(),
+            GrpcStatusCode::ResourceExhausted,
+            "rate limit exceeded".into(),
         ));
         assert_eq!(classify(&r), RetryDecision::RetryRateLimit);
         assert!(classify(&r).is_rate_limit());
@@ -247,7 +277,8 @@ mod tests {
     #[test]
     fn test_classify_resource_exhausted_capacity_returns_retry() {
         let r: Result<(), _> = Err(GrpcOutboundError::Status(
-            GrpcStatusCode::ResourceExhausted, "server overloaded".into(),
+            GrpcStatusCode::ResourceExhausted,
+            "server overloaded".into(),
         ));
         assert_eq!(classify(&r), RetryDecision::Retry);
         assert!(!classify(&r).is_rate_limit());
@@ -257,7 +288,8 @@ mod tests {
     #[test]
     fn test_classify_resource_exhausted_hard_quota_is_terminal() {
         let r: Result<(), _> = Err(GrpcOutboundError::Status(
-            GrpcStatusCode::ResourceExhausted, "quota exceeded".into(),
+            GrpcStatusCode::ResourceExhausted,
+            "quota exceeded".into(),
         ));
         assert_eq!(classify(&r), RetryDecision::Terminal);
         assert!(!classify(&r).should_retry());
@@ -267,7 +299,8 @@ mod tests {
     #[test]
     fn test_classify_status_permission_denied_is_terminal() {
         let r: Result<(), _> = Err(GrpcOutboundError::Status(
-            GrpcStatusCode::PermissionDenied, "no".into(),
+            GrpcStatusCode::PermissionDenied,
+            "no".into(),
         ));
         assert_eq!(classify(&r), RetryDecision::Terminal);
         assert!(!classify(&r).should_retry());
@@ -277,7 +310,8 @@ mod tests {
     #[test]
     fn test_classify_status_unauthenticated_is_terminal() {
         let r: Result<(), _> = Err(GrpcOutboundError::Status(
-            GrpcStatusCode::Unauthenticated, "bad token".into(),
+            GrpcStatusCode::Unauthenticated,
+            "bad token".into(),
         ));
         assert_eq!(classify(&r), RetryDecision::Terminal);
         assert!(!classify(&r).should_retry());
@@ -287,7 +321,8 @@ mod tests {
     #[test]
     fn test_classify_status_deadline_exceeded_is_terminal() {
         let r: Result<(), _> = Err(GrpcOutboundError::Status(
-            GrpcStatusCode::DeadlineExceeded, "tick".into(),
+            GrpcStatusCode::DeadlineExceeded,
+            "tick".into(),
         ));
         assert_eq!(classify(&r), RetryDecision::Terminal);
     }
@@ -296,7 +331,8 @@ mod tests {
     #[test]
     fn test_classify_status_internal_is_terminal() {
         let r: Result<(), _> = Err(GrpcOutboundError::Status(
-            GrpcStatusCode::Internal, "bug".into(),
+            GrpcStatusCode::Internal,
+            "bug".into(),
         ));
         assert_eq!(classify(&r), RetryDecision::Terminal);
     }

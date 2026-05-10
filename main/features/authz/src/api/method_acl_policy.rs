@@ -10,7 +10,9 @@ pub struct MethodAclPolicy {
 
 impl MethodAclPolicy {
     /// Construct from an ACL config.
-    pub fn from_config(config: MethodAclConfig) -> Self { Self { config } }
+    pub fn from_config(config: MethodAclConfig) -> Self {
+        Self { config }
+    }
 }
 
 #[cfg(test)]

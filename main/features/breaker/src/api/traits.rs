@@ -16,5 +16,7 @@ pub(crate) use swe_edge_egress_grpc::GrpcOutbound;
 mod tests {
     /// @covers: traits — module compiles
     #[test]
-    fn test_traits_module_is_accessible() { assert!(true, "module traits compiled and accessible"); }
+    fn test_traits_module_is_accessible() {
+        assert!(true, "module traits compiled and accessible");
+    }
 }

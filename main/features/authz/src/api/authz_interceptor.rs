@@ -12,7 +12,9 @@ pub struct AuthzInterceptor {
 impl AuthzInterceptor {
     /// Construct from any policy.
     pub fn from_policy<P: AuthzPolicy + 'static>(policy: P) -> Self {
-        Self { policy: Arc::new(policy) }
+        Self {
+            policy: Arc::new(policy),
+        }
     }
     /// Construct from an already-shared policy.
     pub fn from_shared_policy(policy: Arc<dyn AuthzPolicy>) -> Self {
@@ -26,7 +28,9 @@ mod tests {
 
     struct AllowAll;
     impl AuthzPolicy for AllowAll {
-        fn allows(&self, _: &swe_edge_ingress_grpc::PeerIdentity, _: &str) -> bool { true }
+        fn allows(&self, _: &swe_edge_ingress_grpc::PeerIdentity, _: &str) -> bool {
+            true
+        }
     }
 
     /// @covers: from_policy

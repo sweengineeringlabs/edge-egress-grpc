@@ -35,10 +35,7 @@ impl Builder {
     }
 
     /// Wrap `inner` to produce a [`GrpcBreakerClient`].
-    pub fn wrap<T: GrpcOutbound + Send + Sync + 'static>(
-        self,
-        inner: T,
-    ) -> GrpcBreakerClient<T> {
+    pub fn wrap<T: GrpcOutbound + Send + Sync + 'static>(self, inner: T) -> GrpcBreakerClient<T> {
         GrpcBreakerClient::new(inner, self.config)
     }
 }
