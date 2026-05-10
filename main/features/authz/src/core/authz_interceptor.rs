@@ -6,14 +6,12 @@
 //! `Unauthenticated` (the authz interceptor MUST NOT be wired in
 //! front of authn).
 
-use std::sync::Arc;
-
 use swe_edge_ingress_grpc::{
     AuthorizationInterceptor, GrpcInboundError, GrpcInboundInterceptor, GrpcMetadata,
     GrpcRequest, GrpcResponse, GrpcStatusCode, PeerIdentity, PEER_CN, PEER_SAN_DNS,
 };
 
-use crate::api::{AuthzInterceptor, AuthzPolicy};
+use crate::api::AuthzInterceptor;
 
 impl AuthzInterceptor {
     /// Build a [`PeerIdentity`] from the metadata bag the upstream

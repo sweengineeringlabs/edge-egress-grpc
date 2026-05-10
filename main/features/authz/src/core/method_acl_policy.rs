@@ -2,7 +2,7 @@
 
 use swe_edge_ingress_grpc::PeerIdentity;
 
-use crate::api::{AuthzPolicy, MethodAclConfig, MethodAclPolicy};
+use crate::api::{AuthzPolicy, MethodAclPolicy};
 
 impl AuthzPolicy for MethodAclPolicy {
     fn allows(&self, identity: &PeerIdentity, method: &str) -> bool {

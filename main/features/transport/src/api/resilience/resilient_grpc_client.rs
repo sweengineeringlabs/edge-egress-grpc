@@ -3,12 +3,9 @@
 //! The concrete implementation `ResilientGrpcClient` implements [`crate::api::port::GrpcOutbound`]
 //! and [`crate::api::traits::Processor`]; those traits are the public contracts.
 
-pub use crate::api::port::GrpcOutbound;
-pub use crate::api::traits::Processor;
-
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use crate::api::port::GrpcOutbound;
 
     #[test]
     fn test_grpc_outbound_re_export_is_object_safe() {

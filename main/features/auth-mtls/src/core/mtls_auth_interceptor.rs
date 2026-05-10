@@ -14,7 +14,7 @@ use swe_edge_ingress_grpc::{
     PEER_CERT_FINGERPRINT_SHA256, PEER_CN, PEER_SAN_DNS,
 };
 
-use crate::api::{MtlsAuthConfig, MtlsAuthError, MtlsAuthInterceptor};
+use crate::api::{MtlsAuthError, MtlsAuthInterceptor};
 
 impl MtlsAuthInterceptor {
     fn classify(&self, req: &GrpcRequest) -> Result<(), MtlsAuthError> {

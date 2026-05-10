@@ -6,7 +6,6 @@ use bytes::{Buf, BufMut, Bytes, BytesMut};
 use futures::future::BoxFuture;
 use futures::StreamExt as _;
 use http_body_util::{BodyExt as _, Full};
-use hyper_util::client::legacy::connect::HttpConnector;
 use tokio_util::sync::CancellationToken;
 
 use crate::api::client::tonic_grpc_client::TonicGrpcClient;
@@ -193,6 +192,7 @@ fn check_grpc_status(
 // ── constructor helpers ───────────────────────────────────────────────────────
 
 impl TonicGrpcClient {
+    #[allow(dead_code)]
     /// Create a client with an explicit fallback timeout.
     pub(crate) fn with_timeout(base_uri: impl Into<String>, timeout: Duration) -> Self {
         let connector = hyper_rustls::HttpsConnectorBuilder::new()
@@ -232,18 +232,21 @@ impl TonicGrpcClient {
         Ok(client)
     }
 
+    #[allow(dead_code)]
     /// Attach an interceptor chain to the client.  Replaces any previous chain.
     pub(crate) fn with_interceptors(mut self, chain: GrpcOutboundInterceptorChain) -> Self {
         self.interceptors = chain;
         self
     }
 
+    #[allow(dead_code)]
     /// Override the max-message-bytes cap.
     pub(crate) fn with_max_message_bytes(mut self, bytes: usize) -> Self {
         self.max_message_bytes = bytes;
         self
     }
 
+    #[allow(dead_code)]
     /// Override the compression mode.
     pub(crate) fn with_compression(mut self, mode: CompressionMode) -> Self {
         self.compression = mode;
@@ -290,7 +293,7 @@ where
 
 // ── Processor impl ───────────────────────────────────────────────────────────
 
-impl crate::api::traits::Processor for TonicGrpcClient {
+impl crate::api::processor::Processor for TonicGrpcClient {
     fn describe(&self) -> &'static str { "tonic-grpc-client" }
 }
 

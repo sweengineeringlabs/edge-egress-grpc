@@ -9,7 +9,7 @@ use swe_edge_ingress_grpc::{
 
 use crate::api::{
     BearerInboundInterceptor, bearer_auth_config::BearerSecret,
-    BearerAuthError, BearerInboundConfig, AUTHORIZATION_HEADER, EXTRACTED_BEARER_SUBJECT,
+    BearerAuthError, AUTHORIZATION_HEADER, EXTRACTED_BEARER_SUBJECT,
 };
 use crate::core::jwt_claims::JwtClaims;
 

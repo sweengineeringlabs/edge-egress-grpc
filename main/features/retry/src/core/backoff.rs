@@ -107,7 +107,7 @@ impl JitterRng {
     pub(crate) fn from_clock() -> Self {
         let nanos = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
-            .map(|d| d.subsec_nanos() as u64 ^ (d.as_secs() as u64).rotate_left(17))
+            .map(|d| u64::from(d.subsec_nanos()) ^ d.as_secs().rotate_left(17))
             .unwrap_or(0);
         Self::new(nanos.wrapping_add(0xDEADBEEF))
     }

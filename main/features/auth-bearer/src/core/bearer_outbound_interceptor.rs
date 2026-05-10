@@ -10,7 +10,7 @@ use swe_edge_egress_grpc::{
 
 use crate::api::{
     BearerOutboundInterceptor, bearer_auth_config::BearerSecret,
-    BearerAuthError, BearerOutboundConfig, AUTHORIZATION_HEADER,
+    BearerAuthError, AUTHORIZATION_HEADER,
 };
 use crate::core::jwt_claims::JwtClaims;
 

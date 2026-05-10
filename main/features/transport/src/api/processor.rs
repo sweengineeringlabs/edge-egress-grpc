@@ -5,6 +5,7 @@
 /// Implemented by `crate::core::resilience::resilient_grpc_client::ResilientGrpcClient`
 /// and `crate::core::client::tonic_grpc_client::TonicGrpcClient` (both implement
 /// [`GrpcOutbound`] which satisfies this contract).
+#[allow(dead_code)]
 pub trait Processor: Send + Sync {
     /// Identify this processor unit.
     fn describe(&self) -> &'static str;

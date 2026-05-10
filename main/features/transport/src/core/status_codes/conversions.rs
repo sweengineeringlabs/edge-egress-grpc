@@ -7,9 +7,6 @@
 
 use crate::api::value_object::GrpcStatusCode;
 
-/// Zero-size marker identifying this as the status code conversion module.
-pub(crate) struct Conversions;
-
 /// Convert a [`tonic::Code`] (server-side / wire-side enum) into the
 /// crate-local [`GrpcStatusCode`].  Total — covers all 17 variants.
 pub(crate) fn from_tonic_code(code: tonic::Code) -> GrpcStatusCode {
@@ -34,6 +31,7 @@ pub(crate) fn from_tonic_code(code: tonic::Code) -> GrpcStatusCode {
     }
 }
 
+#[cfg(test)]
 /// Convert a crate-local [`GrpcStatusCode`] into a [`tonic::Code`].  Total.
 pub(crate) fn to_tonic_code(code: GrpcStatusCode) -> tonic::Code {
     match code {
@@ -66,6 +64,7 @@ pub(crate) fn from_wire(value: i32) -> GrpcStatusCode {
     from_tonic_code(tonic::Code::from(value))
 }
 
+#[cfg(test)]
 /// Encode a [`GrpcStatusCode`] as the numeric `grpc-status` wire value.
 pub(crate) fn to_wire(code: GrpcStatusCode) -> i32 {
     to_tonic_code(code) as i32
