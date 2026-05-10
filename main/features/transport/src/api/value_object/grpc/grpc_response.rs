@@ -15,7 +15,10 @@ mod tests {
 
     #[test]
     fn test_grpc_response_holds_body_bytes() {
-        let resp = GrpcResponse { body: vec![0x08, 0x01], metadata: GrpcMetadata::default() };
+        let resp = GrpcResponse {
+            body: vec![0x08, 0x01],
+            metadata: GrpcMetadata::default(),
+        };
         assert_eq!(resp.body, vec![0x08, 0x01]);
     }
 }

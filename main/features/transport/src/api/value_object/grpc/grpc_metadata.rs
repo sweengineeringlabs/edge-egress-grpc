@@ -32,7 +32,10 @@ mod tests {
     #[test]
     fn test_with_header_inserts_entry_into_headers_map() {
         let m = GrpcMetadata::default().with_header("x-request-id", "req-1");
-        assert_eq!(m.headers.get("x-request-id").map(String::as_str), Some("req-1"));
+        assert_eq!(
+            m.headers.get("x-request-id").map(String::as_str),
+            Some("req-1")
+        );
     }
 
     /// @covers: with_header

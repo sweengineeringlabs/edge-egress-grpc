@@ -44,7 +44,7 @@ mod tests {
     #[test]
     fn test_status_variant_carries_code_and_message() {
         let err = GrpcOutboundError::Status(GrpcStatusCode::NotFound, "no such row".into());
-        let s   = err.to_string();
+        let s = err.to_string();
         assert!(s.contains("NotFound"));
         assert!(s.contains("no such row"));
     }

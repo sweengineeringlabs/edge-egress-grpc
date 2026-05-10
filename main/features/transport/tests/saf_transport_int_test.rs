@@ -1,7 +1,7 @@
 //! SAF-level integration tests for `create_transport_from_config`.
 
 use swe_edge_egress_grpc_transport::{
-    GrpcChannelConfig, GrpcChannelConfigError, ResilienceConfig, create_transport_from_config,
+    create_transport_from_config, GrpcChannelConfig, GrpcChannelConfigError, ResilienceConfig,
 };
 
 fn ensure_rustls_provider() {
@@ -14,17 +14,17 @@ fn ensure_rustls_provider() {
 
 fn resilience() -> ResilienceConfig {
     ResilienceConfig {
-        max_attempts:                  3,
-        initial_backoff_ms:            100,
-        backoff_multiplier:            2.0,
-        jitter_factor:                 0.1,
-        max_backoff_ms:                2_000,
-        rate_limit_max_attempts:       2,
+        max_attempts: 3,
+        initial_backoff_ms: 100,
+        backoff_multiplier: 2.0,
+        jitter_factor: 0.1,
+        max_backoff_ms: 2_000,
+        rate_limit_max_attempts: 2,
         rate_limit_initial_backoff_ms: 1_000,
-        rate_limit_max_backoff_ms:     10_000,
-        failure_threshold:             5,
-        cool_down_seconds:             10,
-        half_open_probe_count:         1,
+        rate_limit_max_backoff_ms: 10_000,
+        failure_threshold: 5,
+        cool_down_seconds: 10,
+        half_open_probe_count: 1,
     }
 }
 
@@ -56,4 +56,3 @@ fn transport_struct_transport_create_rejects_plaintext_when_tls_required_int_tes
         Err(GrpcChannelConfigError::PlaintextRejected(_))
     ));
 }
-

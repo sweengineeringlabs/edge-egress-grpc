@@ -17,7 +17,9 @@ pub struct GrpcOutboundInterceptorChain {
 impl GrpcOutboundInterceptorChain {
     /// Construct an empty chain.
     pub fn new() -> Self {
-        Self { interceptors: Vec::new() }
+        Self {
+            interceptors: Vec::new(),
+        }
     }
 
     /// Register `interceptor` at the end of the chain.
@@ -27,10 +29,14 @@ impl GrpcOutboundInterceptorChain {
     }
 
     /// Number of registered interceptors.
-    pub fn len(&self) -> usize { self.interceptors.len() }
+    pub fn len(&self) -> usize {
+        self.interceptors.len()
+    }
 
     /// `true` when no interceptors are registered.
-    pub fn is_empty(&self) -> bool { self.interceptors.is_empty() }
+    pub fn is_empty(&self) -> bool {
+        self.interceptors.is_empty()
+    }
 
     /// Run every `before_call` in order until one fails or all succeed.
     pub fn run_before(&self, req: &mut GrpcRequest) -> Result<(), GrpcOutboundError> {
@@ -61,7 +67,7 @@ mod tests {
 
     struct Recorder {
         marker: &'static str,
-        log:    Arc<Mutex<Vec<&'static str>>>,
+        log: Arc<Mutex<Vec<&'static str>>>,
     }
 
     impl GrpcOutboundInterceptor for Recorder {
@@ -92,7 +98,9 @@ mod tests {
     struct CountAfter(Arc<AtomicUsize>);
 
     impl GrpcOutboundInterceptor for CountAfter {
-        fn before_call(&self, _: &mut GrpcRequest) -> Result<(), GrpcOutboundError> { Ok(()) }
+        fn before_call(&self, _: &mut GrpcRequest) -> Result<(), GrpcOutboundError> {
+            Ok(())
+        }
         fn after_call(&self, _: &mut GrpcResponse) -> Result<(), GrpcOutboundError> {
             self.0.fetch_add(1, Ordering::SeqCst);
             Ok(())
@@ -103,7 +111,10 @@ mod tests {
         GrpcRequest::new("svc/M", vec![], Duration::from_secs(1))
     }
     fn resp() -> GrpcResponse {
-        GrpcResponse { body: vec![], metadata: GrpcMetadata::default() }
+        GrpcResponse {
+            body: vec![],
+            metadata: GrpcMetadata::default(),
+        }
     }
 
     /// @covers: is_empty
@@ -119,9 +130,18 @@ mod tests {
     fn test_push_appends_in_registration_order() {
         let log = Arc::new(Mutex::new(Vec::new()));
         let chain = GrpcOutboundInterceptorChain::new()
-            .push(Arc::new(Recorder { marker: "a", log: log.clone() }))
-            .push(Arc::new(Recorder { marker: "b", log: log.clone() }))
-            .push(Arc::new(Recorder { marker: "c", log: log.clone() }));
+            .push(Arc::new(Recorder {
+                marker: "a",
+                log: log.clone(),
+            }))
+            .push(Arc::new(Recorder {
+                marker: "b",
+                log: log.clone(),
+            }))
+            .push(Arc::new(Recorder {
+                marker: "c",
+                log: log.clone(),
+            }));
         let mut r = req();
         chain.run_before(&mut r).expect("chain should pass");
         assert_eq!(log.lock().unwrap().clone(), vec!["a", "b", "c"]);
@@ -149,8 +169,14 @@ mod tests {
     fn test_run_after_invokes_every_interceptor_in_order() {
         let log = Arc::new(Mutex::new(Vec::new()));
         let chain = GrpcOutboundInterceptorChain::new()
-            .push(Arc::new(Recorder { marker: "x", log: log.clone() }))
-            .push(Arc::new(Recorder { marker: "y", log: log.clone() }));
+            .push(Arc::new(Recorder {
+                marker: "x",
+                log: log.clone(),
+            }))
+            .push(Arc::new(Recorder {
+                marker: "y",
+                log: log.clone(),
+            }));
         let mut r = resp();
         chain.run_after(&mut r).expect("chain should pass");
         assert_eq!(log.lock().unwrap().clone(), vec!["x", "y"]);
@@ -159,8 +185,7 @@ mod tests {
     /// @covers: len
     #[test]
     fn test_len_returns_number_of_registered_interceptors() {
-        let chain = GrpcOutboundInterceptorChain::new()
-            .push(Arc::new(AlwaysFailBefore));
+        let chain = GrpcOutboundInterceptorChain::new().push(Arc::new(AlwaysFailBefore));
         assert_eq!(chain.len(), 1);
         assert!(!chain.is_empty());
     }

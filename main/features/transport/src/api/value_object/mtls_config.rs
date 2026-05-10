@@ -17,23 +17,24 @@ pub struct MtlsConfig {
 
 impl MtlsConfig {
     /// Construct an mTLS config with platform trust roots.
-    pub fn new(
-        cert_pem_path: impl Into<String>,
-        key_pem_path:  impl Into<String>,
-    ) -> Self {
-        Self { cert_pem_path: cert_pem_path.into(), key_pem_path: key_pem_path.into(), ca_pem_path: None }
+    pub fn new(cert_pem_path: impl Into<String>, key_pem_path: impl Into<String>) -> Self {
+        Self {
+            cert_pem_path: cert_pem_path.into(),
+            key_pem_path: key_pem_path.into(),
+            ca_pem_path: None,
+        }
     }
 
     /// Construct an mTLS config that pins a specific CA bundle.
     pub fn with_pinned_ca(
         cert_pem_path: impl Into<String>,
-        key_pem_path:  impl Into<String>,
-        ca_pem_path:   impl Into<String>,
+        key_pem_path: impl Into<String>,
+        ca_pem_path: impl Into<String>,
     ) -> Self {
         Self {
             cert_pem_path: cert_pem_path.into(),
-            key_pem_path:  key_pem_path.into(),
-            ca_pem_path:   Some(ca_pem_path.into()),
+            key_pem_path: key_pem_path.into(),
+            ca_pem_path: Some(ca_pem_path.into()),
         }
     }
 }
@@ -42,7 +43,6 @@ impl MtlsConfig {
 mod tests {
     use super::*;
 
-    
     #[test]
     fn test_new_leaves_pinned_ca_unset() {
         let cfg = MtlsConfig::new("c.pem", "k.pem");
@@ -56,7 +56,7 @@ mod tests {
     fn test_with_pinned_ca_stores_all_three_paths() {
         let cfg = MtlsConfig::with_pinned_ca("c.pem", "k.pem", "ca.pem");
         assert_eq!(cfg.cert_pem_path, "c.pem");
-        assert_eq!(cfg.key_pem_path,  "k.pem");
+        assert_eq!(cfg.key_pem_path, "k.pem");
         assert_eq!(cfg.ca_pem_path.as_deref(), Some("ca.pem"));
     }
 }

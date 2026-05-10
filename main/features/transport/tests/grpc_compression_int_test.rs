@@ -40,7 +40,7 @@ async fn tonic_grpc_client_struct_advertises_grpc_encoding_when_gzip_set_int_tes
     ensure_rustls_provider();
     let recorded: Arc<Mutex<Option<String>>> = Arc::new(Mutex::new(None));
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
-    let addr     = listener.local_addr().unwrap();
+    let addr = listener.local_addr().unwrap();
 
     let recorded_for_server = recorded.clone();
     tokio::spawn(async move {
@@ -81,7 +81,8 @@ async fn tonic_grpc_client_struct_advertises_grpc_encoding_when_gzip_set_int_tes
         &GrpcChannelConfig::new(format!("http://{addr}"))
             .allow_plaintext()
             .with_compression(CompressionMode::Gzip),
-    ).expect("transport");
+    )
+    .expect("transport");
     let req = GrpcRequest::new("svc/M", b"payload".to_vec(), Duration::from_secs(2));
     let _ = client.call_unary(req).await.expect("call_unary");
 
@@ -99,7 +100,7 @@ async fn tonic_grpc_client_struct_does_not_set_grpc_encoding_when_none_int_test(
     ensure_rustls_provider();
     let recorded: Arc<Mutex<Option<String>>> = Arc::new(Mutex::new(None));
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
-    let addr     = listener.local_addr().unwrap();
+    let addr = listener.local_addr().unwrap();
 
     let recorded_for_server = recorded.clone();
     tokio::spawn(async move {
@@ -138,7 +139,8 @@ async fn tonic_grpc_client_struct_does_not_set_grpc_encoding_when_none_int_test(
 
     let client = create_transport_from_config(
         &GrpcChannelConfig::new(format!("http://{addr}")).allow_plaintext(),
-    ).expect("transport");
+    )
+    .expect("transport");
     let req = GrpcRequest::new("svc/M", b"payload".to_vec(), Duration::from_secs(2));
     let _ = client.call_unary(req).await.expect("call_unary");
 

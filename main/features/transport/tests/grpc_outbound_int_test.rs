@@ -14,8 +14,8 @@ use http_body::Frame;
 use http_body_util::{BodyExt as _, Full, StreamBody};
 
 use swe_edge_egress_grpc_transport::{
-    create_transport_from_config, GrpcChannelConfig, GrpcMessageStream, GrpcMetadata,
-    GrpcOutbound, GrpcOutboundError, GrpcRequest, GrpcResponse, GrpcStatusCode,
+    create_transport_from_config, GrpcChannelConfig, GrpcMessageStream, GrpcMetadata, GrpcOutbound,
+    GrpcOutboundError, GrpcRequest, GrpcResponse, GrpcStatusCode,
 };
 
 fn make_client(addr: SocketAddr) -> Arc<dyn GrpcOutbound> {
@@ -73,34 +73,35 @@ async fn spawn_echo_server(listener: tokio::net::TcpListener) -> SocketAddr {
 
             tokio::spawn(async move {
                 let io = hyper_util::rt::TokioIo::new(stream);
-                let _ = hyper::server::conn::http2::Builder::new(
-                    hyper_util::rt::TokioExecutor::new(),
-                )
-                .serve_connection(
-                    io,
-                    hyper::service::service_fn(|req: http::Request<hyper::body::Incoming>| async {
-                        // Collect body bytes.
-                        let collected = req.into_body().collect().await.unwrap();
-                        let body_bytes = collected.to_bytes();
+                let _ =
+                    hyper::server::conn::http2::Builder::new(hyper_util::rt::TokioExecutor::new())
+                        .serve_connection(
+                            io,
+                            hyper::service::service_fn(
+                                |req: http::Request<hyper::body::Incoming>| async {
+                                    // Collect body bytes.
+                                    let collected = req.into_body().collect().await.unwrap();
+                                    let body_bytes = collected.to_bytes();
 
-                        // Decode frames and re-encode the payloads as response frames.
-                        let frames = decode_frames(body_bytes);
-                        let mut resp_buf = BytesMut::new();
-                        for f in frames {
-                            resp_buf.put(encode_frame(&f));
-                        }
+                                    // Decode frames and re-encode the payloads as response frames.
+                                    let frames = decode_frames(body_bytes);
+                                    let mut resp_buf = BytesMut::new();
+                                    for f in frames {
+                                        resp_buf.put(encode_frame(&f));
+                                    }
 
-                        let resp = http::Response::builder()
-                            .status(200)
-                            .header(http::header::CONTENT_TYPE, "application/grpc")
-                            .header("grpc-status", "0")
-                            .body(Full::new(resp_buf.freeze()))
-                            .unwrap();
+                                    let resp = http::Response::builder()
+                                        .status(200)
+                                        .header(http::header::CONTENT_TYPE, "application/grpc")
+                                        .header("grpc-status", "0")
+                                        .body(Full::new(resp_buf.freeze()))
+                                        .unwrap();
 
-                        Ok::<_, Infallible>(resp)
-                    }),
-                )
-                .await;
+                                    Ok::<_, Infallible>(resp)
+                                },
+                            ),
+                        )
+                        .await;
             });
         }
     });
@@ -120,23 +121,24 @@ async fn spawn_error_server(listener: tokio::net::TcpListener) -> SocketAddr {
             };
             tokio::spawn(async move {
                 let io = hyper_util::rt::TokioIo::new(stream);
-                let _ = hyper::server::conn::http2::Builder::new(
-                    hyper_util::rt::TokioExecutor::new(),
-                )
-                .serve_connection(
-                    io,
-                    hyper::service::service_fn(|_req: http::Request<hyper::body::Incoming>| async {
-                        let resp = http::Response::builder()
-                            .status(200)
-                            .header(http::header::CONTENT_TYPE, "application/grpc")
-                            .header("grpc-status", "13")
-                            .header("grpc-message", "server-side error")
-                            .body(Full::new(Bytes::new()))
-                            .unwrap();
-                        Ok::<_, Infallible>(resp)
-                    }),
-                )
-                .await;
+                let _ =
+                    hyper::server::conn::http2::Builder::new(hyper_util::rt::TokioExecutor::new())
+                        .serve_connection(
+                            io,
+                            hyper::service::service_fn(
+                                |_req: http::Request<hyper::body::Incoming>| async {
+                                    let resp = http::Response::builder()
+                                        .status(200)
+                                        .header(http::header::CONTENT_TYPE, "application/grpc")
+                                        .header("grpc-status", "13")
+                                        .header("grpc-message", "server-side error")
+                                        .body(Full::new(Bytes::new()))
+                                        .unwrap();
+                                    Ok::<_, Infallible>(resp)
+                                },
+                            ),
+                        )
+                        .await;
             });
         }
     });
@@ -157,23 +159,24 @@ async fn spawn_stalling_grpc_server(listener: tokio::net::TcpListener) -> Socket
             };
             tokio::spawn(async move {
                 let io = hyper_util::rt::TokioIo::new(stream);
-                let _ = hyper::server::conn::http2::Builder::new(
-                    hyper_util::rt::TokioExecutor::new(),
-                )
-                .serve_connection(
-                    io,
-                    hyper::service::service_fn(|_req: http::Request<hyper::body::Incoming>| async {
-                        // Complete the HTTP/2 handshake but never return a response.
-                        tokio::time::sleep(Duration::from_secs(60)).await;
-                        Ok::<_, Infallible>(
-                            http::Response::builder()
-                                .status(200)
-                                .body(http_body_util::Full::new(bytes::Bytes::new()))
-                                .unwrap(),
+                let _ =
+                    hyper::server::conn::http2::Builder::new(hyper_util::rt::TokioExecutor::new())
+                        .serve_connection(
+                            io,
+                            hyper::service::service_fn(
+                                |_req: http::Request<hyper::body::Incoming>| async {
+                                    // Complete the HTTP/2 handshake but never return a response.
+                                    tokio::time::sleep(Duration::from_secs(60)).await;
+                                    Ok::<_, Infallible>(
+                                        http::Response::builder()
+                                            .status(200)
+                                            .body(http_body_util::Full::new(bytes::Bytes::new()))
+                                            .unwrap(),
+                                    )
+                                },
+                            ),
                         )
-                    }),
-                )
-                .await;
+                        .await;
             });
         }
     });
@@ -188,44 +191,51 @@ async fn spawn_metadata_server(listener: tokio::net::TcpListener) -> SocketAddr 
     tokio::spawn(async move {
         loop {
             let (stream, _) = match listener.accept().await {
-                Ok(v)  => v,
+                Ok(v) => v,
                 Err(_) => break,
             };
             tokio::spawn(async move {
                 let io = hyper_util::rt::TokioIo::new(stream);
-                let _ = hyper::server::conn::http2::Builder::new(
-                    hyper_util::rt::TokioExecutor::new(),
-                )
-                .serve_connection(
-                    io,
-                    hyper::service::service_fn(|req: http::Request<hyper::body::Incoming>| async {
-                        let collected = req.into_body().collect().await.unwrap();
-                        let body_bytes = collected.to_bytes();
-                        let frames = decode_frames(body_bytes);
-                        let mut resp_buf = BytesMut::new();
-                        for f in &frames {
-                            resp_buf.put(encode_frame(f));
-                        }
+                let _ =
+                    hyper::server::conn::http2::Builder::new(hyper_util::rt::TokioExecutor::new())
+                        .serve_connection(
+                            io,
+                            hyper::service::service_fn(
+                                |req: http::Request<hyper::body::Incoming>| async {
+                                    let collected = req.into_body().collect().await.unwrap();
+                                    let body_bytes = collected.to_bytes();
+                                    let frames = decode_frames(body_bytes);
+                                    let mut resp_buf = BytesMut::new();
+                                    for f in &frames {
+                                        resp_buf.put(encode_frame(f));
+                                    }
 
-                        let mut trailers = http::HeaderMap::new();
-                        trailers.insert("grpc-status",   http::HeaderValue::from_static("0"));
-                        trailers.insert("x-response-id", http::HeaderValue::from_static("meta-42"));
+                                    let mut trailers = http::HeaderMap::new();
+                                    trailers
+                                        .insert("grpc-status", http::HeaderValue::from_static("0"));
+                                    trailers.insert(
+                                        "x-response-id",
+                                        http::HeaderValue::from_static("meta-42"),
+                                    );
 
-                        let body = StreamBody::new(futures::stream::iter(vec![
-                            Ok::<Frame<Bytes>, Infallible>(Frame::data(resp_buf.freeze())),
-                            Ok(Frame::trailers(trailers)),
-                        ]));
+                                    let body = StreamBody::new(futures::stream::iter(vec![
+                                        Ok::<Frame<Bytes>, Infallible>(Frame::data(
+                                            resp_buf.freeze(),
+                                        )),
+                                        Ok(Frame::trailers(trailers)),
+                                    ]));
 
-                        let resp = http::Response::builder()
-                            .status(200)
-                            .header(http::header::CONTENT_TYPE, "application/grpc")
-                            .body(body.boxed())
-                            .unwrap();
+                                    let resp = http::Response::builder()
+                                        .status(200)
+                                        .header(http::header::CONTENT_TYPE, "application/grpc")
+                                        .body(body.boxed())
+                                        .unwrap();
 
-                        Ok::<_, Infallible>(resp)
-                    }),
-                )
-                .await;
+                                    Ok::<_, Infallible>(resp)
+                                },
+                            ),
+                        )
+                        .await;
             });
         }
     });
@@ -257,7 +267,10 @@ async fn test_call_unary_sends_request_and_receives_response() {
     let client = make_client(addr);
     let req = GrpcRequest::new("echo/Echo", b"hello".to_vec(), Duration::from_secs(5));
 
-    let resp = client.call_unary(req).await.expect("call_unary should succeed");
+    let resp = client
+        .call_unary(req)
+        .await
+        .expect("call_unary should succeed");
     assert_eq!(resp.body, b"hello");
 }
 
@@ -326,7 +339,10 @@ async fn test_health_check_succeeds_when_server_is_listening() {
 
     ensure_rustls_provider();
     let client = make_client(addr);
-    client.health_check().await.expect("health_check should succeed when port is open");
+    client
+        .health_check()
+        .await
+        .expect("health_check should succeed when port is open");
 }
 
 /// @covers: TonicGrpcClient::health_check — fails when nothing is listening.
@@ -363,8 +379,8 @@ async fn test_health_check_fails_when_no_server_is_listening() {
 #[test]
 fn test_grpc_request_holds_method_and_body() {
     let req = GrpcRequest::new("svc/Method", vec![1, 2, 3], Duration::from_secs(1));
-    assert_eq!(req.method,   "svc/Method");
-    assert_eq!(req.body,     vec![1, 2, 3]);
+    assert_eq!(req.method, "svc/Method");
+    assert_eq!(req.body, vec![1, 2, 3]);
     assert_eq!(req.deadline, Duration::from_secs(1));
 }
 
@@ -384,7 +400,10 @@ fn test_grpc_status_code_ok_is_distinct_from_internal() {
 /// @covers: GrpcResponse — struct construction.
 #[test]
 fn test_grpc_response_holds_body_bytes() {
-    let resp = GrpcResponse { body: vec![0x08, 0x01], metadata: GrpcMetadata::default() };
+    let resp = GrpcResponse {
+        body: vec![0x08, 0x01],
+        metadata: GrpcMetadata::default(),
+    };
     assert_eq!(resp.body, vec![0x08, 0x01]);
 }
 
@@ -398,10 +417,16 @@ async fn test_call_unary_receives_response_metadata_from_trailers() {
     let client = make_client(addr);
     let req = GrpcRequest::new("echo/Echo", b"hi".to_vec(), Duration::from_secs(5));
 
-    let resp = client.call_unary(req).await.expect("call_unary should succeed");
+    let resp = client
+        .call_unary(req)
+        .await
+        .expect("call_unary should succeed");
     assert_eq!(resp.body, b"hi", "body must be echoed");
     assert_eq!(
-        resp.metadata.headers.get("x-response-id").map(String::as_str),
+        resp.metadata
+            .headers
+            .get("x-response-id")
+            .map(String::as_str),
         Some("meta-42"),
         "x-response-id trailer must be present in response metadata; got: {:?}",
         resp.metadata.headers
@@ -454,51 +479,50 @@ use std::sync::Mutex;
 async fn spawn_timeout_recording_server(
     listener: tokio::net::TcpListener,
 ) -> (SocketAddr, Arc<Mutex<Option<String>>>) {
-    let addr     = listener.local_addr().expect("local_addr");
+    let addr = listener.local_addr().expect("local_addr");
     let captured = Arc::new(Mutex::new(None::<String>));
-    let cap      = captured.clone();
+    let cap = captured.clone();
     tokio::spawn(async move {
         loop {
             let (stream, _) = match listener.accept().await {
-                Ok(v)  => v,
+                Ok(v) => v,
                 Err(_) => break,
             };
             let cap = cap.clone();
             tokio::spawn(async move {
                 let io = hyper_util::rt::TokioIo::new(stream);
-                let _ = hyper::server::conn::http2::Builder::new(
-                    hyper_util::rt::TokioExecutor::new(),
-                )
-                .serve_connection(
-                    io,
-                    hyper::service::service_fn(
-                        move |req: http::Request<hyper::body::Incoming>| {
-                            let cap = cap.clone();
-                            async move {
-                                if let Some(v) = req.headers().get("grpc-timeout") {
-                                    if let Ok(s) = v.to_str() {
-                                        *cap.lock().unwrap() = Some(s.to_owned());
+                let _ =
+                    hyper::server::conn::http2::Builder::new(hyper_util::rt::TokioExecutor::new())
+                        .serve_connection(
+                            io,
+                            hyper::service::service_fn(
+                                move |req: http::Request<hyper::body::Incoming>| {
+                                    let cap = cap.clone();
+                                    async move {
+                                        if let Some(v) = req.headers().get("grpc-timeout") {
+                                            if let Ok(s) = v.to_str() {
+                                                *cap.lock().unwrap() = Some(s.to_owned());
+                                            }
+                                        }
+                                        let collected = req.into_body().collect().await.unwrap();
+                                        let body_bytes = collected.to_bytes();
+                                        let frames = decode_frames(body_bytes);
+                                        let mut buf = BytesMut::new();
+                                        for f in frames {
+                                            buf.put(encode_frame(&f));
+                                        }
+                                        let resp = http::Response::builder()
+                                            .status(200)
+                                            .header(http::header::CONTENT_TYPE, "application/grpc")
+                                            .header("grpc-status", "0")
+                                            .body(Full::new(buf.freeze()))
+                                            .unwrap();
+                                        Ok::<_, Infallible>(resp)
                                     }
-                                }
-                                let collected = req.into_body().collect().await.unwrap();
-                                let body_bytes = collected.to_bytes();
-                                let frames     = decode_frames(body_bytes);
-                                let mut buf    = BytesMut::new();
-                                for f in frames {
-                                    buf.put(encode_frame(&f));
-                                }
-                                let resp = http::Response::builder()
-                                    .status(200)
-                                    .header(http::header::CONTENT_TYPE, "application/grpc")
-                                    .header("grpc-status", "0")
-                                    .body(Full::new(buf.freeze()))
-                                    .unwrap();
-                                Ok::<_, Infallible>(resp)
-                            }
-                        },
-                    ),
-                )
-                .await;
+                                },
+                            ),
+                        )
+                        .await;
             });
         }
     });
@@ -509,23 +533,32 @@ async fn spawn_timeout_recording_server(
 /// derived from the GrpcRequest deadline.
 #[tokio::test]
 async fn test_call_unary_sends_grpc_timeout_header_from_deadline() {
-    let listener        = bind_listener().await;
+    let listener = bind_listener().await;
     let (addr, captured) = spawn_timeout_recording_server(listener).await;
 
     ensure_rustls_provider();
     let client = make_client(addr);
-    let req    = GrpcRequest::new("svc/Method", b"x".to_vec(), Duration::from_secs(2));
-    client.call_unary(req).await.expect("call_unary should succeed");
+    let req = GrpcRequest::new("svc/Method", b"x".to_vec(), Duration::from_secs(2));
+    client
+        .call_unary(req)
+        .await
+        .expect("call_unary should succeed");
 
     let header = captured.lock().unwrap().clone();
     let header = header.expect("server must have observed a grpc-timeout header");
     // The encoder may pick any unit; just verify it ends with one of the standard suffixes
     // and parses to a non-empty positive value.
     let last = header.chars().last().expect("non-empty header");
-    assert!("nuMSmH".contains(last), "unexpected unit suffix in {header}");
+    assert!(
+        "nuMSmH".contains(last),
+        "unexpected unit suffix in {header}"
+    );
     let prefix = &header[..header.len() - 1];
     let value: u64 = prefix.parse().unwrap_or(0);
-    assert!(value > 0, "grpc-timeout value must be positive, got {header}");
+    assert!(
+        value > 0,
+        "grpc-timeout value must be positive, got {header}"
+    );
 }
 
 /// @covers: TonicGrpcClient::call_unary — caller-supplied cancellation token aborts
@@ -535,13 +568,13 @@ async fn test_call_unary_cancellation_token_aborts_in_flight_request() {
     use tokio_util::sync::CancellationToken;
 
     let listener = bind_listener().await;
-    let addr     = spawn_stalling_grpc_server(listener).await;
+    let addr = spawn_stalling_grpc_server(listener).await;
 
     // Long deadline so timeout doesn't beat us; cancellation must win.
     ensure_rustls_provider();
     let client = make_client(addr);
-    let token  = CancellationToken::new();
-    let req    = GrpcRequest::new("svc/Method", b"x".to_vec(), Duration::from_secs(60))
+    let token = CancellationToken::new();
+    let req = GrpcRequest::new("svc/Method", b"x".to_vec(), Duration::from_secs(60))
         .with_cancellation(token.clone());
 
     // Fire the cancel after a brief wait so the request is actually in flight.
@@ -608,32 +641,30 @@ fn test_status_error_round_trips_all_17_grpc_status_code_variants() {
 async fn test_call_unary_sanitizes_internal_error_message_on_truncated_response() {
     use std::convert::Infallible;
     let listener = bind_listener().await;
-    let addr     = listener.local_addr().expect("local_addr");
+    let addr = listener.local_addr().expect("local_addr");
 
     tokio::spawn(async move {
         let (stream, _) = listener.accept().await.unwrap();
         let io = hyper_util::rt::TokioIo::new(stream);
-        let _ = hyper::server::conn::http2::Builder::new(
-            hyper_util::rt::TokioExecutor::new(),
-        )
-        .serve_connection(
-            io,
-            hyper::service::service_fn(|_req: http::Request<hyper::body::Incoming>| async {
-                // Frame header claims length=100 but only 3 bytes follow → truncated frame.
-                let mut buf = BytesMut::new();
-                buf.put_u8(0x00);
-                buf.put_u32(100);
-                buf.put_slice(b"abc");
-                let resp = http::Response::builder()
-                    .status(200)
-                    .header(http::header::CONTENT_TYPE, "application/grpc")
-                    .header("grpc-status", "0")
-                    .body(Full::new(buf.freeze()))
-                    .unwrap();
-                Ok::<_, Infallible>(resp)
-            }),
-        )
-        .await;
+        let _ = hyper::server::conn::http2::Builder::new(hyper_util::rt::TokioExecutor::new())
+            .serve_connection(
+                io,
+                hyper::service::service_fn(|_req: http::Request<hyper::body::Incoming>| async {
+                    // Frame header claims length=100 but only 3 bytes follow → truncated frame.
+                    let mut buf = BytesMut::new();
+                    buf.put_u8(0x00);
+                    buf.put_u32(100);
+                    buf.put_slice(b"abc");
+                    let resp = http::Response::builder()
+                        .status(200)
+                        .header(http::header::CONTENT_TYPE, "application/grpc")
+                        .header("grpc-status", "0")
+                        .body(Full::new(buf.freeze()))
+                        .unwrap();
+                    Ok::<_, Infallible>(resp)
+                }),
+            )
+            .await;
     });
 
     ensure_rustls_provider();
@@ -644,7 +675,7 @@ async fn test_call_unary_sanitizes_internal_error_message_on_truncated_response(
         .call_stream("svc/Method".into(), GrpcMetadata::default(), messages)
         .await;
     let err = match result {
-        Ok(_)  => panic!("expected an error from a truncated server response, got Ok"),
+        Ok(_) => panic!("expected an error from a truncated server response, got Ok"),
         Err(e) => e,
     };
     match err {

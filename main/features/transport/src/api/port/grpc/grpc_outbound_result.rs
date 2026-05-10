@@ -18,8 +18,10 @@ mod tests {
     #[test]
     fn test_grpc_outbound_result_err_variant_carries_error() {
         use crate::api::value_object::GrpcStatusCode;
-        let r: GrpcOutboundResult<u32> =
-            Err(GrpcOutboundError::Status(GrpcStatusCode::NotFound, "gone".into()));
+        let r: GrpcOutboundResult<u32> = Err(GrpcOutboundError::Status(
+            GrpcStatusCode::NotFound,
+            "gone".into(),
+        ));
         assert!(r.is_err());
     }
 }

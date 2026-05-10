@@ -8,7 +8,7 @@ pub enum TraceContextSource {
     /// Always inject a static `traceparent` (and optional `tracestate`).
     Static {
         traceparent: String,
-        tracestate:  Option<String>,
+        tracestate: Option<String>,
     },
 }
 
@@ -26,10 +26,13 @@ mod tests {
     fn test_static_variant_holds_traceparent_and_tracestate() {
         let s = TraceContextSource::Static {
             traceparent: "00-abc-def-01".into(),
-            tracestate:  Some("vendor=1".into()),
+            tracestate: Some("vendor=1".into()),
         };
         match s {
-            TraceContextSource::Static { traceparent, tracestate } => {
+            TraceContextSource::Static {
+                traceparent,
+                tracestate,
+            } => {
                 assert_eq!(traceparent, "00-abc-def-01");
                 assert_eq!(tracestate, Some("vendor=1".into()));
             }

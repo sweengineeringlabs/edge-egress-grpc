@@ -10,12 +10,11 @@ pub type GrpcMessageStream =
 mod tests {
     #[test]
     fn test_grpc_message_stream_can_be_constructed_from_empty_stream() {
-        use futures::stream;
-        use crate::api::port::grpc::grpc_outbound_result::GrpcOutboundResult;
         use super::GrpcMessageStream;
+        use crate::api::port::grpc::grpc_outbound_result::GrpcOutboundResult;
+        use futures::stream;
 
-        let s: GrpcMessageStream =
-            Box::pin(stream::empty::<GrpcOutboundResult<Vec<u8>>>());
+        let s: GrpcMessageStream = Box::pin(stream::empty::<GrpcOutboundResult<Vec<u8>>>());
         let _ = s;
     }
 }

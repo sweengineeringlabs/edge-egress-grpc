@@ -2,9 +2,9 @@
 
 use futures::future::BoxFuture;
 
+use crate::api::port::grpc::grpc_message_stream::GrpcMessageStream;
 use crate::api::port::grpc::grpc_outbound_error::GrpcOutboundError;
 use crate::api::port::grpc::grpc_outbound_result::GrpcOutboundResult;
-use crate::api::port::grpc::grpc_message_stream::GrpcMessageStream;
 use crate::api::value_object::{GrpcMetadata, GrpcRequest, GrpcResponse, GrpcStatusCode};
 
 /// Makes outbound gRPC calls to remote services.
@@ -35,8 +35,8 @@ pub trait GrpcOutbound: Send + Sync {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::time::Duration;
     use crate::api::value_object::GrpcMetadata;
+    use std::time::Duration;
 
     #[test]
     fn test_grpc_outbound_is_object_safe() {
@@ -52,7 +52,7 @@ mod tests {
                 _: GrpcRequest,
             ) -> futures::future::BoxFuture<'_, GrpcOutboundResult<GrpcResponse>> {
                 Box::pin(futures::future::ready(Ok(GrpcResponse {
-                    body:     vec![],
+                    body: vec![],
                     metadata: GrpcMetadata::default(),
                 })))
             }
@@ -70,9 +70,12 @@ mod tests {
             .await;
         match result {
             Err(GrpcOutboundError::Status(GrpcStatusCode::Unimplemented, msg)) => {
-                assert!(msg.contains("streaming not supported"), "message was: {msg}");
+                assert!(
+                    msg.contains("streaming not supported"),
+                    "message was: {msg}"
+                );
             }
-            Ok(_)  => panic!("expected Err(Status(Unimplemented)), got Ok"),
+            Ok(_) => panic!("expected Err(Status(Unimplemented)), got Ok"),
             Err(e) => panic!("expected Status(Unimplemented, _), got Err({e})"),
         }
     }

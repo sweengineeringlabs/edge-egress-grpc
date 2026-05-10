@@ -15,12 +15,12 @@ pub(crate) type HyperClient =
 
 /// Concrete `GrpcOutbound` implementation using hyper HTTP/2.
 pub struct TonicGrpcClient {
-    pub(crate) base_uri:          String,
-    pub(crate) client:            HyperClient,
-    pub(crate) timeout:           Duration,
-    pub(crate) interceptors:      GrpcOutboundInterceptorChain,
+    pub(crate) base_uri: String,
+    pub(crate) client: HyperClient,
+    pub(crate) timeout: Duration,
+    pub(crate) interceptors: GrpcOutboundInterceptorChain,
     pub(crate) max_message_bytes: usize,
-    pub(crate) compression:       CompressionMode,
+    pub(crate) compression: CompressionMode,
 }
 
 impl TonicGrpcClient {
@@ -36,12 +36,12 @@ impl TonicGrpcClient {
                 .http2_only(true)
                 .build(connector);
         Self {
-            base_uri:          base_uri.into(),
+            base_uri: base_uri.into(),
             client,
-            timeout:           Duration::from_secs(30),
-            interceptors:      GrpcOutboundInterceptorChain::new(),
+            timeout: Duration::from_secs(30),
+            interceptors: GrpcOutboundInterceptorChain::new(),
             max_message_bytes: DEFAULT_MAX_MESSAGE_BYTES,
-            compression:       CompressionMode::None,
+            compression: CompressionMode::None,
         }
     }
 }

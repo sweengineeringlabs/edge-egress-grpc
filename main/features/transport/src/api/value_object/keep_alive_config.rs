@@ -22,7 +22,7 @@ impl Default for KeepAliveConfig {
     fn default() -> Self {
         Self {
             interval: Duration::from_secs(10),
-            timeout:  Duration::from_secs(20),
+            timeout: Duration::from_secs(20),
             permit_without_calls: false,
         }
     }
@@ -36,7 +36,7 @@ mod tests {
     fn test_default_uses_recommended_grpc_intervals() {
         let cfg = KeepAliveConfig::default();
         assert_eq!(cfg.interval, Duration::from_secs(10));
-        assert_eq!(cfg.timeout,  Duration::from_secs(20));
+        assert_eq!(cfg.timeout, Duration::from_secs(20));
         assert!(!cfg.permit_without_calls);
     }
 }

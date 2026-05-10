@@ -43,13 +43,13 @@ impl GrpcChannelConfig {
     /// Construct a TLS-required channel for `endpoint`.
     pub fn new(endpoint: impl Into<String>) -> Self {
         Self {
-            endpoint:          endpoint.into(),
-            tls_required:      true,
-            mtls:              None,
-            keep_alive:        None,
+            endpoint: endpoint.into(),
+            tls_required: true,
+            mtls: None,
+            keep_alive: None,
             max_message_bytes: DEFAULT_MAX_MESSAGE_BYTES,
-            compression:       CompressionMode::None,
-            resilience:        None,
+            compression: CompressionMode::None,
+            resilience: None,
         }
     }
 
@@ -95,13 +95,13 @@ impl Default for GrpcChannelConfig {
     /// 4 MiB message cap, no compression.
     fn default() -> Self {
         Self {
-            endpoint:          String::new(),
-            tls_required:      true,
-            mtls:              None,
-            keep_alive:        None,
+            endpoint: String::new(),
+            tls_required: true,
+            mtls: None,
+            keep_alive: None,
             max_message_bytes: DEFAULT_MAX_MESSAGE_BYTES,
-            compression:       CompressionMode::None,
-            resilience:        None,
+            compression: CompressionMode::None,
+            resilience: None,
         }
     }
 }
@@ -146,8 +146,7 @@ mod tests {
     /// @covers: with_mtls
     #[test]
     fn test_with_mtls_stores_identity() {
-        let cfg = GrpcChannelConfig::new("https://x")
-            .with_mtls(MtlsConfig::new("c.pem", "k.pem"));
+        let cfg = GrpcChannelConfig::new("https://x").with_mtls(MtlsConfig::new("c.pem", "k.pem"));
         let mtls = cfg.mtls.expect("mtls must be Some");
         assert_eq!(mtls.cert_pem_path, "c.pem");
     }
@@ -163,9 +162,9 @@ mod tests {
     #[test]
     fn test_with_keep_alive_stores_config() {
         use std::time::Duration;
-        let ka  = KeepAliveConfig {
-            interval:             Duration::from_secs(5),
-            timeout:              Duration::from_secs(10),
+        let ka = KeepAliveConfig {
+            interval: Duration::from_secs(5),
+            timeout: Duration::from_secs(10),
             permit_without_calls: true,
         };
         let cfg = GrpcChannelConfig::new("https://x").with_keep_alive(ka);
@@ -185,17 +184,17 @@ mod tests {
     fn test_with_resilience_stores_policy() {
         use crate::api::value_object::resilience::resilience_config::ResilienceConfig;
         let r = ResilienceConfig {
-            max_attempts:                  3,
-            initial_backoff_ms:            100,
-            backoff_multiplier:            2.0,
-            jitter_factor:                 0.1,
-            max_backoff_ms:                2_000,
-            rate_limit_max_attempts:       2,
+            max_attempts: 3,
+            initial_backoff_ms: 100,
+            backoff_multiplier: 2.0,
+            jitter_factor: 0.1,
+            max_backoff_ms: 2_000,
+            rate_limit_max_attempts: 2,
             rate_limit_initial_backoff_ms: 1_000,
-            rate_limit_max_backoff_ms:     10_000,
-            failure_threshold:             5,
-            cool_down_seconds:             10,
-            half_open_probe_count:         1,
+            rate_limit_max_backoff_ms: 10_000,
+            failure_threshold: 5,
+            cool_down_seconds: 10,
+            half_open_probe_count: 1,
         };
         let cfg = GrpcChannelConfig::new("https://x").with_resilience(r);
         assert!(cfg.resilience.is_some());

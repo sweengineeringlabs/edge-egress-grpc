@@ -40,17 +40,17 @@ mod tests {
 
     fn valid() -> ResilienceConfig {
         ResilienceConfig {
-            max_attempts:                  3,
-            initial_backoff_ms:            100,
-            backoff_multiplier:            2.0,
-            jitter_factor:                 0.1,
-            max_backoff_ms:                2_000,
-            rate_limit_max_attempts:       2,
+            max_attempts: 3,
+            initial_backoff_ms: 100,
+            backoff_multiplier: 2.0,
+            jitter_factor: 0.1,
+            max_backoff_ms: 2_000,
+            rate_limit_max_attempts: 2,
             rate_limit_initial_backoff_ms: 1_000,
-            rate_limit_max_backoff_ms:     10_000,
-            failure_threshold:             5,
-            cool_down_seconds:             10,
-            half_open_probe_count:         1,
+            rate_limit_max_backoff_ms: 10_000,
+            failure_threshold: 5,
+            cool_down_seconds: 10,
+            half_open_probe_count: 1,
         }
     }
 
@@ -92,7 +92,7 @@ mod tests {
     #[test]
     fn test_validate_rejects_rate_limit_max_backoff_less_than_initial() {
         let mut r = valid();
-        r.rate_limit_max_backoff_ms     = 500;
+        r.rate_limit_max_backoff_ms = 500;
         r.rate_limit_initial_backoff_ms = 1_000;
         assert!(r.validate().is_err());
     }

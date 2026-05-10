@@ -25,13 +25,13 @@ use super::grpc_metadata::GrpcMetadata;
 #[derive(Debug, Clone)]
 pub struct GrpcRequest {
     /// Fully-qualified gRPC method path (e.g. `"pkg.Service/Method"`).
-    pub method:       String,
+    pub method: String,
     /// Raw protobuf-encoded request bytes.
-    pub body:         Vec<u8>,
+    pub body: Vec<u8>,
     /// Request metadata (headers).
-    pub metadata:     GrpcMetadata,
+    pub metadata: GrpcMetadata,
     /// Per-call deadline.  Always present.
-    pub deadline:     Duration,
+    pub deadline: Duration,
     /// Optional caller-supplied cancellation token.
     pub cancellation: Option<CancellationToken>,
 }
@@ -42,15 +42,11 @@ impl GrpcRequest {
     ///
     /// `deadline` is a required positional argument — there is no overload
     /// without it and no default.  Compile error if omitted.
-    pub fn new(
-        method:   impl Into<String>,
-        body:     Vec<u8>,
-        deadline: Duration,
-    ) -> Self {
+    pub fn new(method: impl Into<String>, body: Vec<u8>, deadline: Duration) -> Self {
         Self {
-            method:       method.into(),
+            method: method.into(),
             body,
-            metadata:     GrpcMetadata::default(),
+            metadata: GrpcMetadata::default(),
             deadline,
             cancellation: None,
         }
@@ -82,10 +78,10 @@ mod tests {
 
     #[test]
     fn test_new_stores_method_body_and_deadline() {
-        let d   = Duration::from_secs(5);
+        let d = Duration::from_secs(5);
         let req = GrpcRequest::new("pkg.Svc/Method", vec![0xAB], d);
-        assert_eq!(req.method,   "pkg.Svc/Method");
-        assert_eq!(req.body,     vec![0xAB]);
+        assert_eq!(req.method, "pkg.Svc/Method");
+        assert_eq!(req.body, vec![0xAB]);
         assert_eq!(req.deadline, d);
         assert!(req.metadata.headers.is_empty());
         assert!(req.cancellation.is_none());
@@ -97,7 +93,10 @@ mod tests {
         let req = GrpcRequest::new("svc/M", vec![], Duration::from_secs(1))
             .with_header("authorization", "Bearer tok");
         assert_eq!(
-            req.metadata.headers.get("authorization").map(String::as_str),
+            req.metadata
+                .headers
+                .get("authorization")
+                .map(String::as_str),
             Some("Bearer tok")
         );
     }
@@ -108,8 +107,7 @@ mod tests {
         let meta = GrpcMetadata {
             headers: [("k".to_string(), "v".to_string())].into_iter().collect(),
         };
-        let req = GrpcRequest::new("svc/M", vec![], Duration::from_secs(1))
-            .with_metadata(meta);
+        let req = GrpcRequest::new("svc/M", vec![], Duration::from_secs(1)).with_metadata(meta);
         assert_eq!(req.metadata.headers.get("k").map(String::as_str), Some("v"));
     }
 
@@ -117,25 +115,28 @@ mod tests {
     #[test]
     fn test_with_cancellation_attaches_token() {
         let token = CancellationToken::new();
-        let req   = GrpcRequest::new("svc/M", vec![], Duration::from_secs(1))
+        let req = GrpcRequest::new("svc/M", vec![], Duration::from_secs(1))
             .with_cancellation(token.clone());
         let stored = req.cancellation.as_ref().expect("token should be Some");
         assert!(!stored.is_cancelled());
         token.cancel();
-        assert!(stored.is_cancelled(), "stored token must observe cancellation");
+        assert!(
+            stored.is_cancelled(),
+            "stored token must observe cancellation"
+        );
     }
 
     #[test]
     fn test_grpc_request_holds_method_body_and_deadline_via_struct_init() {
         let req = GrpcRequest {
-            method:       "svc/Method".into(),
-            body:         vec![1, 2],
-            metadata:     GrpcMetadata::default(),
-            deadline:     Duration::from_millis(250),
+            method: "svc/Method".into(),
+            body: vec![1, 2],
+            metadata: GrpcMetadata::default(),
+            deadline: Duration::from_millis(250),
             cancellation: None,
         };
         assert_eq!(req.method, "svc/Method");
-        assert_eq!(req.body,   vec![1, 2]);
+        assert_eq!(req.body, vec![1, 2]);
         assert_eq!(req.deadline, Duration::from_millis(250));
     }
 }

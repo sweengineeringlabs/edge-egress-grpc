@@ -6,10 +6,9 @@
 use std::sync::Arc;
 
 use swe_edge_egress_grpc_transport::{
-    CompressionMode, GrpcChannelConfig, GrpcChannelConfigError, GrpcOutbound,
-    GrpcOutboundError, GrpcOutboundInterceptor, GrpcOutboundInterceptorChain,
+    create_transport_from_config, CompressionMode, GrpcChannelConfig, GrpcChannelConfigError,
+    GrpcOutbound, GrpcOutboundError, GrpcOutboundInterceptor, GrpcOutboundInterceptorChain,
     GrpcRequest, GrpcResponse, GrpcStatusCode, TraceContextInterceptor,
-    create_transport_from_config,
 };
 
 fn ensure_rustls_provider() {
@@ -31,11 +30,14 @@ fn transport_struct_channel_config_default_requires_tls_int_test() {
 #[test]
 fn transport_struct_channel_config_from_config_rejects_plaintext_int_test() {
     ensure_rustls_provider();
-    let cfg    = GrpcChannelConfig::new("http://localhost:50051");
+    let cfg = GrpcChannelConfig::new("http://localhost:50051");
     let result = create_transport_from_config(&cfg);
     match result {
         Err(GrpcChannelConfigError::PlaintextRejected(endpoint)) => {
-            assert!(endpoint.contains("localhost"), "endpoint in error: {endpoint}");
+            assert!(
+                endpoint.contains("localhost"),
+                "endpoint in error: {endpoint}"
+            );
         }
         Err(GrpcChannelConfigError::Config(msg)) => panic!("unexpected Config error: {msg}"),
         Ok(_) => panic!("must reject plaintext when tls_required=true"),
@@ -61,8 +63,8 @@ fn transport_struct_channel_config_from_config_accepts_https_int_test() {
 /// @covers: GrpcOutboundInterceptorChain — accepts a TraceContextInterceptor.
 #[test]
 fn transport_struct_channel_config_with_interceptors_accepts_chain_int_test() {
-    let chain = GrpcOutboundInterceptorChain::new()
-        .push(Arc::new(TraceContextInterceptor::pass_through()));
+    let chain =
+        GrpcOutboundInterceptorChain::new().push(Arc::new(TraceContextInterceptor::pass_through()));
     assert_eq!(chain.len(), 1);
 }
 
@@ -76,24 +78,41 @@ async fn transport_struct_channel_config_interceptor_short_circuits_int_test() {
     struct Deny;
     impl GrpcOutboundInterceptor for Deny {
         fn before_call(&self, _: &mut GrpcRequest) -> Result<(), GrpcOutboundError> {
-            Err(GrpcOutboundError::Status(GrpcStatusCode::PermissionDenied, "denied".into()))
+            Err(GrpcOutboundError::Status(
+                GrpcStatusCode::PermissionDenied,
+                "denied".into(),
+            ))
         }
-        fn after_call(&self, _: &mut GrpcResponse) -> Result<(), GrpcOutboundError> { Ok(()) }
+        fn after_call(&self, _: &mut GrpcResponse) -> Result<(), GrpcOutboundError> {
+            Ok(())
+        }
     }
 
-    let cfg    = GrpcChannelConfig::new("http://127.0.0.1:1").allow_plaintext();
-    let base   = create_transport_from_config(&cfg).expect("transport");
-    let chain  = GrpcOutboundInterceptorChain::new().push(Arc::new(Deny));
+    let cfg = GrpcChannelConfig::new("http://127.0.0.1:1").allow_plaintext();
+    let base = create_transport_from_config(&cfg).expect("transport");
+    let chain = GrpcOutboundInterceptorChain::new().push(Arc::new(Deny));
 
-    struct WithChain { inner: Arc<dyn GrpcOutbound>, chain: GrpcOutboundInterceptorChain }
+    struct WithChain {
+        inner: Arc<dyn GrpcOutbound>,
+        chain: GrpcOutboundInterceptorChain,
+    }
     impl GrpcOutbound for WithChain {
-        fn call_unary(&self, mut req: GrpcRequest) -> futures::future::BoxFuture<'_, swe_edge_egress_grpc_transport::GrpcOutboundResult<GrpcResponse>> {
+        fn call_unary(
+            &self,
+            mut req: GrpcRequest,
+        ) -> futures::future::BoxFuture<
+            '_,
+            swe_edge_egress_grpc_transport::GrpcOutboundResult<GrpcResponse>,
+        > {
             Box::pin(async move {
                 self.chain.run_before(&mut req)?;
                 self.inner.call_unary(req).await
             })
         }
-        fn health_check(&self) -> futures::future::BoxFuture<'_, swe_edge_egress_grpc_transport::GrpcOutboundResult<()>> {
+        fn health_check(
+            &self,
+        ) -> futures::future::BoxFuture<'_, swe_edge_egress_grpc_transport::GrpcOutboundResult<()>>
+        {
             self.inner.health_check()
         }
     }

@@ -6,8 +6,8 @@ use std::time::Duration;
 
 use futures::future::BoxFuture;
 use swe_edge_egress_grpc::{
-    GrpcMetadata, GrpcOutbound, GrpcOutboundError, GrpcOutboundResult, GrpcRequest,
-    GrpcResponse, GrpcStatusCode,
+    GrpcMetadata, GrpcOutbound, GrpcOutboundError, GrpcOutboundResult, GrpcRequest, GrpcResponse,
+    GrpcStatusCode,
 };
 use swe_edge_egress_grpc_breaker::{builder, BreakerState, GrpcBreakerClient, GrpcBreakerConfig};
 
@@ -16,16 +16,16 @@ use swe_edge_egress_grpc_breaker::{builder, BreakerState, GrpcBreakerClient, Grp
 /// Tracks the call count so tests can verify that an Open
 /// breaker doesn't reach the inner client.
 struct ToggleClient {
-    calls:  AtomicU32,
+    calls: AtomicU32,
     /// Numeric mode: 0 = Ok, 1 = Status(Unavailable), 2 = Status(Internal).
-    mode:   std::sync::atomic::AtomicU8,
+    mode: std::sync::atomic::AtomicU8,
 }
 
 impl ToggleClient {
     fn new(initial: u8) -> Self {
         Self {
             calls: AtomicU32::new(0),
-            mode:  std::sync::atomic::AtomicU8::new(initial),
+            mode: std::sync::atomic::AtomicU8::new(initial),
         }
     }
     fn call_count(&self) -> u32 {
@@ -39,16 +39,13 @@ impl ToggleClient {
 struct Shared(Arc<ToggleClient>);
 
 impl GrpcOutbound for Shared {
-    fn call_unary(
-        &self,
-        _r: GrpcRequest,
-    ) -> BoxFuture<'_, GrpcOutboundResult<GrpcResponse>> {
+    fn call_unary(&self, _r: GrpcRequest) -> BoxFuture<'_, GrpcOutboundResult<GrpcResponse>> {
         let inner = Arc::clone(&self.0);
         Box::pin(async move {
             inner.calls.fetch_add(1, Ordering::SeqCst);
             match inner.mode.load(Ordering::SeqCst) {
                 0 => Ok(GrpcResponse {
-                    body:     b"ok".to_vec(),
+                    body: b"ok".to_vec(),
                     metadata: GrpcMetadata::default(),
                 }),
                 1 => Err(GrpcOutboundError::Status(
@@ -259,7 +256,11 @@ fn test_create_breaker_client_wraps_inner_with_default_config() {
 #[test]
 fn test_with_config_sets_policy() {
     use swe_edge_egress_grpc_breaker::{Builder, GrpcBreakerConfig};
-    let cfg = GrpcBreakerConfig { failure_threshold: 3, cool_down_seconds: 5, half_open_probe_count: 1 };
+    let cfg = GrpcBreakerConfig {
+        failure_threshold: 3,
+        cool_down_seconds: 5,
+        half_open_probe_count: 1,
+    };
     let b = Builder::with_config(cfg);
     assert_eq!(b.config().failure_threshold, 3);
 }

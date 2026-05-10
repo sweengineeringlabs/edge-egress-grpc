@@ -10,8 +10,8 @@ use std::time::{Duration, Instant};
 
 use futures::future::BoxFuture;
 use swe_edge_egress_grpc::{
-    GrpcMetadata, GrpcOutbound, GrpcOutboundError, GrpcOutboundResult, GrpcRequest,
-    GrpcResponse, GrpcStatusCode,
+    GrpcMetadata, GrpcOutbound, GrpcOutboundError, GrpcOutboundResult, GrpcRequest, GrpcResponse,
+    GrpcStatusCode,
 };
 use swe_edge_egress_grpc_retry::{builder, GrpcRetryClient, GrpcRetryConfig};
 
@@ -21,7 +21,7 @@ use swe_edge_egress_grpc_retry::{builder, GrpcRetryClient, GrpcRetryConfig};
 /// The wrapping `Arc` lets the test observe call counts after
 /// the stub has been moved into the decorator.
 struct ScriptedClient {
-    calls:  AtomicU32,
+    calls: AtomicU32,
     /// Each entry is reused on subsequent calls past the script
     /// length; index = (call_count - 1).min(script.len() - 1).
     script: Vec<Outcome>,
@@ -37,7 +37,10 @@ enum Outcome {
 
 impl ScriptedClient {
     fn new(script: Vec<Outcome>) -> Self {
-        Self { calls: AtomicU32::new(0), script }
+        Self {
+            calls: AtomicU32::new(0),
+            script,
+        }
     }
 
     fn call_count(&self) -> u32 {
@@ -50,7 +53,7 @@ impl ScriptedClient {
         let outcome = self.script.get(idx).cloned().unwrap_or(Outcome::Ok);
         match outcome {
             Outcome::Ok => Ok(GrpcResponse {
-                body:     b"ok".to_vec(),
+                body: b"ok".to_vec(),
                 metadata: GrpcMetadata::default(),
             }),
             Outcome::Status(code, msg) => Err(GrpcOutboundError::Status(code, msg.into())),
@@ -74,10 +77,7 @@ impl<T> SharedClient<T> {
 }
 
 impl GrpcOutbound for SharedClient<ScriptedClient> {
-    fn call_unary(
-        &self,
-        _request: GrpcRequest,
-    ) -> BoxFuture<'_, GrpcOutboundResult<GrpcResponse>> {
+    fn call_unary(&self, _request: GrpcRequest) -> BoxFuture<'_, GrpcOutboundResult<GrpcResponse>> {
         let inner = Arc::clone(&self.inner);
         Box::pin(async move { inner.dispatch().await })
     }
@@ -344,10 +344,7 @@ async fn test_retry_honors_caller_deadline_as_total_budget() {
     struct SharedSlow(Arc<Slow>);
 
     impl GrpcOutbound for SharedSlow {
-        fn call_unary(
-            &self,
-            _r: GrpcRequest,
-        ) -> BoxFuture<'_, GrpcOutboundResult<GrpcResponse>> {
+        fn call_unary(&self, _r: GrpcRequest) -> BoxFuture<'_, GrpcOutboundResult<GrpcResponse>> {
             let inner = Arc::clone(&self.0);
             Box::pin(async move {
                 inner.calls.fetch_add(1, Ordering::SeqCst);
@@ -364,7 +361,7 @@ async fn test_retry_honors_caller_deadline_as_total_budget() {
     }
 
     let stats = Arc::new(Slow {
-        calls:    AtomicU32::new(0),
+        calls: AtomicU32::new(0),
         per_call: Duration::from_millis(50),
     });
 

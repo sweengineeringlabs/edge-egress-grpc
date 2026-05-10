@@ -10,36 +10,62 @@ use crate::api::value_object::resilience::resilience_config::ResilienceConfig;
 #[derive(Debug, Default)]
 #[allow(dead_code)]
 pub struct GrpcChannelConfigBuilder {
-    endpoint:          Option<String>,
-    tls_required:      bool,
-    mtls:              Option<MtlsConfig>,
-    keep_alive:        Option<KeepAliveConfig>,
+    endpoint: Option<String>,
+    tls_required: bool,
+    mtls: Option<MtlsConfig>,
+    keep_alive: Option<KeepAliveConfig>,
     max_message_bytes: Option<usize>,
-    compression:       Option<CompressionMode>,
-    resilience:        Option<ResilienceConfig>,
+    compression: Option<CompressionMode>,
+    resilience: Option<ResilienceConfig>,
 }
 
 #[allow(dead_code)]
 impl GrpcChannelConfigBuilder {
-    pub fn new() -> Self { Self { tls_required: true, ..Default::default() } }
-    pub fn endpoint(mut self, v: impl Into<String>) -> Self { self.endpoint = Some(v.into()); self }
-    pub fn allow_plaintext(mut self) -> Self { self.tls_required = false; self }
-    pub fn mtls(mut self, v: MtlsConfig) -> Self { self.mtls = Some(v); self }
-    pub fn keep_alive(mut self, v: KeepAliveConfig) -> Self { self.keep_alive = Some(v); self }
-    pub fn max_message_bytes(mut self, v: usize) -> Self { self.max_message_bytes = Some(v); self }
-    pub fn compression(mut self, v: CompressionMode) -> Self { self.compression = Some(v); self }
-    pub fn resilience(mut self, v: ResilienceConfig) -> Self { self.resilience = Some(v); self }
+    pub fn new() -> Self {
+        Self {
+            tls_required: true,
+            ..Default::default()
+        }
+    }
+    pub fn endpoint(mut self, v: impl Into<String>) -> Self {
+        self.endpoint = Some(v.into());
+        self
+    }
+    pub fn allow_plaintext(mut self) -> Self {
+        self.tls_required = false;
+        self
+    }
+    pub fn mtls(mut self, v: MtlsConfig) -> Self {
+        self.mtls = Some(v);
+        self
+    }
+    pub fn keep_alive(mut self, v: KeepAliveConfig) -> Self {
+        self.keep_alive = Some(v);
+        self
+    }
+    pub fn max_message_bytes(mut self, v: usize) -> Self {
+        self.max_message_bytes = Some(v);
+        self
+    }
+    pub fn compression(mut self, v: CompressionMode) -> Self {
+        self.compression = Some(v);
+        self
+    }
+    pub fn resilience(mut self, v: ResilienceConfig) -> Self {
+        self.resilience = Some(v);
+        self
+    }
 
     /// Build the [`GrpcChannelConfig`]. Returns `Err` when endpoint is unset.
     pub fn build(self) -> Result<GrpcChannelConfig, String> {
         let endpoint = self.endpoint.ok_or("endpoint required")?;
         let mut cfg = GrpcChannelConfig::new(endpoint);
-        cfg.tls_required      = self.tls_required;
-        cfg.mtls              = self.mtls;
-        cfg.keep_alive        = self.keep_alive;
+        cfg.tls_required = self.tls_required;
+        cfg.mtls = self.mtls;
+        cfg.keep_alive = self.keep_alive;
         cfg.max_message_bytes = self.max_message_bytes.unwrap_or(DEFAULT_MAX_MESSAGE_BYTES);
-        cfg.compression       = self.compression.unwrap_or(CompressionMode::None);
-        cfg.resilience        = self.resilience;
+        cfg.compression = self.compression.unwrap_or(CompressionMode::None);
+        cfg.resilience = self.resilience;
         Ok(cfg)
     }
 }
@@ -92,8 +118,8 @@ mod tests {
     fn test_keep_alive_stores_config() {
         use std::time::Duration;
         let ka = KeepAliveConfig {
-            interval:             Duration::from_secs(5),
-            timeout:              Duration::from_secs(10),
+            interval: Duration::from_secs(5),
+            timeout: Duration::from_secs(10),
             permit_without_calls: true,
         };
         let cfg = GrpcChannelConfigBuilder::new()
@@ -130,17 +156,17 @@ mod tests {
     #[test]
     fn test_resilience_stores_policy() {
         let r = ResilienceConfig {
-            max_attempts:                  3,
-            initial_backoff_ms:            100,
-            backoff_multiplier:            2.0,
-            jitter_factor:                 0.1,
-            max_backoff_ms:                2_000,
-            rate_limit_max_attempts:       2,
+            max_attempts: 3,
+            initial_backoff_ms: 100,
+            backoff_multiplier: 2.0,
+            jitter_factor: 0.1,
+            max_backoff_ms: 2_000,
+            rate_limit_max_attempts: 2,
             rate_limit_initial_backoff_ms: 1_000,
-            rate_limit_max_backoff_ms:     10_000,
-            failure_threshold:             5,
-            cool_down_seconds:             10,
-            half_open_probe_count:         1,
+            rate_limit_max_backoff_ms: 10_000,
+            failure_threshold: 5,
+            cool_down_seconds: 10,
+            half_open_probe_count: 1,
         };
         let cfg = GrpcChannelConfigBuilder::new()
             .endpoint("https://example.com:443")
