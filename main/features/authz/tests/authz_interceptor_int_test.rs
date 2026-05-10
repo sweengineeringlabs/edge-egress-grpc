@@ -20,7 +20,7 @@ fn req_with_cn(cn: &str, method: &str) -> GrpcRequest {
 
 /// @covers: AuthzInterceptor + MethodAclPolicy — happy path through saf.
 #[test]
-fn authz_interceptor_struct_method_acl_policy_allows_listed_method_int_test() {
+fn authz_struct_interceptor_method_acl_policy_allows_listed_method_int_test() {
     let cfg    = MethodAclConfig::deny_all().allow("alice", ["/svc/Read".into()]);
     let policy = MethodAclPolicy::from_config(cfg);
     let interceptor = AuthzInterceptor::from_policy(policy);
@@ -31,7 +31,7 @@ fn authz_interceptor_struct_method_acl_policy_allows_listed_method_int_test() {
 
 /// @covers: AuthzInterceptor + MethodAclPolicy — disallowed method denied.
 #[test]
-fn authz_interceptor_struct_method_acl_policy_denies_method_outside_acl_int_test() {
+fn authz_struct_interceptor_method_acl_policy_denies_method_outside_acl_int_test() {
     let cfg    = MethodAclConfig::deny_all().allow("alice", ["/svc/Read".into()]);
     let policy = MethodAclPolicy::from_config(cfg);
     let interceptor = AuthzInterceptor::from_policy(policy);
@@ -45,7 +45,7 @@ fn authz_interceptor_struct_method_acl_policy_denies_method_outside_acl_int_test
 
 /// @covers: AuthzInterceptor — closure policy round-trips through saf.
 #[test]
-fn authz_interceptor_struct_closure_policy_round_trips_int_test() {
+fn authz_struct_interceptor_closure_policy_round_trips_int_test() {
     let interceptor = AuthzInterceptor::from_policy(|id: &PeerIdentity, m: &str| {
         id.cn.as_deref() == Some("alice") && m == "/svc/Read"
     });
@@ -60,7 +60,7 @@ fn authz_interceptor_struct_closure_policy_round_trips_int_test() {
 
 /// @covers: AuthzInterceptor — shared Arc'd policy is accepted.
 #[test]
-fn authz_interceptor_struct_from_shared_policy_accepts_arc_int_test() {
+fn authz_struct_interceptor_from_shared_policy_accepts_arc_int_test() {
     let policy: Arc<dyn AuthzPolicy> =
         Arc::new(|_: &PeerIdentity, _: &str| true);
     let interceptor = AuthzInterceptor::from_shared_policy(policy);

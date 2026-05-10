@@ -30,7 +30,7 @@ fn resilience() -> ResilienceConfig {
 
 /// @covers: create_transport_from_config — bare transport without resilience.
 #[test]
-fn grpc_struct_transport_create_without_resilience_returns_ok_int_test() {
+fn transport_struct_transport_create_without_resilience_returns_ok_int_test() {
     ensure_rustls_provider();
     let cfg = GrpcChannelConfig::new("http://127.0.0.1:50051").allow_plaintext();
     assert!(create_transport_from_config(&cfg).is_ok());
@@ -38,7 +38,7 @@ fn grpc_struct_transport_create_without_resilience_returns_ok_int_test() {
 
 /// @covers: create_transport_from_config — resilient transport with resilience config.
 #[test]
-fn grpc_struct_transport_create_with_resilience_returns_ok_int_test() {
+fn transport_struct_transport_create_with_resilience_returns_ok_int_test() {
     ensure_rustls_provider();
     let cfg = GrpcChannelConfig::new("http://127.0.0.1:50051")
         .allow_plaintext()
@@ -48,7 +48,7 @@ fn grpc_struct_transport_create_with_resilience_returns_ok_int_test() {
 
 /// @covers: create_transport_from_config — rejects plaintext when tls_required.
 #[test]
-fn grpc_struct_transport_create_rejects_plaintext_when_tls_required_int_test() {
+fn transport_struct_transport_create_rejects_plaintext_when_tls_required_int_test() {
     ensure_rustls_provider();
     let cfg = GrpcChannelConfig::new("http://127.0.0.1:50051");
     assert!(matches!(

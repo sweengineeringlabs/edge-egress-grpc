@@ -26,7 +26,7 @@ fn req_with_fingerprint_and_cn(cn: Option<&str>) -> GrpcRequest {
 
 /// @covers: end-to-end — saf surface accepts a verified peer.
 #[test]
-fn mtls_auth_interceptor_struct_accepts_verified_peer_int_test() {
+fn mtls_struct_auth_interceptor_accepts_verified_peer_int_test() {
     let interceptor = MtlsAuthInterceptor::allow_any_verified_peer();
     let mut r = req_with_fingerprint_and_cn(Some("svc-a"));
     interceptor.before_dispatch(&mut r).expect("verified peer must pass");
@@ -34,7 +34,7 @@ fn mtls_auth_interceptor_struct_accepts_verified_peer_int_test() {
 
 /// @covers: saf — empty metadata = Unauthenticated through the chain.
 #[test]
-fn mtls_auth_interceptor_struct_rejects_plaintext_call_int_test() {
+fn mtls_struct_auth_interceptor_rejects_plaintext_call_int_test() {
     let interceptor = MtlsAuthInterceptor::allow_any_verified_peer();
     let mut r = GrpcRequest::new("/svc/M", vec![], Duration::from_secs(1));
     match interceptor.before_dispatch(&mut r) {
@@ -45,7 +45,7 @@ fn mtls_auth_interceptor_struct_rejects_plaintext_call_int_test() {
 
 /// @covers: saf — CN allowlist enforcement is reachable through the facade.
 #[test]
-fn mtls_auth_interceptor_struct_enforces_cn_allowlist_through_saf_int_test() {
+fn mtls_struct_auth_interceptor_enforces_cn_allowlist_through_saf_int_test() {
     let interceptor =
         MtlsAuthInterceptor::from_config(MtlsAuthConfig::restrict_to_cns(["svc-a".into()]));
     let mut r = req_with_fingerprint_and_cn(Some("svc-evil"));

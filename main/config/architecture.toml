@@ -1,0 +1,35 @@
+# SEA project configuration (L0)
+[project]
+name = "swe-edge-egress-grpc"
+workspaces = [
+    "transport",
+    "retry",
+    "breaker",
+    "auth-mtls",
+    "auth-bearer",
+    "authz",
+]
+
+[workspace.transport]
+path = "main/features/transport"
+crate = "swe-edge-egress-grpc-transport"
+
+[workspace.retry]
+path = "main/features/retry"
+crate = "swe-edge-egress-grpc-retry"
+
+[workspace.breaker]
+path = "main/features/breaker"
+crate = "swe-edge-egress-grpc-breaker"
+
+[workspace.auth-mtls]
+path = "main/features/auth-mtls"
+crate = "swe-edge-egress-grpc-auth-mtls"
+
+[workspace.auth-bearer]
+path = "main/features/auth-bearer"
+crate = "swe-edge-egress-grpc-auth-bearer"
+
+[workspace.authz]
+path = "main/features/authz"
+crate = "swe-edge-egress-grpc-authz"

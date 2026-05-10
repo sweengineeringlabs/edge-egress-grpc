@@ -20,13 +20,13 @@ fn valid() -> ResilienceConfig {
 
 /// @covers: validate_resilience_config — valid config is accepted.
 #[test]
-fn grpc_struct_resilience_config_valid_config_is_accepted_int_test() {
+fn transport_struct_resilience_config_valid_config_is_accepted_int_test() {
     assert!(validate_resilience_config(&valid()).is_ok());
 }
 
 /// @covers: validate_resilience_config — zero max_attempts is rejected.
 #[test]
-fn grpc_struct_resilience_config_zero_max_attempts_rejected_int_test() {
+fn transport_struct_resilience_config_zero_max_attempts_rejected_int_test() {
     let mut r = valid();
     r.max_attempts = 0;
     assert!(validate_resilience_config(&r).is_err());
@@ -34,7 +34,7 @@ fn grpc_struct_resilience_config_zero_max_attempts_rejected_int_test() {
 
 /// @covers: validate_resilience_config — jitter_factor out of range is rejected.
 #[test]
-fn grpc_struct_resilience_config_jitter_out_of_range_rejected_int_test() {
+fn transport_struct_resilience_config_jitter_out_of_range_rejected_int_test() {
     let mut r = valid();
     r.jitter_factor = 1.5;
     assert!(validate_resilience_config(&r).is_err());

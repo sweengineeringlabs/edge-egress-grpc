@@ -22,14 +22,14 @@ fn ensure_rustls_provider() {
 
 /// @covers: GrpcChannelConfig::default — tls_required is `true`.
 #[test]
-fn grpc_struct_channel_config_default_requires_tls_int_test() {
+fn transport_struct_channel_config_default_requires_tls_int_test() {
     let cfg = GrpcChannelConfig::default();
     assert!(cfg.tls_required, "TLS-by-default invariant must hold");
 }
 
 /// @covers: create_transport_from_config — plaintext endpoint rejected when tls_required.
 #[test]
-fn grpc_struct_channel_config_from_config_rejects_plaintext_int_test() {
+fn transport_struct_channel_config_from_config_rejects_plaintext_int_test() {
     ensure_rustls_provider();
     let cfg    = GrpcChannelConfig::new("http://localhost:50051");
     let result = create_transport_from_config(&cfg);
@@ -44,7 +44,7 @@ fn grpc_struct_channel_config_from_config_rejects_plaintext_int_test() {
 
 /// @covers: create_transport_from_config — plaintext accepted with allow_plaintext().
 #[test]
-fn grpc_struct_channel_config_from_config_accepts_plaintext_with_opt_in_int_test() {
+fn transport_struct_channel_config_from_config_accepts_plaintext_with_opt_in_int_test() {
     ensure_rustls_provider();
     let cfg = GrpcChannelConfig::new("http://localhost:50051").allow_plaintext();
     assert!(create_transport_from_config(&cfg).is_ok());
@@ -52,7 +52,7 @@ fn grpc_struct_channel_config_from_config_accepts_plaintext_with_opt_in_int_test
 
 /// @covers: create_transport_from_config — https endpoint accepted.
 #[test]
-fn grpc_struct_channel_config_from_config_accepts_https_int_test() {
+fn transport_struct_channel_config_from_config_accepts_https_int_test() {
     ensure_rustls_provider();
     let cfg = GrpcChannelConfig::new("https://example.com:443");
     assert!(create_transport_from_config(&cfg).is_ok());
@@ -60,7 +60,7 @@ fn grpc_struct_channel_config_from_config_accepts_https_int_test() {
 
 /// @covers: GrpcOutboundInterceptorChain — accepts a TraceContextInterceptor.
 #[test]
-fn grpc_struct_channel_config_with_interceptors_accepts_chain_int_test() {
+fn transport_struct_channel_config_with_interceptors_accepts_chain_int_test() {
     let chain = GrpcOutboundInterceptorChain::new()
         .push(Arc::new(TraceContextInterceptor::pass_through()));
     assert_eq!(chain.len(), 1);
@@ -68,7 +68,7 @@ fn grpc_struct_channel_config_with_interceptors_accepts_chain_int_test() {
 
 /// @covers: GrpcOutboundInterceptorChain — before_call short-circuits on first failure.
 #[tokio::test]
-async fn grpc_struct_channel_config_interceptor_short_circuits_int_test() {
+async fn transport_struct_channel_config_interceptor_short_circuits_int_test() {
     use std::time::Duration;
 
     ensure_rustls_provider();
@@ -110,7 +110,7 @@ async fn grpc_struct_channel_config_interceptor_short_circuits_int_test() {
 
 /// @covers: GrpcChannelConfig::with_compression — sets mode.
 #[test]
-fn grpc_struct_channel_config_with_compression_overrides_mode_int_test() {
+fn transport_struct_channel_config_with_compression_overrides_mode_int_test() {
     let cfg = GrpcChannelConfig::new("http://localhost:0").with_compression(CompressionMode::Gzip);
     assert_eq!(cfg.compression, CompressionMode::Gzip);
 }

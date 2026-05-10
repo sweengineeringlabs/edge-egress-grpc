@@ -41,7 +41,7 @@ fn inbound_cfg() -> BearerInboundConfig {
 
 /// @covers: outbound mints → inbound validates → subject republished.
 #[test]
-fn bearer_outbound_to_inbound_round_trip_publishes_subject_int_test() {
+fn bearer_struct_outbound_to_inbound_round_trip_publishes_subject_int_test() {
     let outbound = BearerOutboundInterceptor::from_config(outbound_cfg());
     let inbound  = BearerInboundInterceptor::from_config(inbound_cfg());
 
@@ -74,7 +74,7 @@ fn bearer_outbound_to_inbound_round_trip_publishes_subject_int_test() {
 
 /// @covers: round-trip with mismatched issuer fails closed.
 #[test]
-fn bearer_round_trip_rejects_mismatched_issuer_int_test() {
+fn bearer_struct_round_trip_rejects_mismatched_issuer_int_test() {
     let outbound = BearerOutboundInterceptor::from_config(outbound_cfg());
     let inbound  = BearerInboundInterceptor::from_config(BearerInboundConfig {
         expected_issuer: "different-issuer".into(),
