@@ -65,6 +65,7 @@ mod tests {
     use swe_edge_egress_grpc::GrpcRequest;
 
     use super::*;
+    use crate::BearerOutboundConfig;
 
     fn hs256_config(secret: &[u8]) -> BearerOutboundConfig {
         BearerOutboundConfig {

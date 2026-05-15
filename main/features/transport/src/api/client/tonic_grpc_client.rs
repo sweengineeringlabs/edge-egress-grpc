@@ -50,9 +50,16 @@ impl TonicGrpcClient {
 mod tests {
     use super::*;
 
+    fn ensure_rustls_provider() {
+        use std::sync::Once;
+        static ONCE: Once = Once::new();
+        ONCE.call_once(|| { let _ = rustls::crypto::aws_lc_rs::default_provider().install_default(); });
+    }
+
     /// @covers: TonicGrpcClient::new — creates a client with the given base URI.
     #[test]
     fn test_new_creates_client_with_given_base_uri() {
+        ensure_rustls_provider();
         let c = TonicGrpcClient::new("http://127.0.0.1:50051");
         assert_eq!(c.base_uri, "http://127.0.0.1:50051");
         assert_eq!(c.timeout, Duration::from_secs(30));

@@ -103,6 +103,7 @@ mod tests {
     use swe_edge_ingress_grpc::{GrpcMetadata, GrpcRequest};
 
     use super::*;
+    use crate::BearerInboundConfig;
 
     fn build_token(secret: &[u8], iss: &str, aud: &str, sub: &str, exp_offset: i64) -> String {
         let now = SystemTime::now()

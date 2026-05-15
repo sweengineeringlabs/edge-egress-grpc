@@ -14,6 +14,7 @@ impl AuthzPolicy for MethodAclPolicy {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::MethodAclConfig;
 
     /// @covers: MethodAclPolicy — delegates allow decision to config.
     #[test]

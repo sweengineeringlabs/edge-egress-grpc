@@ -119,6 +119,7 @@ mod tests {
     };
 
     use super::*;
+    use crate::MtlsAuthConfig;
 
     fn req_no_identity() -> GrpcRequest {
         GrpcRequest::new("/svc/M", vec![], Duration::from_secs(1))
