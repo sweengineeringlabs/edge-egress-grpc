@@ -226,12 +226,16 @@ impl TonicGrpcClient {
     /// [`GrpcChannelConfigError::PlaintextRejected`] before any
     /// transport setup.
     pub(crate) fn from_config(config: &GrpcChannelConfig) -> Result<Self, GrpcChannelConfigError> {
+        use crate::api::value_object::DEFAULT_REQUEST_TIMEOUT_SECS;
         if config.tls_required && is_plaintext_endpoint(&config.endpoint) {
             return Err(GrpcChannelConfigError::PlaintextRejected(
                 config.endpoint.clone(),
             ));
         }
-        let mut client = Self::new(&config.endpoint);
+        let timeout = Duration::from_secs(
+            config.request_timeout_secs.unwrap_or(DEFAULT_REQUEST_TIMEOUT_SECS),
+        );
+        let mut client = Self::with_timeout(&config.endpoint, timeout);
         client.max_message_bytes = config.max_message_bytes;
         client.compression = config.compression;
         Ok(client)
@@ -613,6 +617,29 @@ mod tests {
         let cfg = crate::api::value_object::GrpcChannelConfig::new("http://localhost:50051")
             .allow_plaintext();
         assert!(TonicGrpcClient::from_config(&cfg).is_ok());
+    }
+
+    #[test]
+    fn test_from_config_honors_request_timeout_secs() {
+        rustls::crypto::aws_lc_rs::default_provider()
+            .install_default()
+            .ok();
+        let cfg = crate::api::value_object::GrpcChannelConfig::new("http://localhost:50051")
+            .allow_plaintext()
+            .with_request_timeout(Duration::from_secs(120));
+        let client = TonicGrpcClient::from_config(&cfg).unwrap();
+        assert_eq!(client.timeout, Duration::from_secs(120));
+    }
+
+    #[test]
+    fn test_from_config_defaults_to_30s_when_timeout_not_set() {
+        rustls::crypto::aws_lc_rs::default_provider()
+            .install_default()
+            .ok();
+        let cfg = crate::api::value_object::GrpcChannelConfig::new("http://localhost:50051")
+            .allow_plaintext();
+        let client = TonicGrpcClient::from_config(&cfg).unwrap();
+        assert_eq!(client.timeout, Duration::from_secs(30));
     }
 
     #[test]

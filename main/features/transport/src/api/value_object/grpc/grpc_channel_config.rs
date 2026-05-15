@@ -10,6 +10,9 @@ use crate::api::value_object::resilience::resilience_config::ResilienceConfig;
 /// Default ceiling for inbound message bytes (4 MiB).
 pub const DEFAULT_MAX_MESSAGE_BYTES: usize = 4 * 1024 * 1024;
 
+/// Default client-side fallback timeout in seconds.
+pub const DEFAULT_REQUEST_TIMEOUT_SECS: u64 = 30;
+
 /// Configuration for a single outbound gRPC channel.
 ///
 /// **TLS-by-default**.  `tls_required` is `true` in
@@ -37,6 +40,16 @@ pub struct GrpcChannelConfig {
     /// breaker). When `None`, the transport is returned unwrapped.
     #[serde(default)]
     pub resilience: Option<ResilienceConfig>,
+    /// Client-side fallback timeout in seconds.
+    ///
+    /// Applied as a `tokio::time::timeout` backstop on each request, independent
+    /// of the per-call `GrpcRequest::deadline` (which propagates as `grpc-timeout`
+    /// and is enforced server-side).  When absent, defaults to
+    /// [`DEFAULT_REQUEST_TIMEOUT_SECS`] (30 s).
+    ///
+    /// In TOML: `request_timeout_secs = 60`
+    #[serde(default)]
+    pub request_timeout_secs: Option<u64>,
 }
 
 impl GrpcChannelConfig {
@@ -50,6 +63,7 @@ impl GrpcChannelConfig {
             max_message_bytes: DEFAULT_MAX_MESSAGE_BYTES,
             compression: CompressionMode::None,
             resilience: None,
+            request_timeout_secs: None,
         }
     }
 
@@ -88,6 +102,17 @@ impl GrpcChannelConfig {
         self.resilience = Some(policy);
         self
     }
+
+    /// Set the client-side fallback request timeout.
+    ///
+    /// This backstop is applied on every request via `tokio::time::timeout`,
+    /// independent of the per-call `GrpcRequest::deadline` header. Use it to
+    /// defend against unresponsive upstreams when your call deadlines vary or
+    /// are not set.
+    pub fn with_request_timeout(mut self, timeout: std::time::Duration) -> Self {
+        self.request_timeout_secs = Some(timeout.as_secs().max(1));
+        self
+    }
 }
 
 impl Default for GrpcChannelConfig {
@@ -102,6 +127,7 @@ impl Default for GrpcChannelConfig {
             max_message_bytes: DEFAULT_MAX_MESSAGE_BYTES,
             compression: CompressionMode::None,
             resilience: None,
+            request_timeout_secs: None,
         }
     }
 }
@@ -177,6 +203,30 @@ mod tests {
     fn test_with_max_message_bytes_overrides_default() {
         let cfg = GrpcChannelConfig::new("https://x").with_max_message_bytes(8 * 1024 * 1024);
         assert_eq!(cfg.max_message_bytes, 8 * 1024 * 1024);
+    }
+
+    /// @covers: with_request_timeout
+    #[test]
+    fn test_with_request_timeout_stores_seconds() {
+        use std::time::Duration;
+        let cfg = GrpcChannelConfig::new("https://x")
+            .with_request_timeout(Duration::from_secs(60));
+        assert_eq!(cfg.request_timeout_secs, Some(60));
+    }
+
+    /// @covers: with_request_timeout
+    #[test]
+    fn test_with_request_timeout_clamps_sub_second_to_one_second() {
+        use std::time::Duration;
+        let cfg = GrpcChannelConfig::new("https://x")
+            .with_request_timeout(Duration::from_millis(500));
+        assert_eq!(cfg.request_timeout_secs, Some(1));
+    }
+
+    /// @covers: with_request_timeout
+    #[test]
+    fn test_default_request_timeout_secs_is_none() {
+        assert!(GrpcChannelConfig::new("https://x").request_timeout_secs.is_none());
     }
 
     /// @covers: with_resilience

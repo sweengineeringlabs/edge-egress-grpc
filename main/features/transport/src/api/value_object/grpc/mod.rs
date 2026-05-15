@@ -8,7 +8,7 @@ pub mod grpc_request_builder;
 pub mod grpc_response;
 pub mod grpc_status_code;
 
-pub use grpc_channel_config::{GrpcChannelConfig, DEFAULT_MAX_MESSAGE_BYTES};
+pub use grpc_channel_config::{GrpcChannelConfig, DEFAULT_MAX_MESSAGE_BYTES, DEFAULT_REQUEST_TIMEOUT_SECS};
 pub use grpc_metadata::GrpcMetadata;
 pub use grpc_request::GrpcRequest;
 pub use grpc_response::GrpcResponse;
