@@ -8,9 +8,9 @@ use crate::api::error::Error;
 
 /// Start configuring the breaker with the SWE baseline loaded
 /// from `config/application.toml`.
-pub fn builder() -> Result<Builder, Error> {
+pub fn builder() -> Result<ApplicationConfigBuilder, Error> {
     let cfg = GrpcBreakerConfig::swe_default()?;
-    Ok(Builder::with_config(cfg))
+    Ok(ApplicationConfigBuilder::with_config(cfg))
 }
 
 /// One-shot factory: wrap `inner` with the SWE baseline policy.
@@ -21,9 +21,9 @@ pub fn create_breaker_client<T: GrpcOutbound + Send + Sync + 'static>(
     Ok(GrpcBreakerClient::new(inner, cfg))
 }
 
-pub use crate::api::builder::Builder;
+pub use crate::api::builder::ApplicationConfigBuilder;
 
-impl Builder {
+impl ApplicationConfigBuilder {
     /// Construct from a caller-supplied config.
     pub fn with_config(config: GrpcBreakerConfig) -> Self {
         Self { config }
@@ -51,7 +51,7 @@ mod tests {
         assert!(b.config().failure_threshold >= 1);
     }
 
-    /// @covers: Builder::with_config
+    /// @covers: ApplicationConfigBuilder::with_config
     #[test]
     fn test_with_config_stores_provided_config() {
         let cfg = GrpcBreakerConfig::from_config(
@@ -62,7 +62,7 @@ mod tests {
             "#,
         )
         .unwrap();
-        let b = Builder::with_config(cfg);
+        let b = ApplicationConfigBuilder::with_config(cfg);
         assert_eq!(b.config().failure_threshold, 7);
         assert_eq!(b.config().cool_down_seconds, 60);
         assert_eq!(b.config().half_open_probe_count, 3);

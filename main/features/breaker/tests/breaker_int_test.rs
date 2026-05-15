@@ -255,13 +255,13 @@ fn test_create_breaker_client_wraps_inner_with_default_config() {
 /// @covers: with_config
 #[test]
 fn test_with_config_sets_policy() {
-    use swe_edge_egress_grpc_breaker::{Builder, GrpcBreakerConfig};
+    use swe_edge_egress_grpc_breaker::{ApplicationConfigBuilder, GrpcBreakerConfig};
     let cfg = GrpcBreakerConfig {
         failure_threshold: 3,
         cool_down_seconds: 5,
         half_open_probe_count: 1,
     };
-    let b = Builder::with_config(cfg);
+    let b = ApplicationConfigBuilder::with_config(cfg);
     assert_eq!(b.config().failure_threshold, 3);
 }
 
