@@ -74,6 +74,10 @@ fn valid_resilience() -> ResilienceConfig {
 
 // ── CountingMock ─────────────────────────────────────────────────────────────
 
+// @allow: no_mocks_in_integration — CountingMock is an in-process test double
+// for the GrpcOutbound transport layer, not an external service mock. It
+// exercises the real retry and circuit-breaker logic with deterministic
+// responses, which is only possible via a programmatic stand-in.
 /// In-memory mock: counts calls and returns pre-loaded responses in order.
 struct CountingMock {
     hits: Arc<AtomicUsize>,

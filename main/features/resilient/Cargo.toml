@@ -31,3 +31,11 @@ rustls  = { version = "0.23", features = ["aws-lc-rs"] }
 [[test]]
 name = "resilient_stack_int_test"
 path = "tests/resilient_stack_int_test.rs"
+
+[[test]]
+name = "factory_int_test"
+path = "tests/factory_int_test.rs"
+
+[[test]]
+name = "error_int_test"
+path = "tests/error_int_test.rs"
