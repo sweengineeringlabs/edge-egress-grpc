@@ -66,6 +66,6 @@ mod tests {
     /// @covers: retry_client — module compiles
     #[test]
     fn test_retry_client_module_is_accessible() {
-        assert!(true, "module retry_client compiled and accessible");
+        
     }
 }

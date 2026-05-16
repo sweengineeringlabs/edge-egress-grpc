@@ -267,7 +267,7 @@ mod dedicated_coverage {
     fn test_new_creates_rng_with_seed() {
         let mut rng = JitterRng::new(42);
         let v = rng.next_unit();
-        assert!(v >= 0.0 && v < 1.0);
+        assert!((0.0_f64..1.0).contains(&v));
     }
 
     /// @covers: from_clock
@@ -275,7 +275,7 @@ mod dedicated_coverage {
     fn test_from_clock_creates_rng() {
         let mut rng = JitterRng::from_clock();
         let v = rng.next_unit();
-        assert!(v >= 0.0 && v < 1.0);
+        assert!((0.0_f64..1.0).contains(&v));
     }
 
     /// @covers: next_unit
@@ -284,7 +284,7 @@ mod dedicated_coverage {
         let mut rng = JitterRng::new(1);
         for _ in 0..10 {
             let v = rng.next_unit();
-            assert!(v >= 0.0 && v < 1.0, "next_unit out of range: {v}");
+            assert!((0.0_f64..1.0).contains(&v), "next_unit out of range: {v}");
         }
     }
 }

@@ -31,6 +31,6 @@ mod tests {
     /// @covers: transitions — module compiles
     #[test]
     fn test_transitions_module_is_accessible() {
-        assert!(true, "module transitions compiled and accessible");
+        
     }
 }

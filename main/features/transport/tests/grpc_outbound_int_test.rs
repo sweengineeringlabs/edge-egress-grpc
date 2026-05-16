@@ -2,7 +2,6 @@
 //!
 //! Tests spin up a minimal in-process HTTP/2 echo server using `hyper_util`.
 
-use hyper_util::rt::{TokioExecutor, TokioIo};
 use std::convert::Infallible;
 use std::net::SocketAddr;
 use std::sync::Arc;
