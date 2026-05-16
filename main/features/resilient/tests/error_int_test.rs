@@ -26,7 +26,10 @@ fn test_error_invalid_resilience_variant_produced_on_bad_config() {
     rustls::crypto::aws_lc_rs::default_provider()
         .install_default()
         .ok();
-    let r = ResilienceConfig { max_attempts: 0, ..ResilienceConfig::default() };
+    let r = ResilienceConfig {
+        max_attempts: 0,
+        ..ResilienceConfig::default()
+    };
     let config = GrpcChannelConfig::new("http://127.0.0.1:50051")
         .allow_plaintext()
         .with_resilience(r);

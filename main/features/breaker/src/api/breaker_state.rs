@@ -53,7 +53,5 @@ pub(crate) enum Outcome {
 mod tests {
     /// @covers: breaker_state — module compiles
     #[test]
-    fn test_breaker_state_module_is_accessible() {
-        
-    }
+    fn test_breaker_state_module_is_accessible() {}
 }

@@ -77,7 +77,5 @@ impl<T> GrpcBreakerClient<T> {
 mod tests {
     /// @covers: breaker_client — module compiles
     #[test]
-    fn test_breaker_client_module_is_accessible() {
-        
-    }
+    fn test_breaker_client_module_is_accessible() {}
 }

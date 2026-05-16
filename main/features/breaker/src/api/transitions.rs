@@ -30,7 +30,5 @@ pub(crate) trait BreakerTransitions {
 mod tests {
     /// @covers: transitions — module compiles
     #[test]
-    fn test_transitions_module_is_accessible() {
-        
-    }
+    fn test_transitions_module_is_accessible() {}
 }

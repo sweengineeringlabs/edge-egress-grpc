@@ -18,7 +18,5 @@ pub struct ApplicationConfigBuilder {
 mod tests {
     /// @covers: builder — module compiles
     #[test]
-    fn test_builder_module_is_accessible() {
-        
-    }
+    fn test_builder_module_is_accessible() {}
 }

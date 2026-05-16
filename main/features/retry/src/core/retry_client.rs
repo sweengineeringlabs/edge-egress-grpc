@@ -203,7 +203,5 @@ impl<T: GrpcOutbound + Send + Sync + 'static> GrpcRetryClient<T> {
 mod tests {
     /// @covers: retry_client — module compiles
     #[test]
-    fn test_retry_client_module_is_accessible() {
-        
-    }
+    fn test_retry_client_module_is_accessible() {}
 }
