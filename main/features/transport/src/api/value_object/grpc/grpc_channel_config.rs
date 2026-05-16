@@ -209,8 +209,7 @@ mod tests {
     #[test]
     fn test_with_request_timeout_stores_seconds() {
         use std::time::Duration;
-        let cfg = GrpcChannelConfig::new("https://x")
-            .with_request_timeout(Duration::from_secs(60));
+        let cfg = GrpcChannelConfig::new("https://x").with_request_timeout(Duration::from_secs(60));
         assert_eq!(cfg.request_timeout_secs, Some(60));
     }
 
@@ -218,15 +217,17 @@ mod tests {
     #[test]
     fn test_with_request_timeout_clamps_sub_second_to_one_second() {
         use std::time::Duration;
-        let cfg = GrpcChannelConfig::new("https://x")
-            .with_request_timeout(Duration::from_millis(500));
+        let cfg =
+            GrpcChannelConfig::new("https://x").with_request_timeout(Duration::from_millis(500));
         assert_eq!(cfg.request_timeout_secs, Some(1));
     }
 
     /// @covers: with_request_timeout
     #[test]
     fn test_default_request_timeout_secs_is_none() {
-        assert!(GrpcChannelConfig::new("https://x").request_timeout_secs.is_none());
+        assert!(GrpcChannelConfig::new("https://x")
+            .request_timeout_secs
+            .is_none());
     }
 
     /// @covers: with_resilience

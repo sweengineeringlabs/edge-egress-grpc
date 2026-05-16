@@ -53,7 +53,9 @@ mod tests {
     fn ensure_rustls_provider() {
         use std::sync::Once;
         static ONCE: Once = Once::new();
-        ONCE.call_once(|| { let _ = rustls::crypto::aws_lc_rs::default_provider().install_default(); });
+        ONCE.call_once(|| {
+            let _ = rustls::crypto::aws_lc_rs::default_provider().install_default();
+        });
     }
 
     /// @covers: TonicGrpcClient::new — creates a client with the given base URI.

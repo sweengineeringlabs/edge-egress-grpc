@@ -13,11 +13,13 @@ use std::time::Duration;
 
 use futures::future::BoxFuture;
 use swe_edge_egress_grpc::{
-    GrpcChannelConfig, GrpcMetadata, GrpcOutbound, GrpcOutboundError,
-    GrpcOutboundResult, GrpcRequest, GrpcResponse, GrpcStatusCode, ResilienceConfig,
+    GrpcChannelConfig, GrpcMetadata, GrpcOutbound, GrpcOutboundError, GrpcOutboundResult,
+    GrpcRequest, GrpcResponse, GrpcStatusCode, ResilienceConfig,
 };
 use swe_edge_egress_grpc_breaker::{BreakerState, GrpcBreakerClient, GrpcBreakerConfig};
-use swe_edge_egress_grpc_resilient::{create_resilient_transport_from_config, ResilientTransportError};
+use swe_edge_egress_grpc_resilient::{
+    create_resilient_transport_from_config, ResilientTransportError,
+};
 use swe_edge_egress_grpc_retry::{GrpcRetryClient, GrpcRetryConfig};
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -31,11 +33,17 @@ fn ensure_tls_provider() {
 }
 
 fn ok_response() -> GrpcOutboundResult<GrpcResponse> {
-    Ok(GrpcResponse { body: vec![], metadata: GrpcMetadata::default() })
+    Ok(GrpcResponse {
+        body: vec![],
+        metadata: GrpcMetadata::default(),
+    })
 }
 
 fn unavailable() -> GrpcOutboundResult<GrpcResponse> {
-    Err(GrpcOutboundError::Status(GrpcStatusCode::Unavailable, "upstream down".into()))
+    Err(GrpcOutboundError::Status(
+        GrpcStatusCode::Unavailable,
+        "upstream down".into(),
+    ))
 }
 
 fn hard_quota() -> GrpcOutboundResult<GrpcResponse> {
@@ -191,9 +199,16 @@ async fn test_retry_amplification_factor_does_not_exceed_one_point_five_times() 
     // total: 12 hits for 10 calls → 1.2×
     let responses = vec![
         ok_response(),
-        unavailable(), ok_response(),
-        ok_response(), ok_response(), ok_response(), ok_response(), ok_response(), ok_response(),
-        unavailable(), ok_response(),
+        unavailable(),
+        ok_response(),
+        ok_response(),
+        ok_response(),
+        ok_response(),
+        ok_response(),
+        ok_response(),
+        ok_response(),
+        unavailable(),
+        ok_response(),
         ok_response(),
     ];
     let mock = CountingMock::with_responses(Arc::clone(&hits), responses);
@@ -236,8 +251,15 @@ async fn test_unavailable_error_is_retried_up_to_max_attempts_then_fails() {
     let client = GrpcBreakerClient::new(GrpcRetryClient::new(mock, fast_retry(3)), breaker_cfg);
 
     let result = client.call_unary(req()).await;
-    assert!(result.is_err(), "expected error after exhausting all attempts");
-    assert_eq!(hits.load(Ordering::SeqCst), 3, "expected exactly 3 server hits");
+    assert!(
+        result.is_err(),
+        "expected error after exhausting all attempts"
+    );
+    assert_eq!(
+        hits.load(Ordering::SeqCst),
+        3,
+        "expected exactly 3 server hits"
+    );
 }
 
 // ── hard quota — never retried ────────────────────────────────────────────────
@@ -336,7 +358,11 @@ async fn test_circuit_breaker_opens_after_consecutive_failures_at_threshold() {
         let _ = client.call_unary(req()).await;
     }
 
-    assert_eq!(hits.load(Ordering::SeqCst), 3, "expected 3 server hits to trip the breaker");
+    assert_eq!(
+        hits.load(Ordering::SeqCst),
+        3,
+        "expected 3 server hits to trip the breaker"
+    );
     assert!(
         matches!(client.state().await, BreakerState::Open { .. }),
         "breaker must be Open after threshold failures",
@@ -393,7 +419,11 @@ async fn test_circuit_breaker_closes_after_probe_succeeds_during_half_open() {
     // Probe: should be admitted (HalfOpen), succeeds, closes breaker.
     let probe = client.call_unary(req()).await;
     assert!(probe.is_ok(), "probe should succeed");
-    assert_eq!(client.state().await, BreakerState::Closed, "breaker must be Closed after probe");
+    assert_eq!(
+        client.state().await,
+        BreakerState::Closed,
+        "breaker must be Closed after probe"
+    );
 
     // One more call confirming normal operation.
     let final_result = client.call_unary(req()).await;

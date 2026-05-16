@@ -233,7 +233,9 @@ impl TonicGrpcClient {
             ));
         }
         let timeout = Duration::from_secs(
-            config.request_timeout_secs.unwrap_or(DEFAULT_REQUEST_TIMEOUT_SECS),
+            config
+                .request_timeout_secs
+                .unwrap_or(DEFAULT_REQUEST_TIMEOUT_SECS),
         );
         let mut client = Self::with_timeout(&config.endpoint, timeout);
         client.max_message_bytes = config.max_message_bytes;

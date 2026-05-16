@@ -18,8 +18,7 @@ pub(crate) fn assemble(
     match &config.resilience {
         None => Ok(Arc::new(base)),
         Some(r) => {
-            validate_resilience_config(r)
-                .map_err(ResilientTransportError::InvalidResilience)?;
+            validate_resilience_config(r).map_err(ResilientTransportError::InvalidResilience)?;
 
             let retry_cfg = GrpcRetryConfig {
                 max_attempts: r.max_attempts,
@@ -99,7 +98,10 @@ mod tests {
         let config = GrpcChannelConfig::new("http://127.0.0.1:50051");
         let result = assemble(&config);
         assert!(result.is_err());
-        assert!(matches!(result.err().unwrap(), ResilientTransportError::ChannelConfig(_)));
+        assert!(matches!(
+            result.err().unwrap(),
+            ResilientTransportError::ChannelConfig(_)
+        ));
     }
 
     /// @covers: assemble — invalid resilience config returns error
@@ -113,6 +115,9 @@ mod tests {
             .with_resilience(r);
         let result = assemble(&config);
         assert!(result.is_err());
-        assert!(matches!(result.err().unwrap(), ResilientTransportError::InvalidResilience(_)));
+        assert!(matches!(
+            result.err().unwrap(),
+            ResilientTransportError::InvalidResilience(_)
+        ));
     }
 }
