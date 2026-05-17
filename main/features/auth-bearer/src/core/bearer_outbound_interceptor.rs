@@ -69,7 +69,9 @@ mod tests {
 
     fn hs256_config(secret: &[u8]) -> BearerOutboundConfig {
         BearerOutboundConfig {
-            secret: BearerSecret::Hs256 { secret: secret.to_vec() },
+            secret: BearerSecret::Hs256 {
+                secret: secret.to_vec(),
+            },
             issuer: "test-iss".into(),
             audience: "test-aud".into(),
             subject: "test-sub".into(),
@@ -89,7 +91,10 @@ mod tests {
             .get(AUTHORIZATION_HEADER)
             .cloned()
             .expect("header injected");
-        assert!(auth.starts_with("Bearer "), "expected Bearer-prefixed header, got {auth}");
+        assert!(
+            auth.starts_with("Bearer "),
+            "expected Bearer-prefixed header, got {auth}"
+        );
         let token = auth.trim_start_matches("Bearer ");
         assert_eq!(token.matches('.').count(), 2, "JWT shape: {token}");
     }
