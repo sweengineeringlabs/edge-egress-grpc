@@ -201,7 +201,52 @@ impl<T: GrpcOutbound + Send + Sync + 'static> GrpcRetryClient<T> {
 
 #[cfg(test)]
 mod tests {
-    /// @covers: retry_client — module compiles
-    #[test]
-    fn test_retry_client_module_is_accessible() {}
+    use std::time::Duration;
+
+    use futures::future::BoxFuture;
+    use swe_edge_egress_grpc::{
+        GrpcMetadata, GrpcOutbound, GrpcOutboundResult, GrpcRequest, GrpcResponse,
+    };
+
+    use crate::api::retry_client::GrpcRetryClient;
+    use crate::api::retry_config::GrpcRetryConfig;
+
+    struct OkStub;
+    impl GrpcOutbound for OkStub {
+        fn call_unary(&self, _: GrpcRequest) -> BoxFuture<'_, GrpcOutboundResult<GrpcResponse>> {
+            Box::pin(async {
+                Ok(GrpcResponse {
+                    body: b"ok".to_vec(),
+                    metadata: GrpcMetadata::default(),
+                })
+            })
+        }
+        fn health_check(&self) -> BoxFuture<'_, GrpcOutboundResult<()>> {
+            Box::pin(async { Ok(()) })
+        }
+    }
+
+    #[tokio::test]
+    async fn test_call_unary_passes_through_to_inner_on_first_success() {
+        let cfg = GrpcRetryConfig::from_config(
+            r#"
+                max_attempts = 3
+                initial_backoff_ms = 1
+                backoff_multiplier = 1.0
+                jitter_factor = 0.0
+                max_backoff_ms = 1
+                rate_limit_max_attempts = 2
+                rate_limit_initial_backoff_ms = 1
+                rate_limit_max_backoff_ms = 1
+            "#,
+        )
+        .unwrap();
+        let client = GrpcRetryClient::new(OkStub, cfg);
+        let req = GrpcRequest::new("svc/M", b"ping".to_vec(), Duration::from_secs(5));
+        let resp = client
+            .call_unary(req)
+            .await
+            .expect("success on first attempt must pass through");
+        assert_eq!(resp.body, b"ok");
+    }
 }
