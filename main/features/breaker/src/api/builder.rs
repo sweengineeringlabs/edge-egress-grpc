@@ -16,7 +16,17 @@ pub struct ApplicationConfigBuilder {
 
 #[cfg(test)]
 mod tests {
-    /// @covers: builder — module compiles
+    use super::ApplicationConfigBuilder;
+    use crate::api::breaker_config::GrpcBreakerConfig;
+
     #[test]
-    fn test_builder_module_is_accessible() {}
+    fn test_application_config_builder_stores_config_failure_threshold() {
+        let cfg = GrpcBreakerConfig::from_config(
+            "failure_threshold = 9\ncool_down_seconds = 45\nhalf_open_probe_count = 2",
+        )
+        .unwrap();
+        let b = ApplicationConfigBuilder { config: cfg };
+        assert_eq!(b.config.failure_threshold, 9);
+        assert_eq!(b.config.cool_down_seconds, 45);
+    }
 }

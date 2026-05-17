@@ -14,7 +14,32 @@ pub(crate) use swe_edge_egress_grpc::GrpcOutbound;
 
 #[cfg(test)]
 mod tests {
-    /// @covers: traits — module compiles
-    #[test]
-    fn test_traits_module_is_accessible() {}
+    use futures::future::BoxFuture;
+    use swe_edge_egress_grpc::{GrpcMetadata, GrpcOutboundResult, GrpcRequest, GrpcResponse};
+
+    use super::GrpcOutbound;
+
+    #[tokio::test]
+    async fn test_grpc_outbound_re_export_is_reachable_as_trait_bound() {
+        struct HealthyStub;
+        impl GrpcOutbound for HealthyStub {
+            fn call_unary(
+                &self,
+                _: GrpcRequest,
+            ) -> BoxFuture<'_, GrpcOutboundResult<GrpcResponse>> {
+                Box::pin(async {
+                    Ok(GrpcResponse {
+                        body: vec![],
+                        metadata: GrpcMetadata::default(),
+                    })
+                })
+            }
+            fn health_check(&self) -> BoxFuture<'_, GrpcOutboundResult<()>> {
+                Box::pin(async { Ok(()) })
+            }
+        }
+
+        let result = HealthyStub.health_check().await;
+        assert!(result.is_ok(), "health check on stub must succeed");
+    }
 }

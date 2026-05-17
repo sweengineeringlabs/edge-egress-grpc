@@ -29,7 +29,7 @@ impl BearerOutboundInterceptor {
         };
         let (alg, key) = match &self.config.secret {
             BearerSecret::Hs256 { secret } => (Algorithm::HS256, EncodingKey::from_secret(secret)),
-            BearerSecret::Rs256 { private_pem, .. } => (
+            BearerSecret::Rs256 { private_pem } => (
                 Algorithm::RS256,
                 EncodingKey::from_rsa_pem(private_pem).map_err(BearerAuthError::SignFailed)?,
             ),
@@ -93,9 +93,8 @@ mod tests {
             .expect("header injected");
         assert!(
             auth.starts_with("Bearer "),
-            "expected Bearer-prefixed header, got {auth}",
+            "expected Bearer-prefixed header, got {auth}"
         );
-        // Body must be three dot-separated base64url segments.
         let token = auth.trim_start_matches("Bearer ");
         assert_eq!(token.matches('.').count(), 2, "JWT shape: {token}");
     }
