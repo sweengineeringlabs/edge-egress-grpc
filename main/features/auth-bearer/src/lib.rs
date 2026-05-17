@@ -1,20 +1,13 @@
-//! `swe-edge-egress-grpc-auth-bearer` — symmetric JWT bearer
-//! interceptors for the gRPC stack.
+//! `swe-edge-egress-grpc-auth-bearer` — JWT bearer
+//! [`GrpcOutboundInterceptor`](swe_edge_egress_grpc::GrpcOutboundInterceptor)
+//! for the gRPC egress stack.
 //!
-//! Two interceptors ship in this crate:
+//! [`BearerOutboundInterceptor`] signs a JWT from configured claims
+//! (or accepts a pre-minted token) and injects it into the
+//! `authorization` request metadata on every outgoing call.
 //!
-//! - [`BearerOutboundInterceptor`] — implements
-//!   [`swe_edge_egress_grpc::GrpcOutboundInterceptor`].  Signs a JWT
-//!   from configured claims (or accepts a pre-minted token) and
-//!   injects it into the `authorization` request metadata.
-//!
-//! - [`BearerInboundInterceptor`] — implements
-//!   [`swe_edge_ingress_grpc::GrpcInboundInterceptor`].  Validates
-//!   incoming `authorization: Bearer <jwt>` against a configured
-//!   secret/key, then surfaces the validated `sub` claim under the
-//!   internal metadata key
-//!   [`crate::EXTRACTED_BEARER_SUBJECT`] for downstream authz
-//!   policies (and *only* after successful verification).
+//! For the inbound (server-side) bearer validation counterpart see
+//! `swe-edge-ingress-grpc-auth-bearer`.
 //!
 //! Constant-time comparisons (`subtle`) are used for any symmetric
 //! shared-secret material in the configuration loaders.
