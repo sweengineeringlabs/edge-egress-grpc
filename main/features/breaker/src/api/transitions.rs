@@ -28,7 +28,34 @@ pub(crate) trait BreakerTransitions {
 
 #[cfg(test)]
 mod tests {
-    /// @covers: transitions — module compiles
+    use crate::api::breaker_client::BreakerNode;
+    use crate::api::breaker_config::GrpcBreakerConfig;
+    use crate::api::breaker_state::{Admission, Outcome};
+    use crate::core::transitions;
+
+    use super::BreakerTransitions;
+
+    struct ConcreteTransitions;
+    impl BreakerTransitions for ConcreteTransitions {
+        fn admit(node: &mut BreakerNode, config: &GrpcBreakerConfig) -> Admission {
+            transitions::admit(node, config)
+        }
+        fn record(node: &mut BreakerNode, config: &GrpcBreakerConfig, outcome: Outcome) {
+            transitions::record(node, config, outcome)
+        }
+    }
+
     #[test]
-    fn test_transitions_module_is_accessible() {}
+    fn test_breaker_transitions_admit_returns_proceed_on_fresh_node() {
+        let cfg = GrpcBreakerConfig::from_config(
+            "failure_threshold = 3\ncool_down_seconds = 10\nhalf_open_probe_count = 1",
+        )
+        .unwrap();
+        let mut node = BreakerNode::new();
+        assert_eq!(
+            ConcreteTransitions::admit(&mut node, &cfg),
+            Admission::Proceed,
+            "fresh node must admit new requests",
+        );
+    }
 }

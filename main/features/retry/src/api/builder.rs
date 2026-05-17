@@ -16,7 +16,26 @@ pub struct ApplicationConfigBuilder {
 
 #[cfg(test)]
 mod tests {
-    /// @covers: builder — module compiles
+    use super::ApplicationConfigBuilder;
+    use crate::api::retry_config::GrpcRetryConfig;
+
     #[test]
-    fn test_builder_module_is_accessible() {}
+    fn test_application_config_builder_stores_config_max_attempts() {
+        let cfg = GrpcRetryConfig::from_config(
+            r#"
+                max_attempts = 7
+                initial_backoff_ms = 50
+                backoff_multiplier = 1.5
+                jitter_factor = 0.0
+                max_backoff_ms = 500
+                rate_limit_max_attempts = 2
+                rate_limit_initial_backoff_ms = 100
+                rate_limit_max_backoff_ms = 1000
+            "#,
+        )
+        .unwrap();
+        let b = ApplicationConfigBuilder { config: cfg };
+        assert_eq!(b.config.max_attempts, 7);
+        assert_eq!(b.config.initial_backoff_ms, 50);
+    }
 }

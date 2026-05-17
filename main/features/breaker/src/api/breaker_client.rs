@@ -75,7 +75,13 @@ impl<T> GrpcBreakerClient<T> {
 
 #[cfg(test)]
 mod tests {
-    /// @covers: breaker_client — module compiles
+    use super::BreakerNode;
+
     #[test]
-    fn test_breaker_client_module_is_accessible() {}
+    fn test_breaker_node_new_initializes_with_closed_state_and_zero_counters() {
+        let node = BreakerNode::new();
+        assert_eq!(node.state, crate::api::breaker_state::BreakerState::Closed);
+        assert_eq!(node.consecutive_failures, 0);
+        assert_eq!(node.consecutive_successes, 0);
+    }
 }
