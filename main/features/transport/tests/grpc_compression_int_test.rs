@@ -13,7 +13,7 @@ use http_body::Frame;
 use http_body_util::{BodyExt as _, StreamBody};
 
 use swe_edge_egress_grpc_transport::{
-    create_transport_from_config, CompressionMode, GrpcChannelConfig, GrpcOutbound, GrpcRequest,
+    create_transport_from_config, CompressionMode, GrpcChannelConfig, GrpcRequest,
 };
 
 /// Install rustls's aws-lc-rs CryptoProvider exactly once per process.

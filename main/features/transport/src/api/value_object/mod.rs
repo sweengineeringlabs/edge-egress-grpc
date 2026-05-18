@@ -8,7 +8,7 @@ pub mod resilience;
 pub use compression_mode::CompressionMode;
 pub use grpc::{
     GrpcChannelConfig, GrpcMetadata, GrpcRequest, GrpcResponse, GrpcStatusCode,
-    DEFAULT_MAX_MESSAGE_BYTES,
+    DEFAULT_MAX_MESSAGE_BYTES, DEFAULT_REQUEST_TIMEOUT_SECS,
 };
 pub use keep_alive_config::KeepAliveConfig;
 pub use mtls_config::MtlsConfig;

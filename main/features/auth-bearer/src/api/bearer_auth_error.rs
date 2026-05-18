@@ -1,22 +1,8 @@
-//! Error variants emitted by the bearer interceptors.
+//! Error variants emitted by the outbound bearer interceptor.
 
-/// Reasons the inbound bearer interceptor rejects a call (or the
-/// outbound interceptor fails to mint a token).
+/// Reasons the outbound bearer interceptor fails to mint a token.
 #[derive(Debug, thiserror::Error)]
 pub enum BearerAuthError {
-    /// The `authorization` header was missing or empty.
-    #[error("missing or empty authorization header")]
-    MissingHeader,
-
-    /// The header was present but not in `Bearer <jwt>` form.
-    #[error("authorization header is not a Bearer token")]
-    MalformedHeader,
-
-    /// `jsonwebtoken` rejected the JWT — bad signature, wrong issuer,
-    /// expired, etc.  Carries the underlying error for observability.
-    #[error("invalid bearer token")]
-    InvalidToken(#[source] jsonwebtoken::errors::Error),
-
     /// The outbound interceptor failed to encode/sign the JWT.
     #[error("failed to mint bearer token")]
     SignFailed(#[source] jsonwebtoken::errors::Error),
@@ -30,17 +16,11 @@ pub enum BearerAuthError {
 mod tests {
     use super::*;
 
-    /// @covers: Display — MissingHeader message says "missing".
+    /// @covers: BearerAuthError implements std::error::Error.
     #[test]
-    fn test_missing_header_display_indicates_absent_header() {
-        let s = BearerAuthError::MissingHeader.to_string();
-        assert!(s.contains("missing"), "unexpected: {s}");
-    }
-
-    /// @covers: Display — MalformedHeader message names the bearer scheme.
-    #[test]
-    fn test_malformed_header_display_mentions_bearer_scheme() {
-        let s = BearerAuthError::MalformedHeader.to_string();
-        assert!(s.contains("Bearer"), "unexpected: {s}");
+    fn test_bearer_auth_error_implements_std_error() {
+        let e = BearerAuthError::InvalidSystemTime;
+        let _: &dyn std::error::Error = &e;
+        assert!(e.to_string().contains("clock"));
     }
 }

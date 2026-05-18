@@ -1,0 +1,41 @@
+[package]
+name         = "swe-edge-egress-grpc-resilient"
+version.workspace      = true
+edition.workspace      = true
+license.workspace      = true
+rust-version.workspace = true
+authors.workspace      = true
+repository.workspace   = true
+description  = "edge — assembled resilient gRPC transport: TonicGrpcClient + retry + circuit breaker"
+keywords     = ["grpc", "resilience", "retry", "circuit-breaker", "swe"]
+categories   = ["network-programming"]
+
+[package.metadata.struct-engine]
+application_type = "lib"
+service_type     = "processor"
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+swe-edge-egress-grpc         = { workspace = true }
+swe-edge-egress-grpc-retry   = { workspace = true }
+swe-edge-egress-grpc-breaker = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+tokio   = { workspace = true, features = ["rt-multi-thread", "macros", "time"] }
+futures = { workspace = true }
+rustls  = { version = "0.23", features = ["aws-lc-rs"] }
+
+[[test]]
+name = "resilient_stack_int_test"
+path = "tests/resilient_stack_int_test.rs"
+
+[[test]]
+name = "factory_int_test"
+path = "tests/factory_int_test.rs"
+
+[[test]]
+name = "error_int_test"
+path = "tests/error_int_test.rs"

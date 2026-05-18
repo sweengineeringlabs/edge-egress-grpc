@@ -8,9 +8,9 @@ use crate::api::retry_config::GrpcRetryConfig;
 
 /// Start configuring the retry decorator with the SWE baseline
 /// loaded from the crate-shipped `config/application.toml`.
-pub fn builder() -> Result<Builder, Error> {
+pub fn builder() -> Result<ApplicationConfigBuilder, Error> {
     let cfg = GrpcRetryConfig::swe_default()?;
-    Ok(Builder::with_config(cfg))
+    Ok(ApplicationConfigBuilder::with_config(cfg))
 }
 
 /// One-shot factory: wrap `inner` with the SWE baseline retry
@@ -25,9 +25,9 @@ pub fn create_retry_client<T: GrpcOutbound + Send + Sync + 'static>(
     Ok(GrpcRetryClient::new(inner, cfg))
 }
 
-pub use crate::api::builder::Builder;
+pub use crate::api::builder::ApplicationConfigBuilder;
 
-impl Builder {
+impl ApplicationConfigBuilder {
     /// Construct from a caller-supplied config.
     pub fn with_config(config: GrpcRetryConfig) -> Self {
         Self { config }
@@ -55,7 +55,7 @@ mod tests {
         assert!(b.config().max_attempts >= 1);
     }
 
-    /// @covers: Builder::with_config
+    /// @covers: ApplicationConfigBuilder::with_config
     #[test]
     fn test_with_config_stores_provided_config() {
         let cfg = GrpcRetryConfig::from_config(
@@ -71,7 +71,7 @@ mod tests {
             "#,
         )
         .unwrap();
-        let b = Builder::with_config(cfg);
+        let b = ApplicationConfigBuilder::with_config(cfg);
         assert_eq!(b.config().max_attempts, 7);
         assert_eq!(b.config().initial_backoff_ms, 50);
     }

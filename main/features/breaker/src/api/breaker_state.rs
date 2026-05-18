@@ -51,9 +51,20 @@ pub(crate) enum Outcome {
 
 #[cfg(test)]
 mod tests {
-    /// @covers: breaker_state — module compiles
+    use super::{Admission, BreakerState, Outcome};
+
     #[test]
-    fn test_breaker_state_module_is_accessible() {
-        assert!(true, "module breaker_state compiled and accessible");
+    fn test_breaker_state_closed_equals_itself() {
+        assert_eq!(BreakerState::Closed, BreakerState::Closed);
+    }
+
+    #[test]
+    fn test_admission_proceed_not_equal_to_reject_open() {
+        assert_ne!(Admission::Proceed, Admission::RejectOpen);
+    }
+
+    #[test]
+    fn test_outcome_success_not_equal_to_failure() {
+        assert_ne!(Outcome::Success, Outcome::Failure);
     }
 }

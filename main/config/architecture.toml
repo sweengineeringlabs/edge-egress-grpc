@@ -5,9 +5,8 @@ workspaces = [
     "transport",
     "retry",
     "breaker",
-    "auth-mtls",
+    "resilient",
     "auth-bearer",
-    "authz",
 ]
 
 [workspace.transport]
@@ -22,14 +21,10 @@ crate = "swe-edge-egress-grpc-retry"
 path = "main/features/breaker"
 crate = "swe-edge-egress-grpc-breaker"
 
-[workspace.auth-mtls]
-path = "main/features/auth-mtls"
-crate = "swe-edge-egress-grpc-auth-mtls"
-
 [workspace.auth-bearer]
 path = "main/features/auth-bearer"
 crate = "swe-edge-egress-grpc-auth-bearer"
 
-[workspace.authz]
-path = "main/features/authz"
-crate = "swe-edge-egress-grpc-authz"
+[workspace.resilient]
+path = "main/features/resilient"
+crate = "swe-edge-egress-grpc-resilient"

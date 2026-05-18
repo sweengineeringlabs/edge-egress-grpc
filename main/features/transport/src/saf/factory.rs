@@ -15,6 +15,17 @@ pub fn create_transport_from_config(
     Ok(Arc::new(TonicGrpcClient::from_config(config)?))
 }
 
+/// Build a concrete [`TonicGrpcClient`] from a [`crate::api::value_object::GrpcChannelConfig`].
+///
+/// Unlike [`create_transport_from_config`], returns the concrete type so that
+/// callers (e.g. `swe-edge-egress-grpc-resilient`) can wrap it in decorator
+/// layers before erasing the type to `Arc<dyn GrpcOutbound>`.
+pub fn create_tonic_client_from_config(
+    config: &crate::api::value_object::GrpcChannelConfig,
+) -> Result<TonicGrpcClient, GrpcChannelConfigError> {
+    TonicGrpcClient::from_config(config)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

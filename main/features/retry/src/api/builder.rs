@@ -1,4 +1,4 @@
-//! Builder type declaration (SEA rule 160 — public types live in api/).
+//! ApplicationConfigBuilder type declaration (SEA rule 160 — public types live in api/).
 
 use crate::api::retry_config::GrpcRetryConfig;
 
@@ -6,19 +6,36 @@ use crate::api::retry_config::GrpcRetryConfig;
 ///
 /// Construct via [`builder()`](crate::builder) (loads SWE
 /// baseline) or
-/// [`Builder::with_config`](crate::Builder::with_config) (caller-supplied).
+/// [`ApplicationConfigBuilder::with_config`](crate::ApplicationConfigBuilder::with_config) (caller-supplied).
 /// Wrap an inner [`GrpcOutbound`](swe_edge_egress_grpc::GrpcOutbound)
-/// with [`Builder::wrap`](crate::Builder::wrap) to finalize.
+/// with [`ApplicationConfigBuilder::wrap`](crate::ApplicationConfigBuilder::wrap) to finalize.
 #[derive(Debug)]
-pub struct Builder {
+pub struct ApplicationConfigBuilder {
     pub(crate) config: GrpcRetryConfig,
 }
 
 #[cfg(test)]
 mod tests {
-    /// @covers: builder — module compiles
+    use super::ApplicationConfigBuilder;
+    use crate::api::retry_config::GrpcRetryConfig;
+
     #[test]
-    fn test_builder_module_is_accessible() {
-        assert!(true, "module builder compiled and accessible");
+    fn test_application_config_builder_stores_config_max_attempts() {
+        let cfg = GrpcRetryConfig::from_config(
+            r#"
+                max_attempts = 7
+                initial_backoff_ms = 50
+                backoff_multiplier = 1.5
+                jitter_factor = 0.0
+                max_backoff_ms = 500
+                rate_limit_max_attempts = 2
+                rate_limit_initial_backoff_ms = 100
+                rate_limit_max_backoff_ms = 1000
+            "#,
+        )
+        .unwrap();
+        let b = ApplicationConfigBuilder { config: cfg };
+        assert_eq!(b.config.max_attempts, 7);
+        assert_eq!(b.config.initial_backoff_ms, 50);
     }
 }

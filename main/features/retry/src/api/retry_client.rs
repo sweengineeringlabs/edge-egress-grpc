@@ -63,9 +63,27 @@ impl<T> GrpcRetryClient<T> {
 
 #[cfg(test)]
 mod tests {
-    /// @covers: retry_client — module compiles
+    use crate::api::retry_config::GrpcRetryConfig;
+
+    use super::GrpcRetryClient;
+
     #[test]
-    fn test_retry_client_module_is_accessible() {
-        assert!(true, "module retry_client compiled and accessible");
+    fn test_grpc_retry_client_new_stores_config_max_attempts() {
+        let cfg = GrpcRetryConfig::from_config(
+            r#"
+                max_attempts = 5
+                initial_backoff_ms = 10
+                backoff_multiplier = 1.0
+                jitter_factor = 0.0
+                max_backoff_ms = 100
+                rate_limit_max_attempts = 2
+                rate_limit_initial_backoff_ms = 10
+                rate_limit_max_backoff_ms = 100
+            "#,
+        )
+        .unwrap();
+        let client = GrpcRetryClient::new((), cfg);
+        assert_eq!(client.config().max_attempts, 5);
+        assert_eq!(client.config().initial_backoff_ms, 10);
     }
 }

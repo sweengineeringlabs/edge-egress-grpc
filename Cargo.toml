@@ -2,9 +2,8 @@
 resolver = "2"
 members  = [
     "main/features/auth-bearer",
-    "main/features/auth-mtls",
-    "main/features/authz",
     "main/features/breaker",
+    "main/features/resilient",
     "main/features/retry",
     "main/features/transport",
 ]
@@ -12,8 +11,8 @@ members  = [
 [workspace.package]
 version      = "0.1.0"
 edition      = "2021"
-license      = "MIT"
-rust-version = "1.75"
+license      = "MIT OR Apache-2.0"
+rust-version = "1.95"
 authors      = ["SWE Engineering Labs"]
 repository   = "https://github.com/sweengineeringlabs/edge"
 
@@ -21,7 +20,6 @@ repository   = "https://github.com/sweengineeringlabs/edge"
 # Common
 serde       = { version = "1.0", features = ["derive"] }
 thiserror   = "2"
-async-trait = "0.1"
 futures     = "0.3"
 tokio       = { version = "1.0", features = ["rt", "sync", "time", "macros", "net"] }
 tracing     = "0.1"
@@ -30,14 +28,10 @@ http        = "1"
 
 # Workspace-internal gRPC transport + interceptor crates
 swe-edge-egress-grpc             = { package = "swe-edge-egress-grpc-transport", path = "main/features/transport" }
-swe-edge-egress-grpc-auth-mtls   = { path = "main/features/auth-mtls" }
 swe-edge-egress-grpc-auth-bearer = { path = "main/features/auth-bearer" }
-swe-edge-egress-grpc-authz       = { path = "main/features/authz" }
 swe-edge-egress-grpc-retry       = { path = "main/features/retry" }
 swe-edge-egress-grpc-breaker     = { path = "main/features/breaker" }
-
-# Cross-workspace git dep — ingress-grpc lives in the ingress workspace
-swe-edge-ingress-grpc = { package = "swe-edge-ingress-grpc-transport", git = "ssh://git@github.com/sweengineeringlabs/edge.git", branch = "dev" }
+swe-edge-egress-grpc-resilient   = { path = "main/features/resilient" }
 
 [workspace.lints.rust]
 unsafe_code  = "deny"

@@ -65,9 +65,45 @@ impl<T: GrpcOutbound + Send + Sync + 'static> GrpcOutbound for GrpcBreakerClient
 
 #[cfg(test)]
 mod tests {
-    /// @covers: breaker_client — module compiles
-    #[test]
-    fn test_breaker_client_module_is_accessible() {
-        assert!(true, "module breaker_client compiled and accessible");
+    use std::time::Duration;
+
+    use futures::future::BoxFuture;
+    use swe_edge_egress_grpc::{
+        GrpcMetadata, GrpcOutbound, GrpcOutboundResult, GrpcRequest, GrpcResponse,
+    };
+
+    use crate::api::breaker_client::GrpcBreakerClient;
+    use crate::api::breaker_config::GrpcBreakerConfig;
+    use crate::api::breaker_state::BreakerState;
+
+    struct PongStub;
+    impl GrpcOutbound for PongStub {
+        fn call_unary(&self, _: GrpcRequest) -> BoxFuture<'_, GrpcOutboundResult<GrpcResponse>> {
+            Box::pin(async {
+                Ok(GrpcResponse {
+                    body: b"pong".to_vec(),
+                    metadata: GrpcMetadata::default(),
+                })
+            })
+        }
+        fn health_check(&self) -> BoxFuture<'_, GrpcOutboundResult<()>> {
+            Box::pin(async { Ok(()) })
+        }
+    }
+
+    #[tokio::test]
+    async fn test_call_unary_passes_through_to_inner_when_closed() {
+        let cfg = GrpcBreakerConfig::from_config(
+            "failure_threshold = 3\ncool_down_seconds = 10\nhalf_open_probe_count = 1",
+        )
+        .unwrap();
+        let client = GrpcBreakerClient::new(PongStub, cfg);
+        let req = GrpcRequest::new("svc/M", b"ping".to_vec(), Duration::from_secs(1));
+        let resp = client
+            .call_unary(req)
+            .await
+            .expect("closed breaker must pass through to inner");
+        assert_eq!(resp.body, b"pong");
+        assert_eq!(client.state().await, BreakerState::Closed);
     }
 }

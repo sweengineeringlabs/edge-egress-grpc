@@ -416,10 +416,10 @@ fn test_create_retry_client_wraps_inner_with_default_config() {
 /// @covers: with_config
 #[test]
 fn test_with_config_sets_policy() {
-    use swe_edge_egress_grpc_retry::Builder;
+    use swe_edge_egress_grpc_retry::ApplicationConfigBuilder;
     let cfg = fast_config();
     let max = cfg.max_attempts;
-    let b = Builder::with_config(cfg);
+    let b = ApplicationConfigBuilder::with_config(cfg);
     assert_eq!(b.config().max_attempts, max);
 }
 
