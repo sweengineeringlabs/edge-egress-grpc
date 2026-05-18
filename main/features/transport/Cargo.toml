@@ -27,7 +27,6 @@ path = "examples/basic_transport.rs"
 [dependencies]
 serde.workspace       = true
 thiserror.workspace   = true
-async-trait.workspace = true
 futures.workspace     = true
 bytes            = "1"
 http             = { workspace = true }

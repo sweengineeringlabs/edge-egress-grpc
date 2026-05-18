@@ -20,7 +20,6 @@ path = "src/lib.rs"
 [dependencies]
 swe-edge-egress-grpc = { workspace = true }
 thiserror = { workspace = true }
-async-trait = { workspace = true }
 futures = { workspace = true }
 # `from_config` loads policy from TOML. `serde` derives the
 # schema; `toml` parses it. Policy values live in
