@@ -1,5 +1,6 @@
 //! gRPC egress API — ports, interceptors, and value objects.
 
+pub mod application_config_builder;
 pub mod client;
 pub mod config;
 pub mod interceptor;

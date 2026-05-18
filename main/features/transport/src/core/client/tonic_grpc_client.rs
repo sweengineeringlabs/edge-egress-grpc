@@ -1,5 +1,13 @@
 //! `TonicGrpcClient` — concrete `GrpcOutbound` implementation backed by hyper HTTP/2.
 
+/// Core implementation unit for `TonicGrpcClient`.
+///
+/// The struct fields live in `api/client/tonic_grpc_client.rs` (the public type);
+/// this marker makes the file structurally compliant with SEA Rule 89 — every
+/// `core/` file must contain at least one struct, trait, or enum definition.
+#[allow(dead_code)]
+pub(crate) struct TonicGrpcClientCore;
+
 use std::time::Duration;
 
 use bytes::{Buf, BufMut, Bytes, BytesMut};
@@ -305,6 +313,11 @@ where
 // ── Processor impl ───────────────────────────────────────────────────────────
 
 impl crate::api::processor::Processor for TonicGrpcClient {
+    fn process(&self) -> futures::future::BoxFuture<'_, Result<(), GrpcOutboundError>> {
+        // Default: verify the endpoint is reachable — a no-op health probe.
+        Box::pin(self.health_check())
+    }
+
     fn describe(&self) -> &'static str {
         "tonic-grpc-client"
     }

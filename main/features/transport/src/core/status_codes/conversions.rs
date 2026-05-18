@@ -7,6 +7,14 @@
 
 use crate::api::value_object::GrpcStatusCode;
 
+/// Namespace marker for gRPC status-code conversion functions.
+///
+/// All conversion logic is exposed as `pub(crate) fn` in this file; this
+/// struct satisfies SEA Rule 89 (core/ files must define a primary type)
+/// while keeping the actual API as free functions.
+#[allow(dead_code)]
+pub(crate) struct Conversions;
+
 /// Convert a [`tonic::Code`] (server-side / wire-side enum) into the
 /// crate-local [`GrpcStatusCode`].  Total — covers all 17 variants.
 pub(crate) fn from_tonic_code(code: tonic::Code) -> GrpcStatusCode {

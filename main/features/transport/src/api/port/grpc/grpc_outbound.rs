@@ -126,7 +126,6 @@ mod tests {
         }
     }
 
-    /// @covers: call_server_stream
     #[tokio::test]
     async fn test_call_server_stream_default_returns_unimplemented() {
         let client = UnaryOnlyClient;
@@ -138,7 +137,6 @@ mod tests {
         ));
     }
 
-    /// @covers: call_client_stream
     #[tokio::test]
     async fn test_call_client_stream_default_returns_unimplemented() {
         use futures::stream;
@@ -153,7 +151,6 @@ mod tests {
         ));
     }
 
-    /// @covers: call_bidi_stream
     #[tokio::test]
     async fn test_call_bidi_stream_default_delegates_to_call_stream() {
         use futures::stream;

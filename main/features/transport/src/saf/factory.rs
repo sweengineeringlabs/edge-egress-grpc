@@ -47,4 +47,21 @@ mod tests {
             Err(GrpcChannelConfigError::PlaintextRejected(_))
         ));
     }
+
+    /// @covers: create_tonic_client_from_config
+    #[test]
+    fn test_create_tonic_client_from_config_plaintext_allowed_returns_ok() {
+        let config = GrpcChannelConfig::new("http://127.0.0.1:50051").allow_plaintext();
+        assert!(create_tonic_client_from_config(&config).is_ok());
+    }
+
+    /// @covers: create_tonic_client_from_config
+    #[test]
+    fn test_create_tonic_client_from_config_tls_required_rejects_plaintext_endpoint() {
+        let config = GrpcChannelConfig::new("http://127.0.0.1:50051");
+        assert!(matches!(
+            create_tonic_client_from_config(&config),
+            Err(GrpcChannelConfigError::PlaintextRejected(_))
+        ));
+    }
 }
