@@ -481,6 +481,145 @@ impl GrpcOutbound for TonicGrpcClient {
         })
     }
 
+    /// Send a server-streaming request — single encoded request, multiple response frames.
+    fn call_server_stream(
+        &self,
+        mut request: GrpcRequest,
+    ) -> BoxFuture<'_, GrpcOutboundResult<GrpcMessageStream>> {
+        if let Err(e) = self.interceptors.run_before(&mut request) {
+            return Box::pin(futures::future::ready(Err(e)));
+        }
+        let method = request.method.trim_start_matches('/');
+        let uri_str = format!("{}/{}", self.base_uri.trim_end_matches('/'), method);
+        let body_bytes = encode_grpc_frame(&request.body);
+        let deadline = request.deadline;
+        let cancel = request.cancellation.clone();
+        let max_bytes = self.max_message_bytes;
+        let http_req =
+            match build_http_request(&uri_str, body_bytes, &request.metadata, Some(deadline)) {
+                Ok(r) => r,
+                Err(e) => return Box::pin(futures::future::ready(Err(e))),
+            };
+
+        Box::pin(async move {
+            let resp = race_deadline_and_cancel(
+                self.client.request(http_req),
+                deadline,
+                cancel.as_ref(),
+            )
+            .await?
+            .map_err(|e| {
+                tracing::warn!(error = %e, "hyper transport error during gRPC server-stream");
+                GrpcOutboundError::ConnectionFailed("transport error".into())
+            })?;
+
+            let response_headers = resp.headers().clone();
+            check_grpc_status(Some(&response_headers), Some(&response_headers))?;
+
+            let limited = http_body_util::Limited::new(resp.into_body(), max_bytes + 5);
+            let collected = race_deadline_and_cancel(limited.collect(), deadline, cancel.as_ref())
+                .await?
+                .map_err(|_| {
+                    GrpcOutboundError::Status(
+                        GrpcStatusCode::ResourceExhausted,
+                        "response exceeded max_message_bytes".into(),
+                    )
+                })?;
+
+            check_grpc_status(collected.trailers(), Some(&response_headers))?;
+
+            let data = collected.to_bytes();
+            let frames = decode_grpc_frames(data)?;
+            let items: Vec<GrpcOutboundResult<Vec<u8>>> = frames.into_iter().map(Ok).collect();
+            Ok(Box::pin(futures::stream::iter(items)) as GrpcMessageStream)
+        })
+    }
+
+    /// Send a client-streaming request — multiple request frames, single response.
+    fn call_client_stream(
+        &self,
+        method: String,
+        metadata: GrpcMetadata,
+        messages: GrpcMessageStream,
+    ) -> BoxFuture<'_, GrpcOutboundResult<GrpcResponse>> {
+        let method_path = method.trim_start_matches('/').to_owned();
+        let uri_str = format!("{}/{}", self.base_uri.trim_end_matches('/'), method_path);
+        let deadline = self.timeout;
+        let max_bytes = self.max_message_bytes;
+        let interceptors = self.interceptors.clone();
+
+        Box::pin(async move {
+            // Collect all request frames into one body.
+            let mut body_buf = BytesMut::new();
+            let mut stream = messages;
+            while let Some(item) = stream.next().await {
+                let payload = item?;
+                body_buf.put(encode_grpc_frame(&payload));
+            }
+
+            let http_req =
+                build_http_request(&uri_str, body_buf.freeze(), &metadata, Some(deadline))?;
+
+            let resp = tokio::time::timeout(deadline, self.client.request(http_req))
+                .await
+                .map_err(|_| {
+                    GrpcOutboundError::Timeout("client-stream request deadline exceeded".into())
+                })?
+                .map_err(|e| {
+                    tracing::warn!(error = %e, "hyper transport error during gRPC client-stream");
+                    GrpcOutboundError::ConnectionFailed("transport error".into())
+                })?;
+
+            let response_headers = resp.headers().clone();
+            check_grpc_status(Some(&response_headers), Some(&response_headers))?;
+
+            let limited = http_body_util::Limited::new(resp.into_body(), max_bytes + 5);
+            let collected = tokio::time::timeout(deadline, limited.collect())
+                .await
+                .map_err(|_| {
+                    GrpcOutboundError::Timeout("client-stream response deadline exceeded".into())
+                })?
+                .map_err(|_| {
+                    GrpcOutboundError::Status(
+                        GrpcStatusCode::ResourceExhausted,
+                        "response exceeded max_message_bytes".into(),
+                    )
+                })?;
+
+            check_grpc_status(collected.trailers(), Some(&response_headers))?;
+
+            let trailer_headers = header_map_to_hash(collected.trailers());
+            let data = collected.to_bytes();
+            let body = if data.len() >= 5 {
+                data[5..].to_vec()
+            } else {
+                data.to_vec()
+            };
+
+            let mut response = GrpcResponse {
+                body,
+                metadata: GrpcMetadata {
+                    headers: trailer_headers,
+                },
+            };
+
+            interceptors.run_after(&mut response)?;
+            Ok(response)
+        })
+    }
+
+    /// Send a bidirectional-streaming request — delegates to [`call_stream`].
+    ///
+    /// [`call_stream`]: GrpcOutbound::call_stream
+    fn call_bidi_stream(
+        &self,
+        method: String,
+        metadata: GrpcMetadata,
+        messages: GrpcMessageStream,
+    ) -> BoxFuture<'_, GrpcOutboundResult<GrpcMessageStream>> {
+        self.call_stream(method, metadata, messages)
+    }
+
     fn health_check(&self) -> BoxFuture<'_, GrpcOutboundResult<()>> {
         let base_uri = self.base_uri.clone();
 

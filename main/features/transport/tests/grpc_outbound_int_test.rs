@@ -689,3 +689,102 @@ async fn test_call_unary_sanitizes_internal_error_message_on_truncated_response(
         other => panic!("expected sanitized Internal error, got {other:?}"),
     }
 }
+
+// ── Named streaming variants ──────────────────────────────────────────────────
+
+/// @covers: call_server_stream
+#[tokio::test]
+async fn test_call_server_stream_sends_single_request_and_receives_response_stream() {
+    let listener = bind_listener().await;
+    let addr = spawn_echo_server(listener).await;
+
+    ensure_rustls_provider();
+    let client = make_client(addr);
+    let req = GrpcRequest::new(
+        "svc/ServerStream".to_string(),
+        b"hello".to_vec(),
+        std::time::Duration::from_secs(5),
+    );
+    let mut stream = client
+        .call_server_stream(req)
+        .await
+        .expect("call_server_stream must succeed against echo server");
+
+    use futures::StreamExt;
+    let frame = stream
+        .next()
+        .await
+        .expect("stream must yield at least one item")
+        .expect("frame must be Ok");
+    assert_eq!(
+        frame, b"hello",
+        "echo server must reflect the request payload"
+    );
+    assert!(
+        stream.next().await.is_none(),
+        "echo server yields one frame per request"
+    );
+}
+
+/// @covers: call_client_stream
+#[tokio::test]
+async fn test_call_client_stream_sends_multiple_frames_and_receives_single_response() {
+    let listener = bind_listener().await;
+    let addr = spawn_echo_server(listener).await;
+
+    ensure_rustls_provider();
+    let client = make_client(addr);
+    // Send two frames; the echo server reflects them.  call_client_stream strips
+    // the first 5-byte gRPC header and returns the remainder as the response body.
+    let messages: GrpcMessageStream = Box::pin(stream::iter(vec![
+        Ok(b"frame-1".to_vec()),
+        Ok(b"frame-2".to_vec()),
+    ]));
+    let response = client
+        .call_client_stream("svc/ClientStream".into(), GrpcMetadata::default(), messages)
+        .await
+        .expect("call_client_stream must succeed against echo server");
+
+    // The response body starts with the payload of the first echoed frame.
+    assert!(
+        response.body.starts_with(b"frame-1"),
+        "response body must start with first echoed frame payload, got {:?}",
+        response.body
+    );
+}
+
+/// @covers: call_bidi_stream
+#[tokio::test]
+async fn test_call_bidi_stream_sends_multiple_frames_and_receives_stream() {
+    let listener = bind_listener().await;
+    let addr = spawn_echo_server(listener).await;
+
+    ensure_rustls_provider();
+    let client = make_client(addr);
+    let messages: GrpcMessageStream = Box::pin(stream::iter(vec![
+        Ok(b"alpha".to_vec()),
+        Ok(b"beta".to_vec()),
+    ]));
+    let mut stream = client
+        .call_bidi_stream("svc/Bidi".into(), GrpcMetadata::default(), messages)
+        .await
+        .expect("call_bidi_stream must succeed against echo server");
+
+    use futures::StreamExt;
+    let frame1 = stream
+        .next()
+        .await
+        .expect("stream must yield frame 1")
+        .expect("Ok");
+    let frame2 = stream
+        .next()
+        .await
+        .expect("stream must yield frame 2")
+        .expect("Ok");
+    assert_eq!(frame1, b"alpha");
+    assert_eq!(frame2, b"beta");
+    assert!(
+        stream.next().await.is_none(),
+        "stream must be exhausted after 2 frames"
+    );
+}
