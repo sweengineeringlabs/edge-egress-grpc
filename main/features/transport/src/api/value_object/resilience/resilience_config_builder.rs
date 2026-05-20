@@ -4,6 +4,7 @@ use super::resilience_config::ResilienceConfig;
 
 /// Builder for [`ResilienceConfig`].
 #[derive(Debug, Default)]
+#[allow(dead_code)]
 pub struct ResilienceConfigBuilder {
     max_attempts: Option<u32>,
     initial_backoff_ms: Option<u64>,
