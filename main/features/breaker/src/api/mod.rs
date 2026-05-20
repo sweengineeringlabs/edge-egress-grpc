@@ -3,6 +3,8 @@
 //! Per SEA rule 160, public type *declarations* live here.  Impl
 //! blocks live in `core/`.
 
+pub(crate) mod application_config_builder;
+pub(crate) mod architecture_config_builder;
 pub(crate) mod breaker_client;
 pub(crate) mod breaker_config;
 pub(crate) mod breaker_state;

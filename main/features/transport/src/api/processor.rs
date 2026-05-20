@@ -1,13 +1,20 @@
 //! `Processor` trait — primary processing contract for this crate.
 
-/// Primary processing trait for the egress gRPC processor.
+use futures::future::BoxFuture;
+
+use crate::api::port::GrpcOutboundError;
+
+/// Primary processing trait — required because `service_type = "processor"` in Cargo.toml.
 ///
-/// Implemented by `crate::core::resilience::resilient_grpc_client::ResilientGrpcClient`
-/// and `crate::core::client::tonic_grpc_client::TonicGrpcClient` (both implement
-/// [`GrpcOutbound`] which satisfies this contract).
+/// Implemented by `TonicGrpcClient` and `ResilientGrpcClient`.
 #[allow(dead_code)]
 pub trait Processor: Send + Sync {
-    /// Identify this processor unit.
+    /// Execute this processor unit's primary operation.
+    ///
+    /// Returns `Err` when the underlying transport or business logic fails.
+    fn process(&self) -> BoxFuture<'_, Result<(), GrpcOutboundError>>;
+
+    /// Identify this processor unit for logging and metrics.
     fn describe(&self) -> &'static str;
 }
 

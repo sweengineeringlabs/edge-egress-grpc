@@ -5,6 +5,8 @@
 //! construct (e.g. [`GrpcRetryConfig`], [`GrpcRetryClient`]) are
 //! declared here so the public type identity is owned by api/.
 
+pub(crate) mod application_config_builder;
+pub(crate) mod architecture_config_builder;
 pub(crate) mod backoff;
 pub(crate) mod builder;
 pub(crate) mod error;

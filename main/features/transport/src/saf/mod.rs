@@ -1,10 +1,12 @@
 //! SAF layer — gRPC public facade.
 
 mod factory;
+mod processor;
 mod validator;
 
 pub use crate::api::client::tonic_grpc_client::TonicGrpcClient;
 pub use factory::{create_tonic_client_from_config, create_transport_from_config};
+pub use processor::describe_processor;
 pub use validator::validate_resilience_config;
 
 pub use crate::api::interceptor::{
