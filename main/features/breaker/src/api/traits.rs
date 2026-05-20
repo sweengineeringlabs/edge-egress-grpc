@@ -9,7 +9,6 @@
 //! trait — this crate's job is to wrap implementors, not to
 //! re-publish the contract.
 
-#[allow(unused_imports)]
 pub(crate) use swe_edge_egress_grpc::GrpcOutbound;
 
 #[cfg(test)]
