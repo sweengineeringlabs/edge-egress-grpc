@@ -2,10 +2,10 @@
 //!
 //! | Trait | Contract |
 //! |---|---|
-//! | [`GrpcOutbound`] | Makes outbound unary and streaming gRPC calls |
-//! | [`GrpcOutboundInterceptor`] | Observes/mutates requests before and after dispatch |
 //! | [`Processor`] | Primary processing trait for this service_type = "processor" crate |
 //! | [`Validator`] | Configuration validation contract |
+
+pub use crate::api::processor::Processor;
 
 /// Configuration validation contract.
 ///
@@ -27,6 +27,11 @@ mod tests {
     #[test]
     fn test_grpc_outbound_re_export_is_object_safe() {
         fn _assert(_: &dyn GrpcOutbound) {}
+    }
+
+    #[test]
+    fn test_processor_is_object_safe() {
+        fn _assert(_: &dyn Processor) {}
     }
 
     #[test]

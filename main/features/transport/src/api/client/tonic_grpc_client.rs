@@ -58,7 +58,6 @@ mod tests {
         });
     }
 
-    /// @covers: TonicGrpcClient::new — creates a client with the given base URI.
     #[test]
     fn test_new_creates_client_with_given_base_uri() {
         ensure_rustls_provider();
@@ -67,9 +66,10 @@ mod tests {
         assert_eq!(c.timeout, Duration::from_secs(30));
     }
 
-    /// @covers: TonicGrpcClient — struct is accessible from api/.
     #[test]
     fn test_tonic_grpc_client_struct_is_accessible() {
-        let _ = std::mem::size_of::<TonicGrpcClient>();
+        ensure_rustls_provider();
+        let c = TonicGrpcClient::new("http://127.0.0.1:50051");
+        let _ = std::mem::size_of_val(&c);
     }
 }

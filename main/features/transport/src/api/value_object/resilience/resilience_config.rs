@@ -159,7 +159,6 @@ mod tests {
         }
     }
 
-    /// @covers: ResilienceConfig::default — fast-stateless-gRPC profile
     #[test]
     fn test_default_returns_fast_stateless_grpc_profile() {
         let d = ResilienceConfig::default();
