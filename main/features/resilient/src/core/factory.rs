@@ -3,7 +3,7 @@
 use std::sync::Arc;
 
 use swe_edge_egress_grpc::{
-    create_tonic_client_from_config, validate_resilience_config, GrpcChannelConfig, GrpcOutbound,
+    create_tonic_client_from_config, validate_resilience_config, GrpcChannelConfig, GrpcEgress,
 };
 use swe_edge_egress_grpc_breaker::{GrpcBreakerClient, GrpcBreakerConfig};
 use swe_edge_egress_grpc_retry::{GrpcRetryClient, GrpcRetryConfig};
@@ -12,7 +12,7 @@ use crate::api::error::ResilientTransportError;
 
 pub(crate) fn assemble(
     config: &GrpcChannelConfig,
-) -> Result<Arc<dyn GrpcOutbound>, ResilientTransportError> {
+) -> Result<Arc<dyn GrpcEgress>, ResilientTransportError> {
     let base = create_tonic_client_from_config(config)?;
 
     match &config.resilience {

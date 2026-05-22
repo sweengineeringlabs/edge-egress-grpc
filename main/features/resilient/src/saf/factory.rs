@@ -2,7 +2,7 @@
 
 use std::sync::Arc;
 
-use swe_edge_egress_grpc::{GrpcChannelConfig, GrpcOutbound};
+use swe_edge_egress_grpc::{GrpcChannelConfig, GrpcEgress};
 
 use crate::api::error::ResilientTransportError;
 
@@ -23,6 +23,6 @@ use crate::api::error::ResilientTransportError;
 ///   validation (e.g. `max_attempts = 0`).
 pub fn create_resilient_transport_from_config(
     config: &GrpcChannelConfig,
-) -> Result<Arc<dyn GrpcOutbound>, ResilientTransportError> {
+) -> Result<Arc<dyn GrpcEgress>, ResilientTransportError> {
     crate::core::factory::assemble(config)
 }

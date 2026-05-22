@@ -1,15 +1,15 @@
-//! Classification of [`GrpcOutboundError`] values into the
+//! Classification of [`GrpcEgressError`] values into the
 //! breaker's binary success/failure outcome.
 //!
 //! Single source of truth for which gRPC errors trip the breaker.
 //!
 //! ## Counted as failures
 //!
-//! - `GrpcOutboundError::Unavailable(_)`
-//! - `GrpcOutboundError::ConnectionFailed(_)`
-//! - `GrpcOutboundError::Internal(_)`
-//! - `GrpcOutboundError::Status(Unavailable, _)`
-//! - `GrpcOutboundError::Status(Internal, _)`
+//! - `GrpcEgressError::Unavailable(_)`
+//! - `GrpcEgressError::ConnectionFailed(_)`
+//! - `GrpcEgressError::Internal(_)`
+//! - `GrpcEgressError::Status(Unavailable, _)`
+//! - `GrpcEgressError::Status(Internal, _)`
 //!
 //! ## NOT counted as failures
 //!
@@ -25,22 +25,22 @@
 //! - `Timeout(_)` — caller's own deadline, not a breaker condition.
 //! - `Cancelled(_)` — caller cancelled.
 
-use swe_edge_egress_grpc::{GrpcOutboundError, GrpcStatusCode};
+use swe_edge_egress_grpc::{GrpcEgressError, GrpcStatusCode};
 
 use crate::api::breaker_state::Outcome;
 
 /// Classify an outbound result into the breaker's outcome.
-pub(crate) fn classify<T>(result: &Result<T, GrpcOutboundError>) -> Outcome {
+pub(crate) fn classify<T>(result: &Result<T, GrpcEgressError>) -> Outcome {
     let err = match result {
         Ok(_) => return Outcome::Success,
         Err(e) => e,
     };
     match err {
-        GrpcOutboundError::Unavailable(_)
-        | GrpcOutboundError::ConnectionFailed(_)
-        | GrpcOutboundError::Internal(_) => Outcome::Failure,
+        GrpcEgressError::Unavailable(_)
+        | GrpcEgressError::ConnectionFailed(_)
+        | GrpcEgressError::Internal(_) => Outcome::Failure,
 
-        GrpcOutboundError::Status(code, _) => match code {
+        GrpcEgressError::Status(code, _) => match code {
             GrpcStatusCode::Unavailable | GrpcStatusCode::Internal => Outcome::Failure,
             // Explicit non-failure variants — exhaustive so a
             // new variant on `GrpcStatusCode` causes a compile
@@ -62,7 +62,7 @@ pub(crate) fn classify<T>(result: &Result<T, GrpcOutboundError>) -> Outcome {
             | GrpcStatusCode::Unauthenticated => Outcome::Success,
         },
 
-        GrpcOutboundError::Timeout(_) | GrpcOutboundError::Cancelled(_) => Outcome::Success,
+        GrpcEgressError::Timeout(_) | GrpcEgressError::Cancelled(_) => Outcome::Success,
     }
 }
 
@@ -73,35 +73,35 @@ mod tests {
     /// @covers: classify — Ok is success.
     #[test]
     fn test_classify_ok_is_success() {
-        let r: Result<i32, GrpcOutboundError> = Ok(1);
+        let r: Result<i32, GrpcEgressError> = Ok(1);
         assert_eq!(classify(&r), Outcome::Success);
     }
 
     /// @covers: classify — transport Unavailable counts as failure.
     #[test]
     fn test_classify_transport_unavailable_is_failure() {
-        let r: Result<(), _> = Err(GrpcOutboundError::Unavailable("lb".into()));
+        let r: Result<(), _> = Err(GrpcEgressError::Unavailable("lb".into()));
         assert_eq!(classify(&r), Outcome::Failure);
     }
 
     /// @covers: classify — ConnectionFailed counts as failure.
     #[test]
     fn test_classify_connection_failed_is_failure() {
-        let r: Result<(), _> = Err(GrpcOutboundError::ConnectionFailed("rst".into()));
+        let r: Result<(), _> = Err(GrpcEgressError::ConnectionFailed("rst".into()));
         assert_eq!(classify(&r), Outcome::Failure);
     }
 
     /// @covers: classify — transport Internal counts as failure.
     #[test]
     fn test_classify_transport_internal_is_failure() {
-        let r: Result<(), _> = Err(GrpcOutboundError::Internal("oops".into()));
+        let r: Result<(), _> = Err(GrpcEgressError::Internal("oops".into()));
         assert_eq!(classify(&r), Outcome::Failure);
     }
 
     /// @covers: classify — Status Unavailable counts as failure.
     #[test]
     fn test_classify_status_unavailable_is_failure() {
-        let r: Result<(), _> = Err(GrpcOutboundError::Status(
+        let r: Result<(), _> = Err(GrpcEgressError::Status(
             GrpcStatusCode::Unavailable,
             "down".into(),
         ));
@@ -111,7 +111,7 @@ mod tests {
     /// @covers: classify — Status Internal counts as failure.
     #[test]
     fn test_classify_status_internal_is_failure() {
-        let r: Result<(), _> = Err(GrpcOutboundError::Status(
+        let r: Result<(), _> = Err(GrpcEgressError::Status(
             GrpcStatusCode::Internal,
             "bug".into(),
         ));
@@ -121,11 +121,11 @@ mod tests {
     /// @covers: classify — auth failures do NOT trip the breaker.
     #[test]
     fn test_classify_auth_failures_are_success() {
-        let r1: Result<(), _> = Err(GrpcOutboundError::Status(
+        let r1: Result<(), _> = Err(GrpcEgressError::Status(
             GrpcStatusCode::Unauthenticated,
             "x".into(),
         ));
-        let r2: Result<(), _> = Err(GrpcOutboundError::Status(
+        let r2: Result<(), _> = Err(GrpcEgressError::Status(
             GrpcStatusCode::PermissionDenied,
             "y".into(),
         ));
@@ -136,7 +136,7 @@ mod tests {
     /// @covers: classify — ResourceExhausted does NOT trip breaker.
     #[test]
     fn test_classify_resource_exhausted_is_success() {
-        let r: Result<(), _> = Err(GrpcOutboundError::Status(
+        let r: Result<(), _> = Err(GrpcEgressError::Status(
             GrpcStatusCode::ResourceExhausted,
             "quota".into(),
         ));
@@ -146,14 +146,14 @@ mod tests {
     /// @covers: classify — Timeout does NOT trip breaker.
     #[test]
     fn test_classify_timeout_is_success() {
-        let r: Result<(), _> = Err(GrpcOutboundError::Timeout("d".into()));
+        let r: Result<(), _> = Err(GrpcEgressError::Timeout("d".into()));
         assert_eq!(classify(&r), Outcome::Success);
     }
 
     /// @covers: classify — Cancelled does NOT trip breaker.
     #[test]
     fn test_classify_cancelled_is_success() {
-        let r: Result<(), _> = Err(GrpcOutboundError::Cancelled("t".into()));
+        let r: Result<(), _> = Err(GrpcEgressError::Cancelled("t".into()));
         assert_eq!(classify(&r), Outcome::Success);
     }
 
@@ -173,7 +173,7 @@ mod tests {
             GrpcStatusCode::Cancelled,
             GrpcStatusCode::DeadlineExceeded,
         ] {
-            let r: Result<(), _> = Err(GrpcOutboundError::Status(code, "x".into()));
+            let r: Result<(), _> = Err(GrpcEgressError::Status(code, "x".into()));
             assert_eq!(
                 classify(&r),
                 Outcome::Success,

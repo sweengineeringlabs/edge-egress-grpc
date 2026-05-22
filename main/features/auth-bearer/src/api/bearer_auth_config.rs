@@ -39,7 +39,7 @@ impl BearerSecret {
 
 /// Outbound (client) bearer config.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct BearerOutboundConfig {
+pub struct BearerEgressConfig {
     /// Algorithm + key material to sign the JWT.  HS256 expects raw
     /// bytes; RS256 expects PEM.
     pub secret: BearerSecret,

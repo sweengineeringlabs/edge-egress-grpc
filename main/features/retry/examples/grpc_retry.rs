@@ -1,6 +1,6 @@
 //! Minimal usage: load the SWE baseline and inspect the resolved policy.
 //!
-//! Wrapping a real `GrpcOutbound` requires a transport (see
+//! Wrapping a real `GrpcEgress` requires a transport (see
 //! `swe-edge-egress-grpc`'s `TonicGrpcClient`); this example shows
 //! only the configuration step that doesn't need a server.
 

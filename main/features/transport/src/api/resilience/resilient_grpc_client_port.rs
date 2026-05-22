@@ -2,18 +2,18 @@
 //!
 //! [`ResilientGrpcClientPort`] is the api/ contract implemented by the
 //! concrete `core::resilience::ResilientGrpcClient`.  Callers retrieve it
-//! from the SAF layer as `Arc<dyn GrpcOutbound>` — this trait is the
+//! from the SAF layer as `Arc<dyn GrpcEgress>` — this trait is the
 //! documentation anchor and extension point.
 
-use crate::api::port::{GrpcOutbound, GrpcOutboundError};
+use crate::api::port::{GrpcEgress, GrpcEgressError};
 
 /// Extension contract for a gRPC client that adds resilience (retry + circuit breaker).
 ///
 /// The concrete implementation lives in `core/resilience/`; consumers interact
-/// with the type-erased `Arc<dyn GrpcOutbound>` surface returned by the SAF
+/// with the type-erased `Arc<dyn GrpcEgress>` surface returned by the SAF
 /// factory functions.
 #[allow(dead_code)]
-pub trait ResilientGrpcClientPort: GrpcOutbound + Send + Sync {
+pub trait ResilientGrpcClientPort: GrpcEgress + Send + Sync {
     /// Return the current circuit-breaker state label for observability.
     ///
     /// Implementations must return one of: `"Closed"`, `"Open"`, `"HalfOpen"`.
@@ -27,7 +27,7 @@ pub trait ResilientGrpcClientPort: GrpcOutbound + Send + Sync {
     ///
     /// Returns `None` when no failure has been recorded (circuit is `Closed`
     /// and no retry storms have fired).
-    fn last_error(&self) -> Option<&GrpcOutboundError>;
+    fn last_error(&self) -> Option<&GrpcEgressError>;
 }
 
 #[cfg(test)]
@@ -40,7 +40,7 @@ mod tests {
     }
 
     #[test]
-    fn test_grpc_outbound_re_export_is_object_safe() {
-        fn _assert(_: &dyn GrpcOutbound) {}
+    fn test_grpc_egress_re_export_is_object_safe() {
+        fn _assert(_: &dyn GrpcEgress) {}
     }
 }

@@ -21,7 +21,7 @@
 
 use std::time::Duration;
 
-use swe_edge_egress_grpc::{GrpcOutboundError, GrpcStatusCode};
+use swe_edge_egress_grpc::{GrpcEgressError, GrpcStatusCode};
 
 // ── ResourceExhaustedContext ─────────────────────────────────────────────────
 
@@ -130,13 +130,13 @@ impl RetryDecision {
 /// `ConnectionFailed` is treated as `Retry` because it's a
 /// transport-level transient (DNS hiccup, TCP RST during a rolling
 /// deploy) matching canonical `Unavailable` gRPC semantics.
-pub fn classify<T>(result: &Result<T, GrpcOutboundError>) -> RetryDecision {
+pub fn classify<T>(result: &Result<T, GrpcEgressError>) -> RetryDecision {
     let err = match result {
         Ok(_) => return RetryDecision::Success,
         Err(e) => e,
     };
     match err {
-        GrpcOutboundError::Status(code, msg) => match code {
+        GrpcEgressError::Status(code, msg) => match code {
             GrpcStatusCode::Unavailable => RetryDecision::Retry,
             GrpcStatusCode::ResourceExhausted => match classify_resource_exhausted(msg) {
                 ResourceExhaustedContext::HardQuota => RetryDecision::Terminal,
@@ -162,11 +162,11 @@ pub fn classify<T>(result: &Result<T, GrpcOutboundError>) -> RetryDecision {
             | GrpcStatusCode::Unimplemented
             | GrpcStatusCode::DataLoss => RetryDecision::Terminal,
         },
-        GrpcOutboundError::ConnectionFailed(_) => RetryDecision::Retry,
-        GrpcOutboundError::Unavailable(_) => RetryDecision::Retry,
-        GrpcOutboundError::Timeout(_)
-        | GrpcOutboundError::Internal(_)
-        | GrpcOutboundError::Cancelled(_) => RetryDecision::Terminal,
+        GrpcEgressError::ConnectionFailed(_) => RetryDecision::Retry,
+        GrpcEgressError::Unavailable(_) => RetryDecision::Retry,
+        GrpcEgressError::Timeout(_)
+        | GrpcEgressError::Internal(_)
+        | GrpcEgressError::Cancelled(_) => RetryDecision::Terminal,
     }
 }
 
@@ -254,7 +254,7 @@ mod tests {
     /// @covers: classify — Unavailable status retries.
     #[test]
     fn test_classify_status_unavailable_returns_retry() {
-        let r: Result<(), _> = Err(GrpcOutboundError::Status(
+        let r: Result<(), _> = Err(GrpcEgressError::Status(
             GrpcStatusCode::Unavailable,
             "lb".into(),
         ));
@@ -264,7 +264,7 @@ mod tests {
     /// @covers: classify — ResourceExhausted(RateLimit) → RetryRateLimit.
     #[test]
     fn test_classify_resource_exhausted_rate_limit_returns_retry_rate_limit() {
-        let r: Result<(), _> = Err(GrpcOutboundError::Status(
+        let r: Result<(), _> = Err(GrpcEgressError::Status(
             GrpcStatusCode::ResourceExhausted,
             "rate limit exceeded".into(),
         ));
@@ -276,7 +276,7 @@ mod tests {
     /// @covers: classify — ResourceExhausted(Capacity) → Retry.
     #[test]
     fn test_classify_resource_exhausted_capacity_returns_retry() {
-        let r: Result<(), _> = Err(GrpcOutboundError::Status(
+        let r: Result<(), _> = Err(GrpcEgressError::Status(
             GrpcStatusCode::ResourceExhausted,
             "server overloaded".into(),
         ));
@@ -287,7 +287,7 @@ mod tests {
     /// @covers: classify — ResourceExhausted(HardQuota) → Terminal.
     #[test]
     fn test_classify_resource_exhausted_hard_quota_is_terminal() {
-        let r: Result<(), _> = Err(GrpcOutboundError::Status(
+        let r: Result<(), _> = Err(GrpcEgressError::Status(
             GrpcStatusCode::ResourceExhausted,
             "quota exceeded".into(),
         ));
@@ -298,7 +298,7 @@ mod tests {
     /// @covers: classify — PermissionDenied is NEVER retried.
     #[test]
     fn test_classify_status_permission_denied_is_terminal() {
-        let r: Result<(), _> = Err(GrpcOutboundError::Status(
+        let r: Result<(), _> = Err(GrpcEgressError::Status(
             GrpcStatusCode::PermissionDenied,
             "no".into(),
         ));
@@ -309,7 +309,7 @@ mod tests {
     /// @covers: classify — Unauthenticated is NEVER retried.
     #[test]
     fn test_classify_status_unauthenticated_is_terminal() {
-        let r: Result<(), _> = Err(GrpcOutboundError::Status(
+        let r: Result<(), _> = Err(GrpcEgressError::Status(
             GrpcStatusCode::Unauthenticated,
             "bad token".into(),
         ));
@@ -320,7 +320,7 @@ mod tests {
     /// @covers: classify — DeadlineExceeded is terminal.
     #[test]
     fn test_classify_status_deadline_exceeded_is_terminal() {
-        let r: Result<(), _> = Err(GrpcOutboundError::Status(
+        let r: Result<(), _> = Err(GrpcEgressError::Status(
             GrpcStatusCode::DeadlineExceeded,
             "tick".into(),
         ));
@@ -330,7 +330,7 @@ mod tests {
     /// @covers: classify — Internal is terminal (server bug).
     #[test]
     fn test_classify_status_internal_is_terminal() {
-        let r: Result<(), _> = Err(GrpcOutboundError::Status(
+        let r: Result<(), _> = Err(GrpcEgressError::Status(
             GrpcStatusCode::Internal,
             "bug".into(),
         ));
@@ -340,28 +340,28 @@ mod tests {
     /// @covers: classify — ConnectionFailed retries.
     #[test]
     fn test_classify_connection_failed_retries() {
-        let r: Result<(), _> = Err(GrpcOutboundError::ConnectionFailed("rst".into()));
+        let r: Result<(), _> = Err(GrpcEgressError::ConnectionFailed("rst".into()));
         assert_eq!(classify(&r), RetryDecision::Retry);
     }
 
     /// @covers: classify — Timeout is terminal.
     #[test]
     fn test_classify_timeout_is_terminal() {
-        let r: Result<(), _> = Err(GrpcOutboundError::Timeout("deadline".into()));
+        let r: Result<(), _> = Err(GrpcEgressError::Timeout("deadline".into()));
         assert_eq!(classify(&r), RetryDecision::Terminal);
     }
 
     /// @covers: classify — Cancelled is terminal.
     #[test]
     fn test_classify_cancelled_is_terminal() {
-        let r: Result<(), _> = Err(GrpcOutboundError::Cancelled("token".into()));
+        let r: Result<(), _> = Err(GrpcEgressError::Cancelled("token".into()));
         assert_eq!(classify(&r), RetryDecision::Terminal);
     }
 
     /// @covers: classify — Ok is success, not retry.
     #[test]
     fn test_classify_ok_returns_success() {
-        let r: Result<i32, GrpcOutboundError> = Ok(42);
+        let r: Result<i32, GrpcEgressError> = Ok(42);
         assert_eq!(classify(&r), RetryDecision::Success);
         assert!(!classify(&r).should_retry());
     }
@@ -390,7 +390,7 @@ mod tests {
             GrpcStatusCode::Unimplemented,
             GrpcStatusCode::DataLoss,
         ] {
-            let r: Result<(), _> = Err(GrpcOutboundError::Status(code, "x".into()));
+            let r: Result<(), _> = Err(GrpcEgressError::Status(code, "x".into()));
             assert_eq!(
                 classify(&r),
                 RetryDecision::Terminal,

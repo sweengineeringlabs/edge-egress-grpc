@@ -1,5 +1,5 @@
 //! `swe_edge_egress_grpc_retry` — decorator that wraps a
-//! [`GrpcOutbound`](swe_edge_egress_grpc::GrpcOutbound) with
+//! [`GrpcEgress`](swe_edge_egress_grpc::GrpcEgress) with
 //! exponential-backoff-with-jitter retry on gRPC-canonical
 //! retryable status codes.
 //!
@@ -25,7 +25,7 @@
 //!
 //! ## Composition
 //!
-//! Wrap any [`GrpcOutbound`] implementor:
+//! Wrap any [`GrpcEgress`] implementor:
 //!
 //! ```ignore
 //! use swe_edge_egress_grpc_retry::builder;

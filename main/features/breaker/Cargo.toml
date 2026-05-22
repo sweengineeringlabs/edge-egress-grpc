@@ -6,7 +6,7 @@ license.workspace = true
 rust-version.workspace = true
 authors.workspace = true
 repository.workspace = true
-description = "Decorator: gRPC-aware circuit breaker around any GrpcOutbound"
+description = "Decorator: gRPC-aware circuit breaker around any GrpcEgress"
 keywords = ["grpc", "circuit-breaker", "tonic", "decorator", "swe"]
 categories = ["network-programming"]
 

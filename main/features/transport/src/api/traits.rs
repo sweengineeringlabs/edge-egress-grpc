@@ -22,11 +22,11 @@ pub trait Validator {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::api::port::GrpcOutbound;
+    use crate::api::port::GrpcEgress;
 
     #[test]
-    fn test_grpc_outbound_re_export_is_object_safe() {
-        fn _assert(_: &dyn GrpcOutbound) {}
+    fn test_grpc_egress_re_export_is_object_safe() {
+        fn _assert(_: &dyn GrpcEgress) {}
     }
 
     #[test]

@@ -1,16 +1,16 @@
-//! `GrpcOutbound` trait — makes outbound gRPC calls.
+//! `GrpcEgress` trait — makes outbound gRPC calls.
 
 use futures::future::BoxFuture;
 
+use crate::api::port::grpc::grpc_egress_error::GrpcEgressError;
+use crate::api::port::grpc::grpc_egress_result::GrpcEgressResult;
 use crate::api::port::grpc::grpc_message_stream::GrpcMessageStream;
-use crate::api::port::grpc::grpc_outbound_error::GrpcOutboundError;
-use crate::api::port::grpc::grpc_outbound_result::GrpcOutboundResult;
 use crate::api::value_object::{GrpcMetadata, GrpcRequest, GrpcResponse, GrpcStatusCode};
 
 /// Makes outbound gRPC calls to remote services.
-pub trait GrpcOutbound: Send + Sync {
+pub trait GrpcEgress: Send + Sync {
     /// Send a single unary gRPC request and receive a single response.
-    fn call_unary(&self, request: GrpcRequest) -> BoxFuture<'_, GrpcOutboundResult<GrpcResponse>>;
+    fn call_unary(&self, request: GrpcRequest) -> BoxFuture<'_, GrpcEgressResult<GrpcResponse>>;
 
     /// Send a streaming gRPC request and receive a response stream.
     ///
@@ -20,9 +20,9 @@ pub trait GrpcOutbound: Send + Sync {
         method: String,
         metadata: GrpcMetadata,
         messages: GrpcMessageStream,
-    ) -> BoxFuture<'_, GrpcOutboundResult<GrpcMessageStream>> {
+    ) -> BoxFuture<'_, GrpcEgressResult<GrpcMessageStream>> {
         let _ = (method, metadata, messages);
-        Box::pin(futures::future::ready(Err(GrpcOutboundError::Status(
+        Box::pin(futures::future::ready(Err(GrpcEgressError::Status(
             GrpcStatusCode::Unimplemented,
             "streaming not supported".into(),
         ))))
@@ -35,9 +35,9 @@ pub trait GrpcOutbound: Send + Sync {
     fn call_server_stream(
         &self,
         request: GrpcRequest,
-    ) -> BoxFuture<'_, GrpcOutboundResult<GrpcMessageStream>> {
+    ) -> BoxFuture<'_, GrpcEgressResult<GrpcMessageStream>> {
         let _ = request;
-        Box::pin(futures::future::ready(Err(GrpcOutboundError::Status(
+        Box::pin(futures::future::ready(Err(GrpcEgressError::Status(
             GrpcStatusCode::Unimplemented,
             "server streaming not supported".into(),
         ))))
@@ -52,9 +52,9 @@ pub trait GrpcOutbound: Send + Sync {
         method: String,
         metadata: GrpcMetadata,
         messages: GrpcMessageStream,
-    ) -> BoxFuture<'_, GrpcOutboundResult<GrpcResponse>> {
+    ) -> BoxFuture<'_, GrpcEgressResult<GrpcResponse>> {
         let _ = (method, metadata, messages);
-        Box::pin(futures::future::ready(Err(GrpcOutboundError::Status(
+        Box::pin(futures::future::ready(Err(GrpcEgressError::Status(
             GrpcStatusCode::Unimplemented,
             "client streaming not supported".into(),
         ))))
@@ -64,18 +64,18 @@ pub trait GrpcOutbound: Send + Sync {
     ///
     /// The default implementation delegates to [`call_stream`].
     ///
-    /// [`call_stream`]: GrpcOutbound::call_stream
+    /// [`call_stream`]: GrpcEgress::call_stream
     fn call_bidi_stream(
         &self,
         method: String,
         metadata: GrpcMetadata,
         messages: GrpcMessageStream,
-    ) -> BoxFuture<'_, GrpcOutboundResult<GrpcMessageStream>> {
+    ) -> BoxFuture<'_, GrpcEgressResult<GrpcMessageStream>> {
         self.call_stream(method, metadata, messages)
     }
 
     /// Check that the remote endpoint is reachable.
-    fn health_check(&self) -> BoxFuture<'_, GrpcOutboundResult<()>>;
+    fn health_check(&self) -> BoxFuture<'_, GrpcEgressResult<()>>;
 }
 
 #[cfg(test)]
@@ -85,24 +85,24 @@ mod tests {
     use std::time::Duration;
 
     struct UnaryOnlyClient;
-    impl GrpcOutbound for UnaryOnlyClient {
+    impl GrpcEgress for UnaryOnlyClient {
         fn call_unary(
             &self,
             _: GrpcRequest,
-        ) -> futures::future::BoxFuture<'_, GrpcOutboundResult<GrpcResponse>> {
+        ) -> futures::future::BoxFuture<'_, GrpcEgressResult<GrpcResponse>> {
             Box::pin(futures::future::ready(Ok(GrpcResponse {
                 body: vec![],
                 metadata: GrpcMetadata::default(),
             })))
         }
-        fn health_check(&self) -> futures::future::BoxFuture<'_, GrpcOutboundResult<()>> {
+        fn health_check(&self) -> futures::future::BoxFuture<'_, GrpcEgressResult<()>> {
             Box::pin(futures::future::ready(Ok(())))
         }
     }
 
     #[test]
-    fn test_grpc_outbound_is_object_safe() {
-        fn _assert_object_safe(_: &dyn GrpcOutbound) {}
+    fn test_grpc_egress_is_object_safe() {
+        fn _assert_object_safe(_: &dyn GrpcEgress) {}
     }
 
     #[tokio::test]
@@ -110,12 +110,12 @@ mod tests {
         let _ = Duration::from_millis(1);
         let client = UnaryOnlyClient;
         let messages: GrpcMessageStream =
-            Box::pin(futures::stream::empty::<GrpcOutboundResult<Vec<u8>>>());
+            Box::pin(futures::stream::empty::<GrpcEgressResult<Vec<u8>>>());
         let result = client
             .call_stream("svc/Method".into(), GrpcMetadata::default(), messages)
             .await;
         match result {
-            Err(GrpcOutboundError::Status(GrpcStatusCode::Unimplemented, msg)) => {
+            Err(GrpcEgressError::Status(GrpcStatusCode::Unimplemented, msg)) => {
                 assert!(
                     msg.contains("streaming not supported"),
                     "message was: {msg}"
@@ -133,7 +133,7 @@ mod tests {
         let result = client.call_server_stream(req).await;
         assert!(matches!(
             result,
-            Err(GrpcOutboundError::Status(GrpcStatusCode::Unimplemented, _))
+            Err(GrpcEgressError::Status(GrpcStatusCode::Unimplemented, _))
         ));
     }
 
@@ -141,13 +141,13 @@ mod tests {
     async fn test_call_client_stream_default_returns_unimplemented() {
         use futures::stream;
         let client = UnaryOnlyClient;
-        let messages: GrpcMessageStream = Box::pin(stream::empty::<GrpcOutboundResult<Vec<u8>>>());
+        let messages: GrpcMessageStream = Box::pin(stream::empty::<GrpcEgressResult<Vec<u8>>>());
         let result = client
             .call_client_stream("svc/M".into(), GrpcMetadata::default(), messages)
             .await;
         assert!(matches!(
             result,
-            Err(GrpcOutboundError::Status(GrpcStatusCode::Unimplemented, _))
+            Err(GrpcEgressError::Status(GrpcStatusCode::Unimplemented, _))
         ));
     }
 
@@ -155,12 +155,12 @@ mod tests {
     async fn test_call_bidi_stream_default_delegates_to_call_stream() {
         use futures::stream;
         let client = UnaryOnlyClient;
-        let messages: GrpcMessageStream = Box::pin(stream::empty::<GrpcOutboundResult<Vec<u8>>>());
+        let messages: GrpcMessageStream = Box::pin(stream::empty::<GrpcEgressResult<Vec<u8>>>());
         let result = client
             .call_bidi_stream("svc/M".into(), GrpcMetadata::default(), messages)
             .await;
         match result {
-            Err(GrpcOutboundError::Status(GrpcStatusCode::Unimplemented, _)) => {}
+            Err(GrpcEgressError::Status(GrpcStatusCode::Unimplemented, _)) => {}
             Ok(_) => panic!("expected Unimplemented"),
             Err(e) => panic!("unexpected error: {e}"),
         }

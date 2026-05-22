@@ -1,7 +1,7 @@
 //! Integration tests for the resilient gRPC transport stack.
 //!
 //! These tests use an in-memory [`CountingMock`] that implements
-//! [`GrpcOutbound`] so the retry and circuit-breaker logic runs against
+//! [`GrpcEgress`] so the retry and circuit-breaker logic runs against
 //! configurable response sequences without a real network connection.
 
 use std::collections::VecDeque;
@@ -13,8 +13,8 @@ use std::time::Duration;
 
 use futures::future::BoxFuture;
 use swe_edge_egress_grpc::{
-    GrpcChannelConfig, GrpcMetadata, GrpcOutbound, GrpcOutboundError, GrpcOutboundResult,
-    GrpcRequest, GrpcResponse, GrpcStatusCode, ResilienceConfig,
+    GrpcChannelConfig, GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcMetadata, GrpcRequest,
+    GrpcResponse, GrpcStatusCode, ResilienceConfig,
 };
 use swe_edge_egress_grpc_breaker::{BreakerState, GrpcBreakerClient, GrpcBreakerConfig};
 use swe_edge_egress_grpc_resilient::{
@@ -32,29 +32,29 @@ fn ensure_tls_provider() {
     });
 }
 
-fn ok_response() -> GrpcOutboundResult<GrpcResponse> {
+fn ok_response() -> GrpcEgressResult<GrpcResponse> {
     Ok(GrpcResponse {
         body: vec![],
         metadata: GrpcMetadata::default(),
     })
 }
 
-fn unavailable() -> GrpcOutboundResult<GrpcResponse> {
-    Err(GrpcOutboundError::Status(
+fn unavailable() -> GrpcEgressResult<GrpcResponse> {
+    Err(GrpcEgressError::Status(
         GrpcStatusCode::Unavailable,
         "upstream down".into(),
     ))
 }
 
-fn hard_quota() -> GrpcOutboundResult<GrpcResponse> {
-    Err(GrpcOutboundError::Status(
+fn hard_quota() -> GrpcEgressResult<GrpcResponse> {
+    Err(GrpcEgressError::Status(
         GrpcStatusCode::ResourceExhausted,
         "quota exceeded".into(),
     ))
 }
 
-fn rate_limited() -> GrpcOutboundResult<GrpcResponse> {
-    Err(GrpcOutboundError::Status(
+fn rate_limited() -> GrpcEgressResult<GrpcResponse> {
+    Err(GrpcEgressError::Status(
         GrpcStatusCode::ResourceExhausted,
         "rate limit exceeded".into(),
     ))
@@ -83,19 +83,19 @@ fn valid_resilience() -> ResilienceConfig {
 // ── CountingMock ─────────────────────────────────────────────────────────────
 
 // @allow: no_mocks_in_integration — CountingMock is an in-process test double
-// for the GrpcOutbound transport layer, not an external service mock. It
+// for the GrpcEgress transport layer, not an external service mock. It
 // exercises the real retry and circuit-breaker logic with deterministic
 // responses, which is only possible via a programmatic stand-in.
 /// In-memory mock: counts calls and returns pre-loaded responses in order.
 struct CountingMock {
     hits: Arc<AtomicUsize>,
-    queue: Arc<Mutex<VecDeque<GrpcOutboundResult<GrpcResponse>>>>,
+    queue: Arc<Mutex<VecDeque<GrpcEgressResult<GrpcResponse>>>>,
 }
 
 impl CountingMock {
     fn with_responses(
         hits: Arc<AtomicUsize>,
-        responses: Vec<GrpcOutboundResult<GrpcResponse>>,
+        responses: Vec<GrpcEgressResult<GrpcResponse>>,
     ) -> Self {
         Self {
             hits,
@@ -104,8 +104,8 @@ impl CountingMock {
     }
 }
 
-impl GrpcOutbound for CountingMock {
-    fn call_unary(&self, _req: GrpcRequest) -> BoxFuture<'_, GrpcOutboundResult<GrpcResponse>> {
+impl GrpcEgress for CountingMock {
+    fn call_unary(&self, _req: GrpcRequest) -> BoxFuture<'_, GrpcEgressResult<GrpcResponse>> {
         self.hits.fetch_add(1, Ordering::SeqCst);
         let result = self
             .queue
@@ -116,7 +116,7 @@ impl GrpcOutbound for CountingMock {
         Box::pin(futures::future::ready(result))
     }
 
-    fn health_check(&self) -> BoxFuture<'_, GrpcOutboundResult<()>> {
+    fn health_check(&self) -> BoxFuture<'_, GrpcEgressResult<()>> {
         Box::pin(futures::future::ready(Ok(())))
     }
 }
@@ -371,7 +371,7 @@ async fn test_circuit_breaker_opens_after_consecutive_failures_at_threshold() {
     // 4th call: breaker rejects without server hit.
     let result = client.call_unary(req()).await;
     assert!(
-        matches!(result, Err(GrpcOutboundError::Unavailable(_))),
+        matches!(result, Err(GrpcEgressError::Unavailable(_))),
         "breaker must return Unavailable when Open, got {result:?}",
     );
     assert_eq!(

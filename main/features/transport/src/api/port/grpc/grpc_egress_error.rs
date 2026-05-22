@@ -1,4 +1,4 @@
-//! `GrpcOutboundError` — error type for gRPC outbound operations.
+//! `GrpcEgressError` — error type for gRPC outbound operations.
 
 use thiserror::Error;
 
@@ -16,7 +16,7 @@ use crate::api::value_object::GrpcStatusCode;
 /// `Internal` are transport-level conditions that occur *before*
 /// the server returns a status (or after the local timeout fires).
 #[derive(Debug, Error)]
-pub enum GrpcOutboundError {
+pub enum GrpcEgressError {
     /// The remote returned a non-`Ok` gRPC status with a sanitized message.
     #[error("status {0:?}: {1}")]
     Status(GrpcStatusCode, String),
@@ -43,7 +43,7 @@ mod tests {
 
     #[test]
     fn test_status_variant_carries_code_and_message() {
-        let err = GrpcOutboundError::Status(GrpcStatusCode::NotFound, "no such row".into());
+        let err = GrpcEgressError::Status(GrpcStatusCode::NotFound, "no such row".into());
         let s = err.to_string();
         assert!(s.contains("NotFound"));
         assert!(s.contains("no such row"));
@@ -51,7 +51,7 @@ mod tests {
 
     #[test]
     fn test_cancelled_variant_renders_with_reason() {
-        let err = GrpcOutboundError::Cancelled("token fired".into());
+        let err = GrpcEgressError::Cancelled("token fired".into());
         assert!(err.to_string().contains("token fired"));
     }
 }

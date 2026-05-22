@@ -1,6 +1,6 @@
 //! Public builder + factory.
 
-use swe_edge_egress_grpc::GrpcOutbound;
+use swe_edge_egress_grpc::GrpcEgress;
 
 use crate::api::breaker_client::GrpcBreakerClient;
 use crate::api::breaker_config::GrpcBreakerConfig;
@@ -14,7 +14,7 @@ pub fn builder() -> Result<ApplicationConfigBuilder, Error> {
 }
 
 /// One-shot factory: wrap `inner` with the SWE baseline policy.
-pub fn create_breaker_client<T: GrpcOutbound + Send + Sync + 'static>(
+pub fn create_breaker_client<T: GrpcEgress + Send + Sync + 'static>(
     inner: T,
 ) -> Result<GrpcBreakerClient<T>, Error> {
     let cfg = GrpcBreakerConfig::swe_default()?;
@@ -35,7 +35,7 @@ impl ApplicationConfigBuilder {
     }
 
     /// Wrap `inner` to produce a [`GrpcBreakerClient`].
-    pub fn wrap<T: GrpcOutbound + Send + Sync + 'static>(self, inner: T) -> GrpcBreakerClient<T> {
+    pub fn wrap<T: GrpcEgress + Send + Sync + 'static>(self, inner: T) -> GrpcBreakerClient<T> {
         GrpcBreakerClient::new(inner, self.config)
     }
 }

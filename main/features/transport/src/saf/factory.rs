@@ -3,7 +3,7 @@
 use std::sync::Arc;
 
 use crate::api::client::tonic_grpc_client::TonicGrpcClient;
-use crate::api::port::{GrpcChannelConfigError, GrpcOutbound};
+use crate::api::port::{GrpcChannelConfigError, GrpcEgress};
 
 /// Build an outbound transport from a [`crate::api::value_object::GrpcChannelConfig`].
 ///
@@ -11,7 +11,7 @@ use crate::api::port::{GrpcChannelConfigError, GrpcOutbound};
 /// `config.tls_required = true` and the endpoint scheme is `http://`.
 pub fn create_transport_from_config(
     config: &crate::api::value_object::GrpcChannelConfig,
-) -> Result<Arc<dyn GrpcOutbound>, GrpcChannelConfigError> {
+) -> Result<Arc<dyn GrpcEgress>, GrpcChannelConfigError> {
     Ok(Arc::new(TonicGrpcClient::from_config(config)?))
 }
 
@@ -19,7 +19,7 @@ pub fn create_transport_from_config(
 ///
 /// Unlike [`create_transport_from_config`], returns the concrete type so that
 /// callers (e.g. `swe-edge-egress-grpc-resilient`) can wrap it in decorator
-/// layers before erasing the type to `Arc<dyn GrpcOutbound>`.
+/// layers before erasing the type to `Arc<dyn GrpcEgress>`.
 pub fn create_tonic_client_from_config(
     config: &crate::api::value_object::GrpcChannelConfig,
 ) -> Result<TonicGrpcClient, GrpcChannelConfigError> {

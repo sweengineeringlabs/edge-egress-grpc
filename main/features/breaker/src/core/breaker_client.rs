@@ -1,4 +1,4 @@
-//! [`GrpcOutbound`] impl for [`GrpcBreakerClient`].
+//! [`GrpcEgress`] impl for [`GrpcBreakerClient`].
 //!
 //! - `call_unary`: admit → call inner → record outcome.  When
 //!   admission is rejected, return `Unavailable` immediately
@@ -14,8 +14,8 @@
 
 use futures::future::BoxFuture;
 use swe_edge_egress_grpc::{
-    GrpcMessageStream, GrpcMetadata, GrpcOutbound, GrpcOutboundError, GrpcOutboundResult,
-    GrpcRequest, GrpcResponse,
+    GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcMessageStream, GrpcMetadata, GrpcRequest,
+    GrpcResponse,
 };
 
 use crate::api::breaker_client::GrpcBreakerClient;
@@ -23,8 +23,8 @@ use crate::api::breaker_state::Admission;
 use crate::api::failure_kind::classify;
 use crate::core::transitions::{admit, record};
 
-impl<T: GrpcOutbound + Send + Sync + 'static> GrpcOutbound for GrpcBreakerClient<T> {
-    fn call_unary(&self, request: GrpcRequest) -> BoxFuture<'_, GrpcOutboundResult<GrpcResponse>> {
+impl<T: GrpcEgress + Send + Sync + 'static> GrpcEgress for GrpcBreakerClient<T> {
+    fn call_unary(&self, request: GrpcRequest) -> BoxFuture<'_, GrpcEgressResult<GrpcResponse>> {
         Box::pin(async move {
             // Admission decision under the lock.
             let decision = {
@@ -33,7 +33,7 @@ impl<T: GrpcOutbound + Send + Sync + 'static> GrpcOutbound for GrpcBreakerClient
             };
 
             match decision {
-                Admission::RejectOpen => Err(GrpcOutboundError::Unavailable(
+                Admission::RejectOpen => Err(GrpcEgressError::Unavailable(
                     "grpc-breaker: circuit open, request short-circuited".into(),
                 )),
                 Admission::Proceed => {
@@ -54,11 +54,11 @@ impl<T: GrpcOutbound + Send + Sync + 'static> GrpcOutbound for GrpcBreakerClient
         method: String,
         metadata: GrpcMetadata,
         messages: GrpcMessageStream,
-    ) -> BoxFuture<'_, GrpcOutboundResult<GrpcMessageStream>> {
+    ) -> BoxFuture<'_, GrpcEgressResult<GrpcMessageStream>> {
         self.inner.call_stream(method, metadata, messages)
     }
 
-    fn health_check(&self) -> BoxFuture<'_, GrpcOutboundResult<()>> {
+    fn health_check(&self) -> BoxFuture<'_, GrpcEgressResult<()>> {
         self.inner.health_check()
     }
 }
@@ -69,7 +69,7 @@ mod tests {
 
     use futures::future::BoxFuture;
     use swe_edge_egress_grpc::{
-        GrpcMetadata, GrpcOutbound, GrpcOutboundResult, GrpcRequest, GrpcResponse,
+        GrpcEgress, GrpcEgressResult, GrpcMetadata, GrpcRequest, GrpcResponse,
     };
 
     use crate::api::breaker_client::GrpcBreakerClient;
@@ -77,8 +77,8 @@ mod tests {
     use crate::api::breaker_state::BreakerState;
 
     struct PongStub;
-    impl GrpcOutbound for PongStub {
-        fn call_unary(&self, _: GrpcRequest) -> BoxFuture<'_, GrpcOutboundResult<GrpcResponse>> {
+    impl GrpcEgress for PongStub {
+        fn call_unary(&self, _: GrpcRequest) -> BoxFuture<'_, GrpcEgressResult<GrpcResponse>> {
             Box::pin(async {
                 Ok(GrpcResponse {
                     body: b"pong".to_vec(),
@@ -86,7 +86,7 @@ mod tests {
                 })
             })
         }
-        fn health_check(&self) -> BoxFuture<'_, GrpcOutboundResult<()>> {
+        fn health_check(&self) -> BoxFuture<'_, GrpcEgressResult<()>> {
             Box::pin(async { Ok(()) })
         }
     }

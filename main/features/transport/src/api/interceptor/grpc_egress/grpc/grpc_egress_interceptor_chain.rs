@@ -1,20 +1,20 @@
-//! `GrpcOutboundInterceptorChain` — ordered chain of outbound interceptors.
+//! `GrpcEgressInterceptorChain` — ordered chain of outbound interceptors.
 
 use std::sync::Arc;
 
-use crate::api::interceptor::GrpcOutboundInterceptor;
-use crate::api::port::GrpcOutboundError;
+use crate::api::interceptor::GrpcEgressInterceptor;
+use crate::api::port::GrpcEgressError;
 use crate::api::value_object::{GrpcRequest, GrpcResponse};
 
-/// A registered chain of [`GrpcOutboundInterceptor`]s.
+/// A registered chain of [`GrpcEgressInterceptor`]s.
 ///
 /// Chain order = the order in which interceptors were added.
 #[derive(Clone, Default)]
-pub struct GrpcOutboundInterceptorChain {
-    pub(crate) interceptors: Vec<Arc<dyn GrpcOutboundInterceptor>>,
+pub struct GrpcEgressInterceptorChain {
+    pub(crate) interceptors: Vec<Arc<dyn GrpcEgressInterceptor>>,
 }
 
-impl GrpcOutboundInterceptorChain {
+impl GrpcEgressInterceptorChain {
     /// Construct an empty chain.
     pub fn new() -> Self {
         Self {
@@ -23,7 +23,7 @@ impl GrpcOutboundInterceptorChain {
     }
 
     /// Register `interceptor` at the end of the chain.
-    pub fn push(mut self, interceptor: Arc<dyn GrpcOutboundInterceptor>) -> Self {
+    pub fn push(mut self, interceptor: Arc<dyn GrpcEgressInterceptor>) -> Self {
         self.interceptors.push(interceptor);
         self
     }
@@ -39,7 +39,7 @@ impl GrpcOutboundInterceptorChain {
     }
 
     /// Run every `before_call` in order until one fails or all succeed.
-    pub fn run_before(&self, req: &mut GrpcRequest) -> Result<(), GrpcOutboundError> {
+    pub fn run_before(&self, req: &mut GrpcRequest) -> Result<(), GrpcEgressError> {
         for interceptor in &self.interceptors {
             interceptor.before_call(req)?;
         }
@@ -47,7 +47,7 @@ impl GrpcOutboundInterceptorChain {
     }
 
     /// Run every `after_call` in order until one fails or all succeed.
-    pub fn run_after(&self, resp: &mut GrpcResponse) -> Result<(), GrpcOutboundError> {
+    pub fn run_after(&self, resp: &mut GrpcResponse) -> Result<(), GrpcEgressError> {
         for interceptor in &self.interceptors {
             interceptor.after_call(resp)?;
         }
@@ -70,12 +70,12 @@ mod tests {
         log: Arc<Mutex<Vec<&'static str>>>,
     }
 
-    impl GrpcOutboundInterceptor for Recorder {
-        fn before_call(&self, _: &mut GrpcRequest) -> Result<(), GrpcOutboundError> {
+    impl GrpcEgressInterceptor for Recorder {
+        fn before_call(&self, _: &mut GrpcRequest) -> Result<(), GrpcEgressError> {
             self.log.lock().unwrap().push(self.marker);
             Ok(())
         }
-        fn after_call(&self, _: &mut GrpcResponse) -> Result<(), GrpcOutboundError> {
+        fn after_call(&self, _: &mut GrpcResponse) -> Result<(), GrpcEgressError> {
             self.log.lock().unwrap().push(self.marker);
             Ok(())
         }
@@ -83,25 +83,25 @@ mod tests {
 
     struct AlwaysFailBefore;
 
-    impl GrpcOutboundInterceptor for AlwaysFailBefore {
-        fn before_call(&self, _: &mut GrpcRequest) -> Result<(), GrpcOutboundError> {
-            Err(GrpcOutboundError::Status(
+    impl GrpcEgressInterceptor for AlwaysFailBefore {
+        fn before_call(&self, _: &mut GrpcRequest) -> Result<(), GrpcEgressError> {
+            Err(GrpcEgressError::Status(
                 GrpcStatusCode::PermissionDenied,
                 "denied by interceptor".into(),
             ))
         }
-        fn after_call(&self, _: &mut GrpcResponse) -> Result<(), GrpcOutboundError> {
+        fn after_call(&self, _: &mut GrpcResponse) -> Result<(), GrpcEgressError> {
             Ok(())
         }
     }
 
     struct CountAfter(Arc<AtomicUsize>);
 
-    impl GrpcOutboundInterceptor for CountAfter {
-        fn before_call(&self, _: &mut GrpcRequest) -> Result<(), GrpcOutboundError> {
+    impl GrpcEgressInterceptor for CountAfter {
+        fn before_call(&self, _: &mut GrpcRequest) -> Result<(), GrpcEgressError> {
             Ok(())
         }
-        fn after_call(&self, _: &mut GrpcResponse) -> Result<(), GrpcOutboundError> {
+        fn after_call(&self, _: &mut GrpcResponse) -> Result<(), GrpcEgressError> {
             self.0.fetch_add(1, Ordering::SeqCst);
             Ok(())
         }
@@ -120,7 +120,7 @@ mod tests {
     /// @covers: is_empty
     #[test]
     fn test_new_chain_is_empty() {
-        let chain = GrpcOutboundInterceptorChain::new();
+        let chain = GrpcEgressInterceptorChain::new();
         assert_eq!(chain.len(), 0);
         assert!(chain.is_empty());
     }
@@ -129,7 +129,7 @@ mod tests {
     #[test]
     fn test_push_appends_in_registration_order() {
         let log = Arc::new(Mutex::new(Vec::new()));
-        let chain = GrpcOutboundInterceptorChain::new()
+        let chain = GrpcEgressInterceptorChain::new()
             .push(Arc::new(Recorder {
                 marker: "a",
                 log: log.clone(),
@@ -151,12 +151,12 @@ mod tests {
     #[test]
     fn test_run_before_short_circuits_on_first_failure() {
         let after_count = Arc::new(AtomicUsize::new(0));
-        let chain = GrpcOutboundInterceptorChain::new()
+        let chain = GrpcEgressInterceptorChain::new()
             .push(Arc::new(AlwaysFailBefore))
             .push(Arc::new(CountAfter(after_count.clone())));
         let mut r = req();
         match chain.run_before(&mut r) {
-            Err(GrpcOutboundError::Status(code, _)) => {
+            Err(GrpcEgressError::Status(code, _)) => {
                 assert_eq!(code, GrpcStatusCode::PermissionDenied);
             }
             other => panic!("expected PermissionDenied, got {other:?}"),
@@ -168,7 +168,7 @@ mod tests {
     #[test]
     fn test_run_after_invokes_every_interceptor_in_order() {
         let log = Arc::new(Mutex::new(Vec::new()));
-        let chain = GrpcOutboundInterceptorChain::new()
+        let chain = GrpcEgressInterceptorChain::new()
             .push(Arc::new(Recorder {
                 marker: "x",
                 log: log.clone(),
@@ -185,7 +185,7 @@ mod tests {
     /// @covers: len
     #[test]
     fn test_len_returns_number_of_registered_interceptors() {
-        let chain = GrpcOutboundInterceptorChain::new().push(Arc::new(AlwaysFailBefore));
+        let chain = GrpcEgressInterceptorChain::new().push(Arc::new(AlwaysFailBefore));
         assert_eq!(chain.len(), 1);
         assert!(!chain.is_empty());
     }

@@ -2,8 +2,8 @@
 
 /// Errors raised while loading config or building the breaker.
 ///
-/// Runtime errors from the wrapped [`GrpcOutbound`] flow through
-/// as the inner crate's `GrpcOutboundError`; they are not
+/// Runtime errors from the wrapped [`GrpcEgress`] flow through
+/// as the inner crate's `GrpcEgressError`; they are not
 /// re-wrapped here.
 #[derive(Debug, thiserror::Error)]
 pub enum Error {

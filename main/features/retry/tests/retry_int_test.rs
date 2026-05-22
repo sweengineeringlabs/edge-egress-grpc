@@ -1,7 +1,7 @@
 //! Integration tests for the gRPC retry decorator.
 //!
 //! These exercise the public API end-to-end: a stub
-//! [`GrpcOutbound`] is wrapped with [`GrpcRetryClient`] and the
+//! [`GrpcEgress`] is wrapped with [`GrpcRetryClient`] and the
 //! retry loop is observed via call counters and elapsed time.
 
 use std::sync::atomic::{AtomicU32, Ordering};
@@ -10,12 +10,12 @@ use std::time::{Duration, Instant};
 
 use futures::future::BoxFuture;
 use swe_edge_egress_grpc::{
-    GrpcMetadata, GrpcOutbound, GrpcOutboundError, GrpcOutboundResult, GrpcRequest, GrpcResponse,
+    GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcMetadata, GrpcRequest, GrpcResponse,
     GrpcStatusCode,
 };
 use swe_edge_egress_grpc_retry::{builder, GrpcRetryClient, GrpcRetryConfig};
 
-/// Stub `GrpcOutbound` that returns a scripted sequence of
+/// Stub `GrpcEgress` that returns a scripted sequence of
 /// outcomes and counts how many times `call_unary` was invoked.
 ///
 /// The wrapping `Arc` lets the test observe call counts after
@@ -47,7 +47,7 @@ impl ScriptedClient {
         self.calls.load(Ordering::SeqCst)
     }
 
-    async fn dispatch(&self) -> GrpcOutboundResult<GrpcResponse> {
+    async fn dispatch(&self) -> GrpcEgressResult<GrpcResponse> {
         let n = self.calls.fetch_add(1, Ordering::SeqCst);
         let idx = (n as usize).min(self.script.len().saturating_sub(1));
         let outcome = self.script.get(idx).cloned().unwrap_or(Outcome::Ok);
@@ -56,15 +56,15 @@ impl ScriptedClient {
                 body: b"ok".to_vec(),
                 metadata: GrpcMetadata::default(),
             }),
-            Outcome::Status(code, msg) => Err(GrpcOutboundError::Status(code, msg.into())),
-            Outcome::Unavailable(msg) => Err(GrpcOutboundError::Unavailable(msg.into())),
-            Outcome::Internal(msg) => Err(GrpcOutboundError::Internal(msg.into())),
+            Outcome::Status(code, msg) => Err(GrpcEgressError::Status(code, msg.into())),
+            Outcome::Unavailable(msg) => Err(GrpcEgressError::Unavailable(msg.into())),
+            Outcome::Internal(msg) => Err(GrpcEgressError::Internal(msg.into())),
         }
     }
 }
 
 /// Newtype that owns an `Arc<ScriptedClient>` and implements
-/// [`GrpcOutbound`].  Avoids needing a blanket impl on `Arc<T>`,
+/// [`GrpcEgress`].  Avoids needing a blanket impl on `Arc<T>`,
 /// which would conflict with the orphan rule.
 struct SharedClient<T> {
     inner: Arc<T>,
@@ -76,13 +76,13 @@ impl<T> SharedClient<T> {
     }
 }
 
-impl GrpcOutbound for SharedClient<ScriptedClient> {
-    fn call_unary(&self, _request: GrpcRequest) -> BoxFuture<'_, GrpcOutboundResult<GrpcResponse>> {
+impl GrpcEgress for SharedClient<ScriptedClient> {
+    fn call_unary(&self, _request: GrpcRequest) -> BoxFuture<'_, GrpcEgressResult<GrpcResponse>> {
         let inner = Arc::clone(&self.inner);
         Box::pin(async move { inner.dispatch().await })
     }
 
-    fn health_check(&self) -> BoxFuture<'_, GrpcOutboundResult<()>> {
+    fn health_check(&self) -> BoxFuture<'_, GrpcEgressResult<()>> {
         Box::pin(async { Ok(()) })
     }
 }
@@ -150,7 +150,7 @@ async fn test_permission_denied_is_never_retried() {
         .await
         .expect_err("must fail");
     match err {
-        GrpcOutboundError::Status(GrpcStatusCode::PermissionDenied, _) => {}
+        GrpcEgressError::Status(GrpcStatusCode::PermissionDenied, _) => {}
         other => panic!("expected PermissionDenied, got {other:?}"),
     }
     assert_eq!(
@@ -175,7 +175,7 @@ async fn test_unauthenticated_is_never_retried() {
         .expect_err("must fail");
     assert!(matches!(
         err,
-        GrpcOutboundError::Status(GrpcStatusCode::Unauthenticated, _)
+        GrpcEgressError::Status(GrpcStatusCode::Unauthenticated, _)
     ));
     assert_eq!(inner.call_count(), 1, "Unauthenticated must not be retried");
 }
@@ -211,7 +211,7 @@ async fn test_unavailable_throughout_exhausts_max_attempts() {
         .expect_err("never recovers");
     assert!(matches!(
         err,
-        GrpcOutboundError::Status(GrpcStatusCode::Unavailable, _)
+        GrpcEgressError::Status(GrpcStatusCode::Unavailable, _)
     ));
     assert_eq!(inner.call_count(), 5, "exhausts max_attempts");
 }
@@ -343,19 +343,19 @@ async fn test_retry_honors_caller_deadline_as_total_budget() {
 
     struct SharedSlow(Arc<Slow>);
 
-    impl GrpcOutbound for SharedSlow {
-        fn call_unary(&self, _r: GrpcRequest) -> BoxFuture<'_, GrpcOutboundResult<GrpcResponse>> {
+    impl GrpcEgress for SharedSlow {
+        fn call_unary(&self, _r: GrpcRequest) -> BoxFuture<'_, GrpcEgressResult<GrpcResponse>> {
             let inner = Arc::clone(&self.0);
             Box::pin(async move {
                 inner.calls.fetch_add(1, Ordering::SeqCst);
                 tokio::time::sleep(inner.per_call).await;
-                Err(GrpcOutboundError::Status(
+                Err(GrpcEgressError::Status(
                     GrpcStatusCode::Unavailable,
                     "slow blip".into(),
                 ))
             })
         }
-        fn health_check(&self) -> BoxFuture<'_, GrpcOutboundResult<()>> {
+        fn health_check(&self) -> BoxFuture<'_, GrpcEgressResult<()>> {
             Box::pin(async { Ok(()) })
         }
     }

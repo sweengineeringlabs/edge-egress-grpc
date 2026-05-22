@@ -1,4 +1,4 @@
-//! [`GrpcOutbound`] impl for [`GrpcRetryClient`].
+//! [`GrpcEgress`] impl for [`GrpcRetryClient`].
 //!
 //! The retry loop:
 //! 1. Issue the call with a per-attempt deadline trimmed to fit
@@ -32,8 +32,8 @@ use std::time::Instant;
 
 use futures::future::BoxFuture;
 use swe_edge_egress_grpc::{
-    GrpcMessageStream, GrpcMetadata, GrpcOutbound, GrpcOutboundError, GrpcOutboundResult,
-    GrpcRequest, GrpcResponse,
+    GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcMessageStream, GrpcMetadata, GrpcRequest,
+    GrpcResponse,
 };
 use tracing::{debug, trace, warn};
 
@@ -41,8 +41,8 @@ use crate::api::retry_client::GrpcRetryClient;
 use crate::api::retry_policy::{classify, parse_retry_after_hint, RetryDecision};
 use crate::core::backoff::{next_backoff, rate_limit_backoff, JitterRng};
 
-impl<T: GrpcOutbound + Send + Sync + 'static> GrpcOutbound for GrpcRetryClient<T> {
-    fn call_unary(&self, request: GrpcRequest) -> BoxFuture<'_, GrpcOutboundResult<GrpcResponse>> {
+impl<T: GrpcEgress + Send + Sync + 'static> GrpcEgress for GrpcRetryClient<T> {
+    fn call_unary(&self, request: GrpcRequest) -> BoxFuture<'_, GrpcEgressResult<GrpcResponse>> {
         Box::pin(self.run_with_retry(request))
     }
 
@@ -51,19 +51,19 @@ impl<T: GrpcOutbound + Send + Sync + 'static> GrpcOutbound for GrpcRetryClient<T
         method: String,
         metadata: GrpcMetadata,
         messages: GrpcMessageStream,
-    ) -> BoxFuture<'_, GrpcOutboundResult<GrpcMessageStream>> {
+    ) -> BoxFuture<'_, GrpcEgressResult<GrpcMessageStream>> {
         // Streaming: pass through.  Re-issuing a half-consumed
         // request stream isn't safe in general.
         self.inner.call_stream(method, metadata, messages)
     }
 
-    fn health_check(&self) -> BoxFuture<'_, GrpcOutboundResult<()>> {
+    fn health_check(&self) -> BoxFuture<'_, GrpcEgressResult<()>> {
         self.inner.health_check()
     }
 }
 
-impl<T: GrpcOutbound + Send + Sync + 'static> GrpcRetryClient<T> {
-    async fn run_with_retry(&self, request: GrpcRequest) -> GrpcOutboundResult<GrpcResponse> {
+impl<T: GrpcEgress + Send + Sync + 'static> GrpcRetryClient<T> {
+    async fn run_with_retry(&self, request: GrpcRequest) -> GrpcEgressResult<GrpcResponse> {
         let started = Instant::now();
         let total_budget = request.deadline;
         let max_attempts = self.config.max_attempts;
@@ -71,7 +71,7 @@ impl<T: GrpcOutbound + Send + Sync + 'static> GrpcRetryClient<T> {
         let mut rng = JitterRng::from_clock();
         let mut standard_attempt = 0u32;
         let mut rate_lim_attempt = 0u32;
-        let mut last_error: Option<GrpcOutboundError> = None;
+        let mut last_error: Option<GrpcEgressError> = None;
 
         // `attempt` is the overall loop index (for deadline trimming).
         for attempt in 0..max_attempts {
@@ -86,7 +86,7 @@ impl<T: GrpcOutbound + Send + Sync + 'static> GrpcRetryClient<T> {
                         "grpc-retry: deadline exhausted before attempt",
                     );
                     return Err(last_error.unwrap_or_else(|| {
-                        GrpcOutboundError::Timeout(
+                        GrpcEgressError::Timeout(
                             "deadline exhausted before retry could be issued".into(),
                         )
                     }));
@@ -143,7 +143,7 @@ impl<T: GrpcOutbound + Send + Sync + 'static> GrpcRetryClient<T> {
 
                     // Extract Retry-After hint from the error message, if present.
                     let hint = last_error.as_ref().and_then(|e| {
-                        if let GrpcOutboundError::Status(_, msg) = e {
+                        if let GrpcEgressError::Status(_, msg) = e {
                             parse_retry_after_hint(msg)
                         } else {
                             None
@@ -169,7 +169,7 @@ impl<T: GrpcOutbound + Send + Sync + 'static> GrpcRetryClient<T> {
         }
 
         Err(last_error.unwrap_or_else(|| {
-            GrpcOutboundError::Internal(
+            GrpcEgressError::Internal(
                 "grpc-retry: exhausted attempts with no recorded error".into(),
             )
         }))
@@ -205,15 +205,15 @@ mod tests {
 
     use futures::future::BoxFuture;
     use swe_edge_egress_grpc::{
-        GrpcMetadata, GrpcOutbound, GrpcOutboundResult, GrpcRequest, GrpcResponse,
+        GrpcEgress, GrpcEgressResult, GrpcMetadata, GrpcRequest, GrpcResponse,
     };
 
     use crate::api::retry_client::GrpcRetryClient;
     use crate::api::retry_config::GrpcRetryConfig;
 
     struct OkStub;
-    impl GrpcOutbound for OkStub {
-        fn call_unary(&self, _: GrpcRequest) -> BoxFuture<'_, GrpcOutboundResult<GrpcResponse>> {
+    impl GrpcEgress for OkStub {
+        fn call_unary(&self, _: GrpcRequest) -> BoxFuture<'_, GrpcEgressResult<GrpcResponse>> {
             Box::pin(async {
                 Ok(GrpcResponse {
                     body: b"ok".to_vec(),
@@ -221,7 +221,7 @@ mod tests {
                 })
             })
         }
-        fn health_check(&self) -> BoxFuture<'_, GrpcOutboundResult<()>> {
+        fn health_check(&self) -> BoxFuture<'_, GrpcEgressResult<()>> {
             Box::pin(async { Ok(()) })
         }
     }

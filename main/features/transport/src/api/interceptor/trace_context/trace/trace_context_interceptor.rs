@@ -1,8 +1,8 @@
 //! W3C Trace Context outbound interceptor — declaration and implementation.
 
-use crate::api::interceptor::grpc_outbound::GrpcOutboundInterceptor;
+use crate::api::interceptor::grpc_egress::GrpcEgressInterceptor;
 use crate::api::interceptor::TraceContextSource;
-use crate::api::port::GrpcOutboundError;
+use crate::api::port::GrpcEgressError;
 use crate::api::value_object::{GrpcRequest, GrpcResponse};
 
 const TRACEPARENT: &str = "traceparent";
@@ -36,8 +36,8 @@ impl TraceContextInterceptor {
     }
 }
 
-impl GrpcOutboundInterceptor for TraceContextInterceptor {
-    fn before_call(&self, req: &mut GrpcRequest) -> Result<(), GrpcOutboundError> {
+impl GrpcEgressInterceptor for TraceContextInterceptor {
+    fn before_call(&self, req: &mut GrpcRequest) -> Result<(), GrpcEgressError> {
         if req.metadata.headers.contains_key(TRACEPARENT) {
             return Ok(());
         }
@@ -60,7 +60,7 @@ impl GrpcOutboundInterceptor for TraceContextInterceptor {
         }
     }
 
-    fn after_call(&self, _resp: &mut GrpcResponse) -> Result<(), GrpcOutboundError> {
+    fn after_call(&self, _resp: &mut GrpcResponse) -> Result<(), GrpcEgressError> {
         Ok(())
     }
 }

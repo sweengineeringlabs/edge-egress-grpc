@@ -1,14 +1,14 @@
 //! Public type — the retry decorator that wraps any
-//! [`GrpcOutbound`].
+//! [`GrpcEgress`].
 //!
 //! Per SEA rule 160, the type *declaration* lives in api/.
-//! The `GrpcOutbound` impl block lives in `core::retry_client`.
+//! The `GrpcEgress` impl block lives in `core::retry_client`.
 
 use std::sync::Arc;
 
 use crate::api::retry_config::GrpcRetryConfig;
 
-/// Decorator that wraps an inner [`GrpcOutbound`] with the
+/// Decorator that wraps an inner [`GrpcEgress`] with the
 /// retry semantics described at the crate root.
 ///
 /// `T` is the inner type; the wrapper is `T + 'static + Send + Sync`

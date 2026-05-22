@@ -5,16 +5,16 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use jsonwebtoken::{Algorithm, EncodingKey, Header};
 use swe_edge_egress_grpc::{
-    GrpcOutboundError, GrpcOutboundInterceptor, GrpcRequest, GrpcResponse, GrpcStatusCode,
+    GrpcEgressError, GrpcEgressInterceptor, GrpcRequest, GrpcResponse, GrpcStatusCode,
 };
 
 use crate::api::{
-    bearer_auth_config::BearerSecret, BearerAuthError, BearerOutboundInterceptor,
+    bearer_auth_config::BearerSecret, BearerAuthError, BearerEgressInterceptor,
     AUTHORIZATION_HEADER,
 };
 use crate::core::jwt_claims::JwtClaims;
 
-impl BearerOutboundInterceptor {
+impl BearerEgressInterceptor {
     fn sign_token(&self) -> Result<String, BearerAuthError> {
         let now = SystemTime::now()
             .duration_since(UNIX_EPOCH)
@@ -38,11 +38,11 @@ impl BearerOutboundInterceptor {
     }
 }
 
-impl GrpcOutboundInterceptor for BearerOutboundInterceptor {
-    fn before_call(&self, req: &mut GrpcRequest) -> Result<(), GrpcOutboundError> {
+impl GrpcEgressInterceptor for BearerEgressInterceptor {
+    fn before_call(&self, req: &mut GrpcRequest) -> Result<(), GrpcEgressError> {
         let token = self.sign_token().map_err(|e| {
             tracing::warn!(error = %e, "failed to mint bearer token");
-            GrpcOutboundError::Status(
+            GrpcEgressError::Status(
                 GrpcStatusCode::Internal,
                 "failed to mint bearer token".into(),
             )
@@ -53,7 +53,7 @@ impl GrpcOutboundInterceptor for BearerOutboundInterceptor {
         Ok(())
     }
 
-    fn after_call(&self, _resp: &mut GrpcResponse) -> Result<(), GrpcOutboundError> {
+    fn after_call(&self, _resp: &mut GrpcResponse) -> Result<(), GrpcEgressError> {
         Ok(())
     }
 }
@@ -65,10 +65,10 @@ mod tests {
     use swe_edge_egress_grpc::GrpcRequest;
 
     use super::*;
-    use crate::BearerOutboundConfig;
+    use crate::BearerEgressConfig;
 
-    fn hs256_config(secret: &[u8]) -> BearerOutboundConfig {
-        BearerOutboundConfig {
+    fn hs256_config(secret: &[u8]) -> BearerEgressConfig {
+        BearerEgressConfig {
             secret: BearerSecret::Hs256 {
                 secret: secret.to_vec(),
             },
@@ -82,7 +82,7 @@ mod tests {
     /// @covers: before_call — injects a Bearer authorization header.
     #[test]
     fn test_before_call_injects_bearer_authorization_header() {
-        let interceptor = BearerOutboundInterceptor::from_config(hs256_config(b"sec"));
+        let interceptor = BearerEgressInterceptor::from_config(hs256_config(b"sec"));
         let mut req = GrpcRequest::new("/svc/M", vec![], Duration::from_secs(1));
         interceptor.before_call(&mut req).expect("before_call");
         let auth = req
@@ -104,7 +104,7 @@ mod tests {
     fn test_sign_token_round_trips_through_jsonwebtoken_verifier() {
         use jsonwebtoken::{decode, DecodingKey, Validation};
 
-        let interceptor = BearerOutboundInterceptor::from_config(hs256_config(b"sec"));
+        let interceptor = BearerEgressInterceptor::from_config(hs256_config(b"sec"));
         let token = interceptor.sign_token().expect("sign");
 
         let mut validation = Validation::new(Algorithm::HS256);

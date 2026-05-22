@@ -1,4 +1,4 @@
-//! Integration tests for `GrpcOutbound` (via `create_transport_from_config`).
+//! Integration tests for `GrpcEgress` (via `create_transport_from_config`).
 //!
 //! Tests spin up a minimal in-process HTTP/2 echo server using `hyper_util`.
 
@@ -13,11 +13,11 @@ use http_body::Frame;
 use http_body_util::{BodyExt as _, Full, StreamBody};
 
 use swe_edge_egress_grpc_transport::{
-    create_transport_from_config, GrpcChannelConfig, GrpcMessageStream, GrpcMetadata, GrpcOutbound,
-    GrpcOutboundError, GrpcRequest, GrpcResponse, GrpcStatusCode,
+    create_transport_from_config, GrpcChannelConfig, GrpcEgress, GrpcEgressError,
+    GrpcMessageStream, GrpcMetadata, GrpcRequest, GrpcResponse, GrpcStatusCode,
 };
 
-fn make_client(addr: SocketAddr) -> Arc<dyn GrpcOutbound> {
+fn make_client(addr: SocketAddr) -> Arc<dyn GrpcEgress> {
     create_transport_from_config(
         &GrpcChannelConfig::new(format!("http://{addr}")).allow_plaintext(),
     )
@@ -286,7 +286,7 @@ async fn test_call_unary_propagates_grpc_error_status() {
     let result = client.call_unary(req).await;
     assert!(result.is_err(), "expected Err for grpc-status 13, got Ok");
     match result.unwrap_err() {
-        GrpcOutboundError::Status(GrpcStatusCode::Internal, msg) => {
+        GrpcEgressError::Status(GrpcStatusCode::Internal, msg) => {
             // server-side message comes through grpc-message verbatim
             assert!(
                 msg.contains("server-side error"),
@@ -362,7 +362,7 @@ async fn test_health_check_fails_when_no_server_is_listening() {
         "expected Err when nothing is listening, got Ok"
     );
     match result.unwrap_err() {
-        GrpcOutboundError::Unavailable(msg) => {
+        GrpcEgressError::Unavailable(msg) => {
             assert!(
                 msg.contains(&addr.port().to_string()),
                 "error should mention port, got: {msg}"
@@ -444,7 +444,7 @@ async fn test_call_unary_returns_timeout_error_when_server_stalls() {
     let req = GrpcRequest::new("svc/Method", b"ping".to_vec(), Duration::from_millis(80));
     let result = client.call_unary(req).await;
     assert!(
-        matches!(result, Err(GrpcOutboundError::Timeout(_))),
+        matches!(result, Err(GrpcEgressError::Timeout(_))),
         "expected Timeout, got {result:?}"
     );
 }
@@ -464,7 +464,7 @@ async fn test_call_unary_returns_connection_failed_when_no_server_is_listening()
     let req = GrpcRequest::new("svc/Method", b"ping".to_vec(), Duration::from_secs(5));
     let result = client.call_unary(req).await;
     assert!(
-        matches!(result, Err(GrpcOutboundError::ConnectionFailed(_))),
+        matches!(result, Err(GrpcEgressError::ConnectionFailed(_))),
         "expected ConnectionFailed, got {result:?}"
     );
 }
@@ -586,7 +586,7 @@ async fn test_call_unary_cancellation_token_aborts_in_flight_request() {
     cancel_handle.await.unwrap();
 
     match result {
-        Err(GrpcOutboundError::Cancelled(msg)) => {
+        Err(GrpcEgressError::Cancelled(msg)) => {
             assert!(
                 msg.to_lowercase().contains("cancel"),
                 "Cancelled message should mention cancellation, got: {msg}"
@@ -596,7 +596,7 @@ async fn test_call_unary_cancellation_token_aborts_in_flight_request() {
     }
 }
 
-/// @covers: GrpcOutboundError::Status — all 17 GrpcStatusCode variants round-trip
+/// @covers: GrpcEgressError::Status — all 17 GrpcStatusCode variants round-trip
 /// through the public error type without information loss.
 #[test]
 fn test_status_error_round_trips_all_17_grpc_status_code_variants() {
@@ -621,9 +621,9 @@ fn test_status_error_round_trips_all_17_grpc_status_code_variants() {
     ];
     assert_eq!(all_17.len(), 17);
     for code in all_17 {
-        let err = GrpcOutboundError::Status(code, "msg".into());
+        let err = GrpcEgressError::Status(code, "msg".into());
         match err {
-            GrpcOutboundError::Status(c, m) => {
+            GrpcEgressError::Status(c, m) => {
                 assert_eq!(c, code, "code lost in round trip for {code:?}");
                 assert_eq!(m, "msg");
             }
@@ -678,7 +678,7 @@ async fn test_call_unary_sanitizes_internal_error_message_on_truncated_response(
         Err(e) => e,
     };
     match err {
-        GrpcOutboundError::Internal(msg) => {
+        GrpcEgressError::Internal(msg) => {
             // Sanitized: must NOT contain raw byte counts, file names, or struct names.
             assert!(
                 !msg.contains("expected") && !msg.contains("got"),

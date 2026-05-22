@@ -10,10 +10,10 @@ pub use processor::describe_processor;
 pub use validator::validate_resilience_config;
 
 pub use crate::api::interceptor::{
-    GrpcOutboundInterceptor, GrpcOutboundInterceptorChain, TraceContextInterceptor,
+    GrpcEgressInterceptor, GrpcEgressInterceptorChain, TraceContextInterceptor,
 };
 pub use crate::api::port::{
-    GrpcChannelConfigError, GrpcMessageStream, GrpcOutbound, GrpcOutboundError, GrpcOutboundResult,
+    GrpcChannelConfigError, GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcMessageStream,
 };
 pub use crate::api::value_object::{
     CompressionMode, GrpcChannelConfig, GrpcMetadata, GrpcRequest, GrpcResponse, GrpcStatusCode,

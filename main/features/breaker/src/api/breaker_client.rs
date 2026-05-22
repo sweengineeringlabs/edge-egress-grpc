@@ -1,7 +1,7 @@
 //! Public type — the breaker decorator.
 //!
 //! Per SEA rule 160 the type *declaration* is here; the
-//! `GrpcOutbound` impl block lives in `core::breaker_client`.
+//! `GrpcEgress` impl block lives in `core::breaker_client`.
 
 use std::sync::Arc;
 
@@ -10,7 +10,7 @@ use tokio::sync::Mutex;
 use crate::api::breaker_config::GrpcBreakerConfig;
 use crate::api::breaker_state::BreakerState;
 
-/// Decorator that wraps an inner [`GrpcOutbound`] with a
+/// Decorator that wraps an inner [`GrpcEgress`] with a
 /// three-state circuit breaker.
 ///
 /// Construct via [`builder()`](crate::builder) (loads SWE

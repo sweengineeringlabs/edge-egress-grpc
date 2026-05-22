@@ -7,7 +7,7 @@ use crate::api::retry_config::GrpcRetryConfig;
 /// Construct via [`builder()`](crate::builder) (loads SWE
 /// baseline) or
 /// [`ApplicationConfigBuilder::with_config`](crate::ApplicationConfigBuilder::with_config) (caller-supplied).
-/// Wrap an inner [`GrpcOutbound`](swe_edge_egress_grpc::GrpcOutbound)
+/// Wrap an inner [`GrpcEgress`](swe_edge_egress_grpc::GrpcEgress)
 /// with [`ApplicationConfigBuilder::wrap`](crate::ApplicationConfigBuilder::wrap) to finalize.
 #[derive(Debug)]
 pub struct ApplicationConfigBuilder {

@@ -6,19 +6,19 @@ use bytes::Bytes;
 use http_body_util::Full;
 use hyper_util::client::legacy::connect::HttpConnector;
 
-use crate::api::interceptor::GrpcOutboundInterceptorChain;
+use crate::api::interceptor::GrpcEgressInterceptorChain;
 use crate::api::value_object::{CompressionMode, DEFAULT_MAX_MESSAGE_BYTES};
 
 /// Hyper HTTP/2 client type alias used by [`TonicGrpcClient`].
 pub(crate) type HyperClient =
     hyper_util::client::legacy::Client<hyper_rustls::HttpsConnector<HttpConnector>, Full<Bytes>>;
 
-/// Concrete `GrpcOutbound` implementation using hyper HTTP/2.
+/// Concrete `GrpcEgress` implementation using hyper HTTP/2.
 pub struct TonicGrpcClient {
     pub(crate) base_uri: String,
     pub(crate) client: HyperClient,
     pub(crate) timeout: Duration,
-    pub(crate) interceptors: GrpcOutboundInterceptorChain,
+    pub(crate) interceptors: GrpcEgressInterceptorChain,
     pub(crate) max_message_bytes: usize,
     pub(crate) compression: CompressionMode,
 }
@@ -39,7 +39,7 @@ impl TonicGrpcClient {
             base_uri: base_uri.into(),
             client,
             timeout: Duration::from_secs(30),
-            interceptors: GrpcOutboundInterceptorChain::new(),
+            interceptors: GrpcEgressInterceptorChain::new(),
             max_message_bytes: DEFAULT_MAX_MESSAGE_BYTES,
             compression: CompressionMode::None,
         }

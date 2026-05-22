@@ -1,6 +1,6 @@
 //! Public builder + factory.
 
-use swe_edge_egress_grpc::GrpcOutbound;
+use swe_edge_egress_grpc::GrpcEgress;
 
 use crate::api::error::Error;
 use crate::api::retry_client::GrpcRetryClient;
@@ -18,7 +18,7 @@ pub fn builder() -> Result<ApplicationConfigBuilder, Error> {
 ///
 /// Use [`builder`] when you need to override config before
 /// wrapping; use this when the defaults are right.
-pub fn create_retry_client<T: GrpcOutbound + Send + Sync + 'static>(
+pub fn create_retry_client<T: GrpcEgress + Send + Sync + 'static>(
     inner: T,
 ) -> Result<GrpcRetryClient<T>, Error> {
     let cfg = GrpcRetryConfig::swe_default()?;
@@ -39,7 +39,7 @@ impl ApplicationConfigBuilder {
     }
 
     /// Wrap `inner` to produce a [`GrpcRetryClient`].
-    pub fn wrap<T: GrpcOutbound + Send + Sync + 'static>(self, inner: T) -> GrpcRetryClient<T> {
+    pub fn wrap<T: GrpcEgress + Send + Sync + 'static>(self, inner: T) -> GrpcRetryClient<T> {
         GrpcRetryClient::new(inner, self.config)
     }
 }

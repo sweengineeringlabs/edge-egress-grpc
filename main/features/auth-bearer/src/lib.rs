@@ -1,8 +1,8 @@
 //! `swe-edge-egress-grpc-auth-bearer` — JWT bearer
-//! [`GrpcOutboundInterceptor`](swe_edge_egress_grpc::GrpcOutboundInterceptor)
+//! [`GrpcEgressInterceptor`](swe_edge_egress_grpc::GrpcEgressInterceptor)
 //! for the gRPC egress stack.
 //!
-//! [`BearerOutboundInterceptor`] signs a JWT from configured claims
+//! [`BearerEgressInterceptor`] signs a JWT from configured claims
 //! (or accepts a pre-minted token) and injects it into the
 //! `authorization` request metadata on every outgoing call.
 //!

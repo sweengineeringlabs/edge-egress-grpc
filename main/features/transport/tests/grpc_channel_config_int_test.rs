@@ -7,8 +7,8 @@ use std::sync::Arc;
 
 use swe_edge_egress_grpc_transport::{
     create_transport_from_config, CompressionMode, GrpcChannelConfig, GrpcChannelConfigError,
-    GrpcOutbound, GrpcOutboundError, GrpcOutboundInterceptor, GrpcOutboundInterceptorChain,
-    GrpcRequest, GrpcResponse, GrpcStatusCode, TraceContextInterceptor,
+    GrpcEgress, GrpcEgressError, GrpcEgressInterceptor, GrpcEgressInterceptorChain, GrpcRequest,
+    GrpcResponse, GrpcStatusCode, TraceContextInterceptor,
 };
 
 fn ensure_rustls_provider() {
@@ -60,15 +60,15 @@ fn transport_struct_channel_config_from_config_accepts_https_int_test() {
     assert!(create_transport_from_config(&cfg).is_ok());
 }
 
-/// @covers: GrpcOutboundInterceptorChain — accepts a TraceContextInterceptor.
+/// @covers: GrpcEgressInterceptorChain — accepts a TraceContextInterceptor.
 #[test]
 fn transport_struct_channel_config_with_interceptors_accepts_chain_int_test() {
     let chain =
-        GrpcOutboundInterceptorChain::new().push(Arc::new(TraceContextInterceptor::pass_through()));
+        GrpcEgressInterceptorChain::new().push(Arc::new(TraceContextInterceptor::pass_through()));
     assert_eq!(chain.len(), 1);
 }
 
-/// @covers: GrpcOutboundInterceptorChain — before_call short-circuits on first failure.
+/// @covers: GrpcEgressInterceptorChain — before_call short-circuits on first failure.
 #[tokio::test]
 async fn transport_struct_channel_config_interceptor_short_circuits_int_test() {
     use std::time::Duration;
@@ -76,33 +76,33 @@ async fn transport_struct_channel_config_interceptor_short_circuits_int_test() {
     ensure_rustls_provider();
 
     struct Deny;
-    impl GrpcOutboundInterceptor for Deny {
-        fn before_call(&self, _: &mut GrpcRequest) -> Result<(), GrpcOutboundError> {
-            Err(GrpcOutboundError::Status(
+    impl GrpcEgressInterceptor for Deny {
+        fn before_call(&self, _: &mut GrpcRequest) -> Result<(), GrpcEgressError> {
+            Err(GrpcEgressError::Status(
                 GrpcStatusCode::PermissionDenied,
                 "denied".into(),
             ))
         }
-        fn after_call(&self, _: &mut GrpcResponse) -> Result<(), GrpcOutboundError> {
+        fn after_call(&self, _: &mut GrpcResponse) -> Result<(), GrpcEgressError> {
             Ok(())
         }
     }
 
     let cfg = GrpcChannelConfig::new("http://127.0.0.1:1").allow_plaintext();
     let base = create_transport_from_config(&cfg).expect("transport");
-    let chain = GrpcOutboundInterceptorChain::new().push(Arc::new(Deny));
+    let chain = GrpcEgressInterceptorChain::new().push(Arc::new(Deny));
 
     struct WithChain {
-        inner: Arc<dyn GrpcOutbound>,
-        chain: GrpcOutboundInterceptorChain,
+        inner: Arc<dyn GrpcEgress>,
+        chain: GrpcEgressInterceptorChain,
     }
-    impl GrpcOutbound for WithChain {
+    impl GrpcEgress for WithChain {
         fn call_unary(
             &self,
             mut req: GrpcRequest,
         ) -> futures::future::BoxFuture<
             '_,
-            swe_edge_egress_grpc_transport::GrpcOutboundResult<GrpcResponse>,
+            swe_edge_egress_grpc_transport::GrpcEgressResult<GrpcResponse>,
         > {
             Box::pin(async move {
                 self.chain.run_before(&mut req)?;
@@ -111,7 +111,7 @@ async fn transport_struct_channel_config_interceptor_short_circuits_int_test() {
         }
         fn health_check(
             &self,
-        ) -> futures::future::BoxFuture<'_, swe_edge_egress_grpc_transport::GrpcOutboundResult<()>>
+        ) -> futures::future::BoxFuture<'_, swe_edge_egress_grpc_transport::GrpcEgressResult<()>>
         {
             self.inner.health_check()
         }
@@ -120,7 +120,7 @@ async fn transport_struct_channel_config_interceptor_short_circuits_int_test() {
     let client = WithChain { inner: base, chain };
     let req = GrpcRequest::new("svc/Method", vec![1, 2, 3], Duration::from_secs(1));
     match client.call_unary(req).await {
-        Err(GrpcOutboundError::Status(GrpcStatusCode::PermissionDenied, msg)) => {
+        Err(GrpcEgressError::Status(GrpcStatusCode::PermissionDenied, msg)) => {
             assert_eq!(msg, "denied");
         }
         other => panic!("expected PermissionDenied; got {other:?}"),

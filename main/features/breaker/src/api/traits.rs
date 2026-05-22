@@ -1,7 +1,7 @@
 //! Primary trait re-export hub for `swe_edge_egress_grpc_breaker`.
 //!
 //! This crate's primary trait is
-//! [`GrpcOutbound`](swe_edge_egress_grpc::GrpcOutbound) — declared
+//! [`GrpcEgress`](swe_edge_egress_grpc::GrpcEgress) — declared
 //! upstream in `swe-edge-egress-grpc`. Consumers of this crate should
 //! depend on `swe-edge-egress-grpc` directly for the trait — this
 //! crate's job is to wrap implementors, not to re-publish the contract.
@@ -10,17 +10,14 @@
 mod tests {
     use futures::future::BoxFuture;
     use swe_edge_egress_grpc::{
-        GrpcMetadata, GrpcOutbound, GrpcOutboundResult, GrpcRequest, GrpcResponse,
+        GrpcEgress, GrpcEgressResult, GrpcMetadata, GrpcRequest, GrpcResponse,
     };
 
     #[tokio::test]
-    async fn test_grpc_outbound_re_export_is_reachable_as_trait_bound() {
+    async fn test_grpc_egress_re_export_is_reachable_as_trait_bound() {
         struct HealthyStub;
-        impl GrpcOutbound for HealthyStub {
-            fn call_unary(
-                &self,
-                _: GrpcRequest,
-            ) -> BoxFuture<'_, GrpcOutboundResult<GrpcResponse>> {
+        impl GrpcEgress for HealthyStub {
+            fn call_unary(&self, _: GrpcRequest) -> BoxFuture<'_, GrpcEgressResult<GrpcResponse>> {
                 Box::pin(async {
                     Ok(GrpcResponse {
                         body: vec![],
@@ -28,7 +25,7 @@ mod tests {
                     })
                 })
             }
-            fn health_check(&self) -> BoxFuture<'_, GrpcOutboundResult<()>> {
+            fn health_check(&self) -> BoxFuture<'_, GrpcEgressResult<()>> {
                 Box::pin(async { Ok(()) })
             }
         }

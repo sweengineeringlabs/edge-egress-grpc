@@ -17,8 +17,7 @@ mod tests {
     impl crate::api::traits::Processor for TestProcessor {
         fn process(
             &self,
-        ) -> futures::future::BoxFuture<'_, Result<(), crate::api::port::GrpcOutboundError>>
-        {
+        ) -> futures::future::BoxFuture<'_, Result<(), crate::api::port::GrpcEgressError>> {
             Box::pin(futures::future::ready(Ok(())))
         }
         fn describe(&self) -> &'static str {

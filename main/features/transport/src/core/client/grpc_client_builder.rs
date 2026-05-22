@@ -3,7 +3,7 @@
 use std::time::Duration;
 
 use crate::api::client::tonic_grpc_client::TonicGrpcClient;
-use crate::api::interceptor::GrpcOutboundInterceptorChain;
+use crate::api::interceptor::GrpcEgressInterceptorChain;
 use crate::api::value_object::{CompressionMode, DEFAULT_MAX_MESSAGE_BYTES};
 
 /// Builder for [`TonicGrpcClient`].
@@ -11,7 +11,7 @@ use crate::api::value_object::{CompressionMode, DEFAULT_MAX_MESSAGE_BYTES};
 pub(crate) struct TonicGrpcClientBuilder {
     base_uri: String,
     timeout: Duration,
-    interceptors: GrpcOutboundInterceptorChain,
+    interceptors: GrpcEgressInterceptorChain,
     max_message_bytes: usize,
     compression: CompressionMode,
 }
@@ -22,7 +22,7 @@ impl TonicGrpcClientBuilder {
         Self {
             base_uri: base_uri.into(),
             timeout: Duration::from_secs(30),
-            interceptors: GrpcOutboundInterceptorChain::new(),
+            interceptors: GrpcEgressInterceptorChain::new(),
             max_message_bytes: DEFAULT_MAX_MESSAGE_BYTES,
             compression: CompressionMode::None,
         }
@@ -31,7 +31,7 @@ impl TonicGrpcClientBuilder {
         self.timeout = v;
         self
     }
-    pub(crate) fn interceptors(mut self, v: GrpcOutboundInterceptorChain) -> Self {
+    pub(crate) fn interceptors(mut self, v: GrpcEgressInterceptorChain) -> Self {
         self.interceptors = v;
         self
     }
@@ -91,7 +91,7 @@ mod tests {
         rustls::crypto::aws_lc_rs::default_provider()
             .install_default()
             .ok();
-        let chain = GrpcOutboundInterceptorChain::new();
+        let chain = GrpcEgressInterceptorChain::new();
         let _ = TonicGrpcClientBuilder::new("http://localhost:50051")
             .interceptors(chain)
             .build();

@@ -4,7 +4,7 @@
 pub const AUTHORIZATION_HEADER: &str = "authorization";
 
 /// Internal metadata key under which a successfully validated JWT
-/// `sub` claim is republished by [`crate::BearerInboundInterceptor`]
+/// `sub` claim is republished by [`crate::BearerIngressInterceptor`]
 /// for downstream authz policies.  Treated as **trusted** only when
 /// set by this interceptor — the inbound interceptor ALWAYS strips
 /// any incoming value before it (re-)inserts the verified one.

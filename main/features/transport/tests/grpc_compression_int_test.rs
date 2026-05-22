@@ -17,7 +17,7 @@ use swe_edge_egress_grpc_transport::{
 };
 
 /// Install rustls's aws-lc-rs CryptoProvider exactly once per process.
-/// See `grpc_outbound_int_test::ensure_rustls_provider` for context.
+/// See `grpc_egress_int_test::ensure_rustls_provider` for context.
 fn ensure_rustls_provider() {
     use std::sync::Once;
     static ONCE: Once = Once::new();

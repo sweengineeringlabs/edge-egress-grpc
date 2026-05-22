@@ -6,12 +6,12 @@ use std::time::Duration;
 
 use futures::future::BoxFuture;
 use swe_edge_egress_grpc::{
-    GrpcMetadata, GrpcOutbound, GrpcOutboundError, GrpcOutboundResult, GrpcRequest, GrpcResponse,
+    GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcMetadata, GrpcRequest, GrpcResponse,
     GrpcStatusCode,
 };
 use swe_edge_egress_grpc_breaker::{builder, BreakerState, GrpcBreakerClient, GrpcBreakerConfig};
 
-/// Stub `GrpcOutbound` whose outcome the test toggles at runtime.
+/// Stub `GrpcEgress` whose outcome the test toggles at runtime.
 ///
 /// Tracks the call count so tests can verify that an Open
 /// breaker doesn't reach the inner client.
@@ -38,8 +38,8 @@ impl ToggleClient {
 
 struct Shared(Arc<ToggleClient>);
 
-impl GrpcOutbound for Shared {
-    fn call_unary(&self, _r: GrpcRequest) -> BoxFuture<'_, GrpcOutboundResult<GrpcResponse>> {
+impl GrpcEgress for Shared {
+    fn call_unary(&self, _r: GrpcRequest) -> BoxFuture<'_, GrpcEgressResult<GrpcResponse>> {
         let inner = Arc::clone(&self.0);
         Box::pin(async move {
             inner.calls.fetch_add(1, Ordering::SeqCst);
@@ -48,15 +48,15 @@ impl GrpcOutbound for Shared {
                     body: b"ok".to_vec(),
                     metadata: GrpcMetadata::default(),
                 }),
-                1 => Err(GrpcOutboundError::Status(
+                1 => Err(GrpcEgressError::Status(
                     GrpcStatusCode::Unavailable,
                     "down".into(),
                 )),
-                2 => Err(GrpcOutboundError::Status(
+                2 => Err(GrpcEgressError::Status(
                     GrpcStatusCode::Internal,
                     "bug".into(),
                 )),
-                3 => Err(GrpcOutboundError::Status(
+                3 => Err(GrpcEgressError::Status(
                     GrpcStatusCode::PermissionDenied,
                     "no".into(),
                 )),
@@ -64,7 +64,7 @@ impl GrpcOutbound for Shared {
             }
         })
     }
-    fn health_check(&self) -> BoxFuture<'_, GrpcOutboundResult<()>> {
+    fn health_check(&self) -> BoxFuture<'_, GrpcEgressResult<()>> {
         Box::pin(async { Ok(()) })
     }
 }
@@ -125,7 +125,7 @@ async fn test_open_state_short_circuits_without_calling_inner() {
             .call_unary(make_request())
             .await
             .expect_err("must reject");
-        assert!(matches!(err, GrpcOutboundError::Unavailable(_)));
+        assert!(matches!(err, GrpcEgressError::Unavailable(_)));
     }
     assert_eq!(
         inner.call_count(),

@@ -6,7 +6,7 @@ license.workspace = true
 rust-version.workspace = true
 authors.workspace = true
 repository.workspace = true
-description = "Decorator: gRPC-aware retry around any GrpcOutbound"
+description = "Decorator: gRPC-aware retry around any GrpcEgress"
 keywords = ["grpc", "retry", "tonic", "decorator", "swe"]
 categories = ["network-programming"]
 

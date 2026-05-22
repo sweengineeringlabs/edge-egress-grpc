@@ -1,5 +1,5 @@
 //! `swe_edge_egress_grpc_breaker` — circuit-breaker decorator
-//! around any [`GrpcOutbound`](swe_edge_egress_grpc::GrpcOutbound).
+//! around any [`GrpcEgress`](swe_edge_egress_grpc::GrpcEgress).
 //!
 //! ## State machine
 //!
@@ -9,7 +9,7 @@
 //!   `Unavailable`/`Internal` failures are counted.  At
 //!   `failure_threshold` the breaker trips Open.
 //! - **Open**: requests short-circuit with
-//!   `GrpcOutboundError::Unavailable` *without* calling the
+//!   `GrpcEgressError::Unavailable` *without* calling the
 //!   inner client.  After `cool_down`, the next request promotes
 //!   to HalfOpen.
 //! - **HalfOpen**: a small number of probe requests are admitted.

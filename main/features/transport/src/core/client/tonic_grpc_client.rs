@@ -1,4 +1,4 @@
-//! `TonicGrpcClient` — concrete `GrpcOutbound` implementation backed by hyper HTTP/2.
+//! `TonicGrpcClient` — concrete `GrpcEgress` implementation backed by hyper HTTP/2.
 
 /// Core implementation unit for `TonicGrpcClient`.
 ///
@@ -17,9 +17,9 @@ use http_body_util::{BodyExt as _, Full};
 use tokio_util::sync::CancellationToken;
 
 use crate::api::client::tonic_grpc_client::TonicGrpcClient;
-use crate::api::interceptor::GrpcOutboundInterceptorChain;
+use crate::api::interceptor::GrpcEgressInterceptorChain;
 use crate::api::port::{
-    GrpcChannelConfigError, GrpcMessageStream, GrpcOutbound, GrpcOutboundError, GrpcOutboundResult,
+    GrpcChannelConfigError, GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcMessageStream,
 };
 use crate::api::value_object::{
     CompressionMode, GrpcChannelConfig, GrpcMetadata, GrpcRequest, GrpcResponse, GrpcStatusCode,
@@ -45,7 +45,7 @@ fn encode_grpc_frame(payload: &[u8]) -> Bytes {
 ///
 /// Each frame: `[compression_flag: u8][length: u32_be][payload: length bytes]`.
 /// Frames with the compression flag set are passed through as-is (no decompression).
-fn decode_grpc_frames(mut data: Bytes) -> GrpcOutboundResult<Vec<Vec<u8>>> {
+fn decode_grpc_frames(mut data: Bytes) -> GrpcEgressResult<Vec<Vec<u8>>> {
     const FRAME_HEADER: usize = 5;
     let mut out = Vec::new();
     while data.len() >= FRAME_HEADER {
@@ -58,7 +58,7 @@ fn decode_grpc_frames(mut data: Bytes) -> GrpcOutboundResult<Vec<Vec<u8>>> {
                 actual = data.len(),
                 "truncated gRPC frame received from server",
             );
-            return Err(GrpcOutboundError::Internal(SANITIZED_INTERNAL_MSG.into()));
+            return Err(GrpcEgressError::Internal(SANITIZED_INTERNAL_MSG.into()));
         }
         out.push(data[..len].to_vec());
         data.advance(len);
@@ -114,10 +114,10 @@ fn build_http_request(
     body_bytes: Bytes,
     metadata: &GrpcMetadata,
     deadline: Option<Duration>,
-) -> GrpcOutboundResult<http::Request<Full<Bytes>>> {
+) -> GrpcEgressResult<http::Request<Full<Bytes>>> {
     let uri: http::Uri = uri_str.parse().map_err(|e| {
         tracing::warn!(error = %e, uri = %uri_str, "invalid gRPC URI supplied by caller");
-        GrpcOutboundError::Internal(SANITIZED_INTERNAL_MSG.into())
+        GrpcEgressError::Internal(SANITIZED_INTERNAL_MSG.into())
     })?;
 
     let mut builder = http::Request::builder()
@@ -136,7 +136,7 @@ fn build_http_request(
 
     builder.body(Full::new(body_bytes)).map_err(|e| {
         tracing::warn!(error = %e, "failed to build HTTP request for gRPC call");
-        GrpcOutboundError::Internal(SANITIZED_INTERNAL_MSG.into())
+        GrpcEgressError::Internal(SANITIZED_INTERNAL_MSG.into())
     })
 }
 
@@ -165,7 +165,7 @@ fn header_map_to_hash(map: Option<&http::HeaderMap>) -> std::collections::HashMa
 fn check_grpc_status(
     trailers: Option<&http::HeaderMap>,
     response_headers: Option<&http::HeaderMap>,
-) -> GrpcOutboundResult<()> {
+) -> GrpcEgressResult<()> {
     let code_str = trailers
         .and_then(|m| m.get("grpc-status"))
         .and_then(|v| v.to_str().ok())
@@ -199,7 +199,7 @@ fn check_grpc_status(
         }
     }
 
-    Err(GrpcOutboundError::Status(code, message))
+    Err(GrpcEgressError::Status(code, message))
 }
 
 // ── constructor helpers ───────────────────────────────────────────────────────
@@ -221,7 +221,7 @@ impl TonicGrpcClient {
             base_uri: base_uri.into(),
             client,
             timeout,
-            interceptors: GrpcOutboundInterceptorChain::new(),
+            interceptors: GrpcEgressInterceptorChain::new(),
             max_message_bytes: DEFAULT_MAX_MESSAGE_BYTES,
             compression: CompressionMode::None,
         }
@@ -253,7 +253,7 @@ impl TonicGrpcClient {
 
     #[allow(dead_code)]
     /// Attach an interceptor chain to the client.  Replaces any previous chain.
-    pub(crate) fn with_interceptors(mut self, chain: GrpcOutboundInterceptorChain) -> Self {
+    pub(crate) fn with_interceptors(mut self, chain: GrpcEgressInterceptorChain) -> Self {
         self.interceptors = chain;
         self
     }
@@ -289,7 +289,7 @@ async fn race_deadline_and_cancel<F, T>(
     fut: F,
     deadline: Duration,
     cancel: Option<&CancellationToken>,
-) -> GrpcOutboundResult<T>
+) -> GrpcEgressResult<T>
 where
     F: std::future::Future<Output = T>,
 {
@@ -297,23 +297,23 @@ where
     match cancel {
         Some(token) => tokio::select! {
             biased;
-            _ = token.cancelled() => Err(GrpcOutboundError::Cancelled(
+            _ = token.cancelled() => Err(GrpcEgressError::Cancelled(
                 "caller cancelled in-flight request".into(),
             )),
-            res = timeout_fut => res.map_err(|_| GrpcOutboundError::Timeout(
+            res = timeout_fut => res.map_err(|_| GrpcEgressError::Timeout(
                 "request deadline exceeded".into(),
             )),
         },
         None => timeout_fut
             .await
-            .map_err(|_| GrpcOutboundError::Timeout("request deadline exceeded".into())),
+            .map_err(|_| GrpcEgressError::Timeout("request deadline exceeded".into())),
     }
 }
 
 // ── Processor impl ───────────────────────────────────────────────────────────
 
 impl crate::api::processor::Processor for TonicGrpcClient {
-    fn process(&self) -> futures::future::BoxFuture<'_, Result<(), GrpcOutboundError>> {
+    fn process(&self) -> futures::future::BoxFuture<'_, Result<(), GrpcEgressError>> {
         // Default: verify the endpoint is reachable — a no-op health probe.
         Box::pin(self.health_check())
     }
@@ -323,13 +323,13 @@ impl crate::api::processor::Processor for TonicGrpcClient {
     }
 }
 
-// ── GrpcOutbound impl ─────────────────────────────────────────────────────────
+// ── GrpcEgress impl ─────────────────────────────────────────────────────────
 
-impl GrpcOutbound for TonicGrpcClient {
+impl GrpcEgress for TonicGrpcClient {
     fn call_unary(
         &self,
         mut request: GrpcRequest,
-    ) -> BoxFuture<'_, GrpcOutboundResult<GrpcResponse>> {
+    ) -> BoxFuture<'_, GrpcEgressResult<GrpcResponse>> {
         // Run before-call interceptors; first failure short-circuits.
         if let Err(e) = self.interceptors.run_before(&mut request) {
             return Box::pin(futures::future::ready(Err(e)));
@@ -374,7 +374,7 @@ impl GrpcOutbound for TonicGrpcClient {
                     .await?
                     .map_err(|e| {
                         tracing::warn!(error = %e, "hyper transport error during gRPC call");
-                        GrpcOutboundError::ConnectionFailed("transport error".into())
+                        GrpcEgressError::ConnectionFailed("transport error".into())
                     })?;
 
             let response_headers = resp.headers().clone();
@@ -390,7 +390,7 @@ impl GrpcOutbound for TonicGrpcClient {
             .await?
             .map_err(|e| {
                 tracing::warn!(error = %e, "response body exceeded max_message_bytes or transport error");
-                GrpcOutboundError::Status(
+                GrpcEgressError::Status(
                     GrpcStatusCode::ResourceExhausted,
                     "response body exceeded max_message_bytes".into(),
                 )
@@ -438,7 +438,7 @@ impl GrpcOutbound for TonicGrpcClient {
         method: String,
         metadata: GrpcMetadata,
         messages: GrpcMessageStream,
-    ) -> BoxFuture<'_, GrpcOutboundResult<GrpcMessageStream>> {
+    ) -> BoxFuture<'_, GrpcEgressResult<GrpcMessageStream>> {
         let method = method.trim_start_matches('/');
         let uri_str = format!("{}/{}", self.base_uri.trim_end_matches('/'), method);
 
@@ -457,10 +457,10 @@ impl GrpcOutbound for TonicGrpcClient {
 
             let resp = tokio::time::timeout(self.timeout, self.client.request(http_req))
                 .await
-                .map_err(|_| GrpcOutboundError::Timeout("stream request deadline exceeded".into()))?
+                .map_err(|_| GrpcEgressError::Timeout("stream request deadline exceeded".into()))?
                 .map_err(|e| {
                     tracing::warn!(error = %e, "hyper transport error during gRPC stream");
-                    GrpcOutboundError::ConnectionFailed("transport error".into())
+                    GrpcEgressError::ConnectionFailed("transport error".into())
                 })?;
 
             // Check grpc-status in the initial response headers first.
@@ -468,7 +468,7 @@ impl GrpcOutbound for TonicGrpcClient {
 
             let collected = resp.into_body().collect().await.map_err(|e| {
                 tracing::warn!(error = %e, "failed to read gRPC stream response body");
-                GrpcOutboundError::Internal(SANITIZED_INTERNAL_MSG.into())
+                GrpcEgressError::Internal(SANITIZED_INTERNAL_MSG.into())
             })?;
 
             // Also check trailers.
@@ -476,7 +476,7 @@ impl GrpcOutbound for TonicGrpcClient {
 
             let data = collected.to_bytes();
             let frames = decode_grpc_frames(data)?;
-            let items: Vec<GrpcOutboundResult<Vec<u8>>> = frames.into_iter().map(Ok).collect();
+            let items: Vec<GrpcEgressResult<Vec<u8>>> = frames.into_iter().map(Ok).collect();
             Ok(Box::pin(futures::stream::iter(items)) as GrpcMessageStream)
         })
     }
@@ -485,7 +485,7 @@ impl GrpcOutbound for TonicGrpcClient {
     fn call_server_stream(
         &self,
         mut request: GrpcRequest,
-    ) -> BoxFuture<'_, GrpcOutboundResult<GrpcMessageStream>> {
+    ) -> BoxFuture<'_, GrpcEgressResult<GrpcMessageStream>> {
         if let Err(e) = self.interceptors.run_before(&mut request) {
             return Box::pin(futures::future::ready(Err(e)));
         }
@@ -510,7 +510,7 @@ impl GrpcOutbound for TonicGrpcClient {
             .await?
             .map_err(|e| {
                 tracing::warn!(error = %e, "hyper transport error during gRPC server-stream");
-                GrpcOutboundError::ConnectionFailed("transport error".into())
+                GrpcEgressError::ConnectionFailed("transport error".into())
             })?;
 
             let response_headers = resp.headers().clone();
@@ -520,7 +520,7 @@ impl GrpcOutbound for TonicGrpcClient {
             let collected = race_deadline_and_cancel(limited.collect(), deadline, cancel.as_ref())
                 .await?
                 .map_err(|_| {
-                    GrpcOutboundError::Status(
+                    GrpcEgressError::Status(
                         GrpcStatusCode::ResourceExhausted,
                         "response exceeded max_message_bytes".into(),
                     )
@@ -530,7 +530,7 @@ impl GrpcOutbound for TonicGrpcClient {
 
             let data = collected.to_bytes();
             let frames = decode_grpc_frames(data)?;
-            let items: Vec<GrpcOutboundResult<Vec<u8>>> = frames.into_iter().map(Ok).collect();
+            let items: Vec<GrpcEgressResult<Vec<u8>>> = frames.into_iter().map(Ok).collect();
             Ok(Box::pin(futures::stream::iter(items)) as GrpcMessageStream)
         })
     }
@@ -541,7 +541,7 @@ impl GrpcOutbound for TonicGrpcClient {
         method: String,
         metadata: GrpcMetadata,
         messages: GrpcMessageStream,
-    ) -> BoxFuture<'_, GrpcOutboundResult<GrpcResponse>> {
+    ) -> BoxFuture<'_, GrpcEgressResult<GrpcResponse>> {
         let method_path = method.trim_start_matches('/').to_owned();
         let uri_str = format!("{}/{}", self.base_uri.trim_end_matches('/'), method_path);
         let deadline = self.timeout;
@@ -563,11 +563,11 @@ impl GrpcOutbound for TonicGrpcClient {
             let resp = tokio::time::timeout(deadline, self.client.request(http_req))
                 .await
                 .map_err(|_| {
-                    GrpcOutboundError::Timeout("client-stream request deadline exceeded".into())
+                    GrpcEgressError::Timeout("client-stream request deadline exceeded".into())
                 })?
                 .map_err(|e| {
                     tracing::warn!(error = %e, "hyper transport error during gRPC client-stream");
-                    GrpcOutboundError::ConnectionFailed("transport error".into())
+                    GrpcEgressError::ConnectionFailed("transport error".into())
                 })?;
 
             let response_headers = resp.headers().clone();
@@ -577,10 +577,10 @@ impl GrpcOutbound for TonicGrpcClient {
             let collected = tokio::time::timeout(deadline, limited.collect())
                 .await
                 .map_err(|_| {
-                    GrpcOutboundError::Timeout("client-stream response deadline exceeded".into())
+                    GrpcEgressError::Timeout("client-stream response deadline exceeded".into())
                 })?
                 .map_err(|_| {
-                    GrpcOutboundError::Status(
+                    GrpcEgressError::Status(
                         GrpcStatusCode::ResourceExhausted,
                         "response exceeded max_message_bytes".into(),
                     )
@@ -610,23 +610,23 @@ impl GrpcOutbound for TonicGrpcClient {
 
     /// Send a bidirectional-streaming request — delegates to [`call_stream`].
     ///
-    /// [`call_stream`]: GrpcOutbound::call_stream
+    /// [`call_stream`]: GrpcEgress::call_stream
     fn call_bidi_stream(
         &self,
         method: String,
         metadata: GrpcMetadata,
         messages: GrpcMessageStream,
-    ) -> BoxFuture<'_, GrpcOutboundResult<GrpcMessageStream>> {
+    ) -> BoxFuture<'_, GrpcEgressResult<GrpcMessageStream>> {
         self.call_stream(method, metadata, messages)
     }
 
-    fn health_check(&self) -> BoxFuture<'_, GrpcOutboundResult<()>> {
+    fn health_check(&self) -> BoxFuture<'_, GrpcEgressResult<()>> {
         let base_uri = self.base_uri.clone();
 
         Box::pin(async move {
             let uri: http::Uri = base_uri.parse().map_err(|e| {
                 tracing::warn!(error = %e, uri = %base_uri, "invalid gRPC URI in health check");
-                GrpcOutboundError::Internal(SANITIZED_INTERNAL_MSG.into())
+                GrpcEgressError::Internal(SANITIZED_INTERNAL_MSG.into())
             })?;
 
             let host = uri.host().unwrap_or("127.0.0.1").to_owned();
@@ -636,7 +636,7 @@ impl GrpcOutbound for TonicGrpcClient {
             tokio::net::TcpStream::connect(&addr)
                 .await
                 .map(|_| ())
-                .map_err(|e| GrpcOutboundError::Unavailable(format!("{addr}: {e}")))
+                .map_err(|e| GrpcEgressError::Unavailable(format!("{addr}: {e}")))
         })
     }
 }
@@ -683,8 +683,8 @@ mod tests {
     }
 
     #[test]
-    fn test_grpc_outbound_is_object_safe() {
-        fn _assert(_: &dyn GrpcOutbound) {}
+    fn test_grpc_egress_is_object_safe() {
+        fn _assert(_: &dyn GrpcEgress) {}
     }
 
     #[test]
@@ -729,7 +729,7 @@ mod tests {
         buf.put_slice(b"abc");
         let result = decode_grpc_frames(buf.freeze());
         match result {
-            Err(GrpcOutboundError::Internal(msg)) => {
+            Err(GrpcEgressError::Internal(msg)) => {
                 // Must be the sanitized constant — never raw byte counts on the wire.
                 assert_eq!(msg, SANITIZED_INTERNAL_MSG);
             }
@@ -802,7 +802,7 @@ mod tests {
             .install_default()
             .ok();
         let client = TonicGrpcClient::new("http://localhost:50051")
-            .with_interceptors(GrpcOutboundInterceptorChain::new());
+            .with_interceptors(GrpcEgressInterceptorChain::new());
         assert_eq!(client.interceptors.len(), 0);
     }
 
