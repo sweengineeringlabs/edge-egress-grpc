@@ -11,6 +11,8 @@
 # Maximum attempts per request (1 = no retry).  5 covers the
 # pathological case where an upstream is rolling deploys and
 # the load balancer hits a not-yet-ready replica twice in a row.
+
+[grpc_retry]
 max_attempts = 5
 
 # Delay before the first retry, in milliseconds.  100ms is short

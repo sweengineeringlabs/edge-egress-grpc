@@ -21,7 +21,8 @@ path = "src/lib.rs"
 swe-edge-egress-grpc         = { workspace = true }
 swe-edge-egress-grpc-retry   = { workspace = true }
 swe-edge-egress-grpc-breaker = { workspace = true }
-thiserror = { workspace = true }
+thiserror              = { workspace = true }
+swe-edge-configbuilder = { git = "ssh://git@github.com/sweengineeringlabs/edge.git", tag = "v0.4.2" }
 
 [dev-dependencies]
 tokio   = { workspace = true, features = ["rt-multi-thread", "macros", "time"] }

@@ -33,6 +33,9 @@ swe-edge-egress-grpc-retry       = { path = "main/features/retry" }
 swe-edge-egress-grpc-breaker     = { path = "main/features/breaker" }
 swe-edge-egress-grpc-resilient   = { path = "main/features/resilient" }
 
+# Config infrastructure
+swe-edge-configbuilder = { git = "ssh://git@github.com/sweengineeringlabs/edge.git", tag = "v0.4.2" }
+
 [workspace.lints.rust]
 unsafe_code  = "deny"
 missing_docs = "warn"

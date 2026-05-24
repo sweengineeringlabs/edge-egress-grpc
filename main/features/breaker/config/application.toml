@@ -13,6 +13,8 @@
 # layer handles with a longer backoff.  `Unauthenticated` /
 # `PermissionDenied` are NOT breaker failures either — the
 # upstream is healthy; the credential is wrong.
+
+[grpc_breaker]
 failure_threshold = 5
 
 # Seconds to wait after opening before allowing a probe.
