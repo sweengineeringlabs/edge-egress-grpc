@@ -1,70 +1,60 @@
-//! Public builder + factory.
+//! Public factory + wrapper entry points.
 
+use swe_edge_configbuilder::ConfigBuilder as _;
 use swe_edge_egress_grpc::GrpcEgress;
 
 use crate::api::breaker_client::GrpcBreakerClient;
 use crate::api::breaker_config::GrpcBreakerConfig;
-use crate::api::error::Error;
 
-/// Start configuring the breaker with the SWE baseline loaded
-/// from `config/application.toml`.
-pub fn builder() -> Result<ApplicationConfigBuilder, Error> {
-    let cfg = GrpcBreakerConfig::swe_default()?;
-    Ok(ApplicationConfigBuilder::with_config(cfg))
+/// Return a [`ConfigBuilder`] pre-seeded with this crate's package name and version.
+pub fn create_config_builder() -> impl swe_edge_configbuilder::ConfigBuilder {
+    swe_edge_configbuilder::create_config_builder()
+        .with_name(env!("CARGO_PKG_NAME"))
+        .with_version(env!("CARGO_PKG_VERSION"))
 }
 
-/// One-shot factory: wrap `inner` with the SWE baseline policy.
+/// Wrap `inner` with the supplied breaker policy.
+///
+/// Use this when you have already loaded `config` via
+/// [`GrpcBreakerConfig::load`] or [`GrpcBreakerConfig::from_config`].
+/// For one-shot default wrapping use [`create_breaker_client`].
+pub fn wrap_breaker<T: GrpcEgress + Send + Sync + 'static>(
+    inner: T,
+    config: GrpcBreakerConfig,
+) -> GrpcBreakerClient<T> {
+    GrpcBreakerClient::new(inner, config)
+}
+
+/// One-shot factory: wrap `inner` with the SWE default breaker policy.
+///
+/// Equivalent to `wrap_breaker(inner, GrpcBreakerConfig::default())`.
+/// Use [`wrap_breaker`] when you need to override the policy before wrapping.
 pub fn create_breaker_client<T: GrpcEgress + Send + Sync + 'static>(
     inner: T,
-) -> Result<GrpcBreakerClient<T>, Error> {
-    let cfg = GrpcBreakerConfig::swe_default()?;
-    Ok(GrpcBreakerClient::new(inner, cfg))
-}
-
-pub use crate::api::builder::ApplicationConfigBuilder;
-
-impl ApplicationConfigBuilder {
-    /// Construct from a caller-supplied config.
-    pub fn with_config(config: GrpcBreakerConfig) -> Self {
-        Self { config }
-    }
-
-    /// Borrow the current policy.
-    pub fn config(&self) -> &GrpcBreakerConfig {
-        &self.config
-    }
-
-    /// Wrap `inner` to produce a [`GrpcBreakerClient`].
-    pub fn wrap<T: GrpcEgress + Send + Sync + 'static>(self, inner: T) -> GrpcBreakerClient<T> {
-        GrpcBreakerClient::new(inner, self.config)
-    }
+) -> GrpcBreakerClient<T> {
+    GrpcBreakerClient::new(inner, GrpcBreakerConfig::default())
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    /// @covers: builder
+    /// @covers: create_config_builder
     #[test]
-    fn test_builder_loads_swe_default() {
-        let b = builder().expect("baseline parses");
-        assert!(b.config().failure_threshold >= 1);
+    fn test_create_config_builder_builds_loader() {
+        let _loader = create_config_builder().build_loader();
     }
 
-    /// @covers: ApplicationConfigBuilder::with_config
+    /// @covers: GrpcBreakerConfig::section_name
     #[test]
-    fn test_with_config_stores_provided_config() {
-        let cfg = GrpcBreakerConfig::from_config(
-            r#"
-                failure_threshold = 7
-                cool_down_seconds = 60
-                half_open_probe_count = 3
-            "#,
-        )
-        .unwrap();
-        let b = ApplicationConfigBuilder::with_config(cfg);
-        assert_eq!(b.config().failure_threshold, 7);
-        assert_eq!(b.config().cool_down_seconds, 60);
-        assert_eq!(b.config().half_open_probe_count, 3);
+    fn test_grpc_breaker_config_section_name_is_grpc_breaker() {
+        use swe_edge_configbuilder::ConfigSection as _;
+        assert_eq!(GrpcBreakerConfig::section_name(), "grpc_breaker");
+    }
+
+    /// @covers: GrpcBreakerConfig::default
+    #[test]
+    fn test_grpc_breaker_config_default_has_positive_failure_threshold() {
+        assert!(GrpcBreakerConfig::default().failure_threshold >= 1);
     }
 }

@@ -6,7 +6,6 @@
 pub(crate) mod breaker_client;
 pub(crate) mod breaker_config;
 pub(crate) mod breaker_state;
-pub(crate) mod builder;
 pub(crate) mod error;
 pub(crate) mod failure_kind;
 pub(crate) mod traits;

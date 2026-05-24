@@ -6,7 +6,6 @@
 //! declared here so the public type identity is owned by api/.
 
 pub(crate) mod backoff;
-pub(crate) mod builder;
 pub(crate) mod error;
 pub(crate) mod retry_client;
 pub(crate) mod retry_config;

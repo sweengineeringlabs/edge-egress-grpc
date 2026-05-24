@@ -30,17 +30,28 @@ pub struct GrpcBreakerConfig {
     pub half_open_probe_count: u32,
 }
 
+impl Default for GrpcBreakerConfig {
+    fn default() -> Self {
+        Self {
+            failure_threshold: 5,
+            cool_down_seconds: 30,
+            half_open_probe_count: 1,
+        }
+    }
+}
+
+impl swe_edge_configbuilder::ConfigSection for GrpcBreakerConfig {
+    fn section_name() -> &'static str {
+        "grpc_breaker"
+    }
+}
+
 impl GrpcBreakerConfig {
     /// Parse a config from TOML text.
     pub fn from_config(toml_text: &str) -> Result<Self, Error> {
         let cfg: Self = toml::from_str(toml_text).map_err(|e| Error::ParseFailed(e.to_string()))?;
         cfg.validate()?;
         Ok(cfg)
-    }
-
-    /// Load the SWE-standard baseline.
-    pub fn swe_default() -> Result<Self, Error> {
-        Self::from_config(include_str!("../../config/application.toml"))
     }
 
     /// Cool-down as a [`Duration`].
@@ -122,18 +133,25 @@ mod tests {
         assert!(matches!(err, Error::InvalidConfig(_)));
     }
 
-    /// @covers: swe_default
+    /// @covers: Default
     #[test]
-    fn test_swe_default_loads_crate_baseline() {
-        let cfg = GrpcBreakerConfig::swe_default().expect("baseline parses");
+    fn test_grpc_breaker_config_default_has_valid_fields() {
+        let cfg = GrpcBreakerConfig::default();
         assert!(cfg.failure_threshold >= 1);
         assert!(cfg.half_open_probe_count >= 1);
+    }
+
+    /// @covers: ConfigSection::section_name
+    #[test]
+    fn test_grpc_breaker_config_section_name_is_grpc_breaker() {
+        use swe_edge_configbuilder::ConfigSection as _;
+        assert_eq!(GrpcBreakerConfig::section_name(), "grpc_breaker");
     }
 
     /// @covers: cool_down
     #[test]
     fn test_cool_down_returns_duration_in_seconds() {
-        let cfg = GrpcBreakerConfig::swe_default().unwrap();
+        let cfg = GrpcBreakerConfig::default();
         assert_eq!(cfg.cool_down(), Duration::from_secs(cfg.cool_down_seconds));
     }
 }

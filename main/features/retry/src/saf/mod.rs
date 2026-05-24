@@ -13,4 +13,4 @@ pub use crate::api::retry_policy::{
     classify, classify_resource_exhausted, parse_retry_after_hint, ResourceExhaustedContext,
     RetryDecision,
 };
-pub use builder::{builder, create_retry_client, ApplicationConfigBuilder};
+pub use builder::{create_config_builder, create_retry_client, wrap_retry};

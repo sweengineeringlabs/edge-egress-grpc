@@ -1,78 +1,60 @@
-//! Public builder + factory.
+//! Public factory + wrapper entry points.
 
+use swe_edge_configbuilder::ConfigBuilder as _;
 use swe_edge_egress_grpc::GrpcEgress;
 
-use crate::api::error::Error;
 use crate::api::retry_client::GrpcRetryClient;
 use crate::api::retry_config::GrpcRetryConfig;
 
-/// Start configuring the retry decorator with the SWE baseline
-/// loaded from the crate-shipped `config/application.toml`.
-pub fn builder() -> Result<ApplicationConfigBuilder, Error> {
-    let cfg = GrpcRetryConfig::swe_default()?;
-    Ok(ApplicationConfigBuilder::with_config(cfg))
+/// Return a [`ConfigBuilder`] pre-seeded with this crate's package name and version.
+pub fn create_config_builder() -> impl swe_edge_configbuilder::ConfigBuilder {
+    swe_edge_configbuilder::create_config_builder()
+        .with_name(env!("CARGO_PKG_NAME"))
+        .with_version(env!("CARGO_PKG_VERSION"))
 }
 
-/// One-shot factory: wrap `inner` with the SWE baseline retry
-/// policy.  Equivalent to `builder()?.wrap(inner)`.
+/// Wrap `inner` with the supplied retry policy.
 ///
-/// Use [`builder`] when you need to override config before
-/// wrapping; use this when the defaults are right.
+/// Use this when you have already loaded `config` via
+/// [`GrpcRetryConfig::load`] or [`GrpcRetryConfig::from_config`].
+/// For one-shot default wrapping use [`create_retry_client`].
+pub fn wrap_retry<T: GrpcEgress + Send + Sync + 'static>(
+    inner: T,
+    config: GrpcRetryConfig,
+) -> GrpcRetryClient<T> {
+    GrpcRetryClient::new(inner, config)
+}
+
+/// One-shot factory: wrap `inner` with the SWE default retry policy.
+///
+/// Equivalent to `wrap_retry(inner, GrpcRetryConfig::default())`.
+/// Use [`wrap_retry`] when you need to override the policy before wrapping.
 pub fn create_retry_client<T: GrpcEgress + Send + Sync + 'static>(
     inner: T,
-) -> Result<GrpcRetryClient<T>, Error> {
-    let cfg = GrpcRetryConfig::swe_default()?;
-    Ok(GrpcRetryClient::new(inner, cfg))
-}
-
-pub use crate::api::builder::ApplicationConfigBuilder;
-
-impl ApplicationConfigBuilder {
-    /// Construct from a caller-supplied config.
-    pub fn with_config(config: GrpcRetryConfig) -> Self {
-        Self { config }
-    }
-
-    /// Borrow the current policy.
-    pub fn config(&self) -> &GrpcRetryConfig {
-        &self.config
-    }
-
-    /// Wrap `inner` to produce a [`GrpcRetryClient`].
-    pub fn wrap<T: GrpcEgress + Send + Sync + 'static>(self, inner: T) -> GrpcRetryClient<T> {
-        GrpcRetryClient::new(inner, self.config)
-    }
+) -> GrpcRetryClient<T> {
+    GrpcRetryClient::new(inner, GrpcRetryConfig::default())
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    /// @covers: builder
+    /// @covers: create_config_builder
     #[test]
-    fn test_builder_loads_swe_default() {
-        let b = builder().expect("baseline parses");
-        assert!(b.config().max_attempts >= 1);
+    fn test_create_config_builder_builds_loader() {
+        let _loader = create_config_builder().build_loader();
     }
 
-    /// @covers: ApplicationConfigBuilder::with_config
+    /// @covers: GrpcRetryConfig::section_name
     #[test]
-    fn test_with_config_stores_provided_config() {
-        let cfg = GrpcRetryConfig::from_config(
-            r#"
-                max_attempts = 7
-                initial_backoff_ms = 50
-                backoff_multiplier = 1.5
-                jitter_factor = 0.2
-                max_backoff_ms = 2000
-                rate_limit_max_attempts = 2
-                rate_limit_initial_backoff_ms = 1000
-                rate_limit_max_backoff_ms = 10000
-            "#,
-        )
-        .unwrap();
-        let b = ApplicationConfigBuilder::with_config(cfg);
-        assert_eq!(b.config().max_attempts, 7);
-        assert_eq!(b.config().initial_backoff_ms, 50);
+    fn test_grpc_retry_config_section_name_is_grpc_retry() {
+        use swe_edge_configbuilder::ConfigSection as _;
+        assert_eq!(GrpcRetryConfig::section_name(), "grpc_retry");
+    }
+
+    /// @covers: GrpcRetryConfig::default
+    #[test]
+    fn test_grpc_retry_config_default_has_positive_max_attempts() {
+        assert!(GrpcRetryConfig::default().max_attempts >= 1);
     }
 }

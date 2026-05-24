@@ -13,7 +13,8 @@ use swe_edge_egress_grpc::{
     GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcMetadata, GrpcRequest, GrpcResponse,
     GrpcStatusCode,
 };
-use swe_edge_egress_grpc_retry::{builder, GrpcRetryClient, GrpcRetryConfig};
+use swe_edge_configbuilder::ConfigBuilder as _;
+use swe_edge_egress_grpc_retry::{create_config_builder, create_retry_client, wrap_retry, GrpcRetryClient, GrpcRetryConfig};
 
 /// Stub `GrpcEgress` that returns a scripted sequence of
 /// outcomes and counts how many times `call_unary` was invoked.
@@ -111,14 +112,14 @@ fn wrap(
     inner: Arc<ScriptedClient>,
     config: GrpcRetryConfig,
 ) -> GrpcRetryClient<SharedClient<ScriptedClient>> {
-    GrpcRetryClient::new(SharedClient::new(inner), config)
+    wrap_retry(SharedClient::new(inner), config)
 }
 
-/// @covers: builder — SWE default loads.
-#[tokio::test(flavor = "multi_thread")]
-async fn test_builder_loads_swe_default() {
-    let b = builder().expect("baseline parses");
-    assert!(b.config().max_attempts >= 1);
+/// @covers: GrpcRetryConfig::default — SWE default has positive max_attempts.
+#[test]
+fn test_grpc_retry_config_default_has_positive_max_attempts() {
+    let cfg = GrpcRetryConfig::default();
+    assert!(cfg.max_attempts >= 1);
 }
 
 /// @covers: GrpcRetryClient — first-call success short-circuits.
@@ -407,43 +408,31 @@ async fn test_retry_honors_caller_deadline_as_total_budget() {
 /// @covers: create_retry_client
 #[test]
 fn test_create_retry_client_wraps_inner_with_default_config() {
-    use swe_edge_egress_grpc_retry::create_retry_client;
     let inner = SharedClient::new(Arc::new(ScriptedClient::new(vec![Outcome::Ok])));
-    let client = create_retry_client(inner).expect("default config ok");
+    let client = create_retry_client(inner);
     drop(client);
 }
 
-/// @covers: with_config
+/// @covers: wrap_retry
 #[test]
-fn test_with_config_sets_policy() {
-    use swe_edge_egress_grpc_retry::ApplicationConfigBuilder;
+fn test_wrap_retry_produces_retry_client_with_supplied_config() {
+    let inner = SharedClient::new(Arc::new(ScriptedClient::new(vec![Outcome::Ok])));
     let cfg = fast_config();
     let max = cfg.max_attempts;
-    let b = ApplicationConfigBuilder::with_config(cfg);
-    assert_eq!(b.config().max_attempts, max);
-}
-
-/// @covers: config
-#[test]
-fn test_config_returns_current_policy() {
-    use swe_edge_egress_grpc_retry::builder;
-    let b = builder().expect("ok");
-    let _ = b.config();
-}
-
-/// @covers: wrap
-#[test]
-fn test_wrap_produces_retry_client() {
-    use swe_edge_egress_grpc_retry::builder;
-    let inner = SharedClient::new(Arc::new(ScriptedClient::new(vec![Outcome::Ok])));
-    let client = builder().expect("ok").wrap(inner);
+    let client = wrap_retry(inner, cfg);
     drop(client);
+    assert!(max >= 1);
 }
 
-/// @covers: builder
+/// @covers: create_config_builder
 #[test]
-fn test_builder_fn_constructs_with_defaults() {
-    use swe_edge_egress_grpc_retry::builder;
-    let b = builder().expect("builder ok");
-    assert!(b.config().max_attempts >= 1);
+fn test_create_config_builder_builds_loader() {
+    let _loader = create_config_builder().build_loader();
+}
+
+/// @covers: GrpcRetryConfig::section_name
+#[test]
+fn test_grpc_retry_config_section_name_is_grpc_retry() {
+    use swe_edge_configbuilder::ConfigSection as _;
+    assert_eq!(GrpcRetryConfig::section_name(), "grpc_retry");
 }

@@ -6,4 +6,4 @@ pub use crate::api::breaker_client::GrpcBreakerClient;
 pub use crate::api::breaker_config::GrpcBreakerConfig;
 pub use crate::api::breaker_state::BreakerState;
 pub use crate::api::error::Error;
-pub use builder::{builder, create_breaker_client, ApplicationConfigBuilder};
+pub use builder::{create_breaker_client, create_config_builder, wrap_breaker};

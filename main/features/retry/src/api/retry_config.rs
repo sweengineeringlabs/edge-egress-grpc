@@ -54,6 +54,27 @@ pub struct GrpcRetryConfig {
     pub rate_limit_max_backoff_ms: u64,
 }
 
+impl Default for GrpcRetryConfig {
+    fn default() -> Self {
+        Self {
+            max_attempts: 5,
+            initial_backoff_ms: 100,
+            backoff_multiplier: 2.0,
+            jitter_factor: 0.1,
+            max_backoff_ms: 5000,
+            rate_limit_max_attempts: 2,
+            rate_limit_initial_backoff_ms: 1000,
+            rate_limit_max_backoff_ms: 10000,
+        }
+    }
+}
+
+impl swe_edge_configbuilder::ConfigSection for GrpcRetryConfig {
+    fn section_name() -> &'static str {
+        "grpc_retry"
+    }
+}
+
 impl GrpcRetryConfig {
     /// Parse a config from TOML text.
     ///
@@ -66,13 +87,6 @@ impl GrpcRetryConfig {
         let cfg: Self = toml::from_str(toml_text).map_err(|e| Error::ParseFailed(e.to_string()))?;
         cfg.validate()?;
         Ok(cfg)
-    }
-
-    /// Load the SWE-standard baseline (the crate-shipped
-    /// `config/application.toml`).  The file is embedded at
-    /// build time via `include_str!`.
-    pub fn swe_default() -> Result<Self, Error> {
-        Self::from_config(include_str!("../../config/application.toml"))
     }
 
     /// Initial backoff as a [`Duration`].
@@ -295,19 +309,26 @@ mod tests {
         assert!(matches!(err, Error::InvalidConfig(_)));
     }
 
-    /// @covers: swe_default
+    /// @covers: Default
     #[test]
-    fn test_swe_default_loads_crate_baseline() {
-        let cfg = GrpcRetryConfig::swe_default().expect("baseline must parse");
+    fn test_grpc_retry_config_default_has_valid_fields() {
+        let cfg = GrpcRetryConfig::default();
         assert!(cfg.max_attempts >= 1);
         assert!(cfg.rate_limit_max_attempts >= 1);
         assert!(cfg.rate_limit_max_backoff_ms >= cfg.rate_limit_initial_backoff_ms);
     }
 
+    /// @covers: ConfigSection::section_name
+    #[test]
+    fn test_grpc_retry_config_section_name_is_grpc_retry() {
+        use swe_edge_configbuilder::ConfigSection as _;
+        assert_eq!(GrpcRetryConfig::section_name(), "grpc_retry");
+    }
+
     /// @covers: initial_backoff
     #[test]
     fn test_initial_backoff_returns_duration_in_milliseconds() {
-        let cfg = GrpcRetryConfig::swe_default().unwrap();
+        let cfg = GrpcRetryConfig::default();
         assert_eq!(
             cfg.initial_backoff(),
             Duration::from_millis(cfg.initial_backoff_ms)
@@ -317,14 +338,14 @@ mod tests {
     /// @covers: max_backoff
     #[test]
     fn test_max_backoff_returns_duration_in_milliseconds() {
-        let cfg = GrpcRetryConfig::swe_default().unwrap();
+        let cfg = GrpcRetryConfig::default();
         assert_eq!(cfg.max_backoff(), Duration::from_millis(cfg.max_backoff_ms));
     }
 
     /// @covers: rate_limit_initial_backoff / rate_limit_max_backoff
     #[test]
     fn test_rate_limit_duration_helpers_return_correct_durations() {
-        let cfg = GrpcRetryConfig::swe_default().unwrap();
+        let cfg = GrpcRetryConfig::default();
         assert_eq!(
             cfg.rate_limit_initial_backoff(),
             Duration::from_millis(cfg.rate_limit_initial_backoff_ms)

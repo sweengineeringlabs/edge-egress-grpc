@@ -28,11 +28,10 @@
 //! Wrap any [`GrpcEgress`] implementor:
 //!
 //! ```ignore
-//! use swe_edge_egress_grpc_retry::builder;
+//! use swe_edge_egress_grpc_retry::{wrap_retry, GrpcRetryConfig};
 //!
 //! let inner   = my_grpc_client();
-//! let layer   = builder()?.build()?;
-//! let retried = layer.wrap(inner);
+//! let retried = wrap_retry(inner, GrpcRetryConfig::default());
 //! ```
 
 #![warn(missing_docs)]

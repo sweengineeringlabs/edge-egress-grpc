@@ -9,7 +9,11 @@ use swe_edge_egress_grpc::{
     GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcMetadata, GrpcRequest, GrpcResponse,
     GrpcStatusCode,
 };
-use swe_edge_egress_grpc_breaker::{builder, BreakerState, GrpcBreakerClient, GrpcBreakerConfig};
+use swe_edge_configbuilder::ConfigBuilder as _;
+use swe_edge_egress_grpc_breaker::{
+    create_breaker_client, create_config_builder, wrap_breaker, BreakerState, GrpcBreakerClient,
+    GrpcBreakerConfig,
+};
 
 /// Stub `GrpcEgress` whose outcome the test toggles at runtime.
 ///
@@ -84,11 +88,11 @@ fn make_request() -> GrpcRequest {
     GrpcRequest::new("svc.Test/Method", b"hi".to_vec(), Duration::from_secs(5))
 }
 
-/// @covers: builder — SWE default loads.
-#[tokio::test(flavor = "multi_thread")]
-async fn test_builder_loads_swe_default() {
-    let b = builder().expect("baseline parses");
-    assert!(b.config().failure_threshold >= 1);
+/// @covers: GrpcBreakerConfig::default — SWE default has positive threshold.
+#[test]
+fn test_grpc_breaker_config_default_has_positive_failure_threshold() {
+    let cfg = GrpcBreakerConfig::default();
+    assert!(cfg.failure_threshold >= 1);
 }
 
 /// @covers: GrpcBreakerClient — passes through when Closed.
@@ -246,44 +250,35 @@ async fn test_intermittent_success_keeps_breaker_closed() {
 /// @covers: create_breaker_client
 #[test]
 fn test_create_breaker_client_wraps_inner_with_default_config() {
-    use swe_edge_egress_grpc_breaker::create_breaker_client;
     let inner = Shared(Arc::new(ToggleClient::new(0)));
-    let client = create_breaker_client(inner).expect("default config ok");
+    let client = create_breaker_client(inner);
     drop(client);
 }
 
-/// @covers: with_config
+/// @covers: wrap_breaker
 #[test]
-fn test_with_config_sets_policy() {
-    use swe_edge_egress_grpc_breaker::{ApplicationConfigBuilder, GrpcBreakerConfig};
+fn test_wrap_breaker_produces_client_with_supplied_config() {
     let cfg = GrpcBreakerConfig {
         failure_threshold: 3,
         cool_down_seconds: 5,
         half_open_probe_count: 1,
     };
-    let b = ApplicationConfigBuilder::with_config(cfg);
-    assert_eq!(b.config().failure_threshold, 3);
-}
-
-/// @covers: config
-#[test]
-fn test_config_returns_current_policy() {
-    let b = builder().expect("ok");
-    let _ = b.config();
-}
-
-/// @covers: wrap
-#[test]
-fn test_wrap_produces_breaker_client() {
+    let threshold = cfg.failure_threshold;
     let inner = Shared(Arc::new(ToggleClient::new(0)));
-    let client = builder().expect("ok").wrap(inner);
+    let client = wrap_breaker(inner, cfg);
     drop(client);
+    assert_eq!(threshold, 3);
 }
 
-/// @covers: builder
+/// @covers: create_config_builder
 #[test]
-fn test_builder_fn_constructs_with_defaults() {
-    use swe_edge_egress_grpc_breaker::builder;
-    let b = builder().expect("builder ok");
-    assert!(b.config().failure_threshold >= 1);
+fn test_create_config_builder_builds_loader() {
+    let _loader = create_config_builder().build_loader();
+}
+
+/// @covers: GrpcBreakerConfig::section_name
+#[test]
+fn test_grpc_breaker_config_section_name_is_grpc_breaker() {
+    use swe_edge_configbuilder::ConfigSection as _;
+    assert_eq!(GrpcBreakerConfig::section_name(), "grpc_breaker");
 }

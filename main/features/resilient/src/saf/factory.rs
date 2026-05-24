@@ -1,10 +1,18 @@
 //! Public factory for the resilient gRPC transport.
 
+use swe_edge_configbuilder::ConfigBuilder as _;
 use std::sync::Arc;
 
 use swe_edge_egress_grpc::{GrpcChannelConfig, GrpcEgress};
 
 use crate::api::error::ResilientTransportError;
+
+/// Return a [`ConfigBuilder`] pre-seeded with this crate's package name and version.
+pub fn create_config_builder() -> impl swe_edge_configbuilder::ConfigBuilder {
+    swe_edge_configbuilder::create_config_builder()
+        .with_name(env!("CARGO_PKG_NAME"))
+        .with_version(env!("CARGO_PKG_VERSION"))
+}
 
 /// Build a resilient outbound gRPC transport from a [`GrpcChannelConfig`].
 ///
