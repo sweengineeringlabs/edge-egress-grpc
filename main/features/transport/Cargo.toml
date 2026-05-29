@@ -34,7 +34,7 @@ http-body-util   = "0.1"
 hyper-util       = { version = "0.1", features = ["client-legacy", "tokio", "http2"] }
 hyper-rustls     = { version = "0.27", features = ["http2", "webpki-tokio"] }
 tokio                  = { version = "1", features = ["rt", "net", "time", "macros"] }
-swe-edge-configbuilder = { git = "ssh://git@github.com/sweengineeringlabs/edge.git", tag = "v0.4.5" }
+swe-edge-configbuilder = { path = "../../../../../configbuilder/main/features/configbuilder" }
 tokio-util       = { version = "0.7", default-features = false }
 tonic            = { version = "0.12", default-features = false }
 tracing          = { workspace = true }

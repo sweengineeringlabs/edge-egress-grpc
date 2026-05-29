@@ -26,7 +26,7 @@ toml          = { workspace = true }
 tracing       = { workspace = true }
 # JWT sign + verify (HS256 / RS256).  Default features include
 # `use_pem` which we need for RS256 PEM-key construction.
-swe-edge-configbuilder = { git = "ssh://git@github.com/sweengineeringlabs/edge.git", tag = "v0.4.5" }
+swe-edge-configbuilder = { path = "../../../../../configbuilder/main/features/configbuilder" }
 jsonwebtoken  = "9"
 # Constant-time comparisons for symmetric-secret material.
 subtle        = "2"

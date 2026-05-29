@@ -34,7 +34,7 @@ swe-edge-egress-grpc-breaker     = { path = "main/features/breaker" }
 swe-edge-egress-grpc-resilient   = { path = "main/features/resilient" }
 
 # Config infrastructure
-swe-edge-configbuilder = { git = "ssh://git@github.com/sweengineeringlabs/edge.git", tag = "v0.4.5" }
+swe-edge-configbuilder = { path = "../../configbuilder/main/features/configbuilder" }
 
 [workspace.lints.rust]
 unsafe_code  = "deny"
