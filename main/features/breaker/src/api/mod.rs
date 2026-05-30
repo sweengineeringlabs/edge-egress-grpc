@@ -10,3 +10,6 @@ pub(crate) mod error;
 pub(crate) mod failure_kind;
 pub(crate) mod traits;
 pub(crate) mod transitions;
+
+pub mod types;
+pub use types::*;

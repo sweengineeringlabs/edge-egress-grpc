@@ -33,3 +33,12 @@ tracing = { workspace = true }
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["macros", "rt", "rt-multi-thread", "time"] }
+
+
+[lints.rust]
+unsafe_code  = "deny"
+missing_docs = "warn"
+
+[lints.clippy]
+unwrap_used = "deny"
+expect_used = "deny"

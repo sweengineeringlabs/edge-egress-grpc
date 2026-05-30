@@ -9,7 +9,6 @@ use swe_edge_egress_grpc::{
     GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcMetadata, GrpcRequest, GrpcResponse,
     GrpcStatusCode,
 };
-use swe_edge_configbuilder::ConfigBuilder as _;
 use swe_edge_egress_grpc_breaker::{
     create_breaker_client, create_config_builder, wrap_breaker, BreakerState, GrpcBreakerClient,
     GrpcBreakerConfig,

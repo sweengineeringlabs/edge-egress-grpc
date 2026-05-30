@@ -36,6 +36,10 @@ swe-edge-egress-grpc-resilient   = { path = "main/features/resilient" }
 # Config infrastructure
 swe-edge-configbuilder = { path = "../../configbuilder/main/features/configbuilder" }
 
+[workspace.lints.clippy]
+unwrap_used = "deny"
+expect_used = "deny"
+
 [workspace.lints.rust]
 unsafe_code  = "deny"
 missing_docs = "warn"

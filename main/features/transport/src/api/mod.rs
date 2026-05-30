@@ -8,4 +8,5 @@ pub mod processor;
 pub mod resilience;
 pub mod status_codes;
 pub mod traits;
+pub mod types;
 pub mod value_object;

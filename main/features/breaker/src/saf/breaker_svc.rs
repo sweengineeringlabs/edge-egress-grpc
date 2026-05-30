@@ -1,0 +1,35 @@
+//! gRPC breaker SAF — factory methods on [`GrpcBreakerSvc`].
+
+use swe_edge_configbuilder::ConfigLoaderFactory;
+use swe_edge_egress_grpc::GrpcEgress;
+
+use crate::api::breaker_config::GrpcBreakerConfig;
+use crate::api::types::breaker_svc::GrpcBreakerSvc;
+use crate::api::types::GrpcBreakerClient;
+
+impl GrpcBreakerSvc {
+    /// Return a config builder pre-seeded with this crate's name and version.
+    pub fn create_config_builder() -> swe_edge_configbuilder::ConfigBuilderImpl {
+        let builder = ConfigLoaderFactory::create_config_builder();
+        builder
+            .with_name(env!("CARGO_PKG_NAME"))
+            .with_version(env!("CARGO_PKG_VERSION"))
+    }
+
+    /// Wrap `inner` with the supplied breaker policy.
+    pub fn wrap_breaker<T: GrpcEgress + Send + Sync + 'static>(
+        inner: T,
+        config: GrpcBreakerConfig,
+    ) -> GrpcBreakerClient<T> {
+        let client = GrpcBreakerClient::new(inner, config);
+        client
+    }
+
+    /// Wrap `inner` with the default breaker policy.
+    pub fn create_breaker_client<T: GrpcEgress + Send + Sync + 'static>(
+        inner: T,
+    ) -> GrpcBreakerClient<T> {
+        let client = GrpcBreakerClient::new(inner, GrpcBreakerConfig::default());
+        client
+    }
+}

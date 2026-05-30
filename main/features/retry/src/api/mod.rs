@@ -11,3 +11,6 @@ pub(crate) mod retry_client;
 pub(crate) mod retry_config;
 pub(crate) mod retry_policy;
 pub(crate) mod traits;
+
+pub mod types;
+pub use types::*;

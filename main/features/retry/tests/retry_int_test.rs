@@ -13,8 +13,9 @@ use swe_edge_egress_grpc::{
     GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcMetadata, GrpcRequest, GrpcResponse,
     GrpcStatusCode,
 };
-use swe_edge_configbuilder::ConfigBuilder as _;
-use swe_edge_egress_grpc_retry::{create_config_builder, create_retry_client, wrap_retry, GrpcRetryClient, GrpcRetryConfig};
+use swe_edge_egress_grpc_retry::{
+    create_config_builder, create_retry_client, wrap_retry, GrpcRetryClient, GrpcRetryConfig,
+};
 
 /// Stub `GrpcEgress` that returns a scripted sequence of
 /// outcomes and counts how many times `call_unary` was invoked.

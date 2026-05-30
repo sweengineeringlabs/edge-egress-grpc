@@ -26,10 +26,19 @@ toml          = { workspace = true }
 tracing       = { workspace = true }
 # JWT sign + verify (HS256 / RS256).  Default features include
 # `use_pem` which we need for RS256 PEM-key construction.
-swe-edge-configbuilder = { path = "../../../../../configbuilder/main/features/configbuilder" }
+swe-edge-configbuilder = { workspace = true }
 jsonwebtoken  = "9"
 # Constant-time comparisons for symmetric-secret material.
 subtle        = "2"
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["macros", "rt", "rt-multi-thread"] }
+
+
+[lints.rust]
+unsafe_code  = "deny"
+missing_docs = "warn"
+
+[lints.clippy]
+unwrap_used = "deny"
+expect_used = "deny"

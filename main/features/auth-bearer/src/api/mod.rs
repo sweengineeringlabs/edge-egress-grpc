@@ -10,3 +10,6 @@ pub use bearer_auth_config::{BearerEgressConfig, BearerSecret};
 pub use bearer_auth_error::BearerAuthError;
 pub use bearer_egress_interceptor::BearerEgressInterceptor;
 pub use metadata_keys::{AUTHORIZATION_HEADER, EXTRACTED_BEARER_SUBJECT};
+
+pub mod types;
+pub use types::*;
