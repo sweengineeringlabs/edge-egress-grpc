@@ -5,8 +5,9 @@ use std::sync::Arc;
 use swe_edge_configbuilder::ConfigLoaderFactory;
 use swe_edge_egress_grpc::{GrpcChannelConfig, GrpcEgress};
 
-use crate::api::error::ResilientTransportError;
-use crate::api::types::resilient_svc::GrpcResilientSvc;
+use crate::api::error::resilient_transport_error::ResilientTransportError;
+use crate::api::types::grpc_resilient_svc::GrpcResilientSvc;
+use crate::core::factory::ResilientAssembler;
 
 impl GrpcResilientSvc {
     /// Return a config builder pre-seeded with this crate's name and version.
@@ -21,7 +22,22 @@ impl GrpcResilientSvc {
     pub fn create_resilient_transport_from_config(
         config: &GrpcChannelConfig,
     ) -> Result<Arc<dyn GrpcEgress>, ResilientTransportError> {
-        let transport = crate::core::factory::assemble(config)?;
-        Ok(transport)
+        ResilientAssembler::assemble(config)
     }
+}
+
+/// Return a config builder pre-seeded with this crate's name and version.
+///
+/// Delegates to [`GrpcResilientSvc::create_config_builder`].
+pub fn create_config_builder() -> swe_edge_configbuilder::ConfigBuilderImpl {
+    GrpcResilientSvc::create_config_builder()
+}
+
+/// Build a resilient outbound gRPC transport from a [`GrpcChannelConfig`].
+///
+/// Calls [`crate::core::factory::ResilientAssembler::assemble`] directly.
+pub fn create_resilient_transport_from_config(
+    config: &swe_edge_egress_grpc::GrpcChannelConfig,
+) -> Result<Arc<dyn GrpcEgress>, ResilientTransportError> {
+    ResilientAssembler::assemble(config)
 }

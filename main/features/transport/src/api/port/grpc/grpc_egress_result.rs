@@ -18,7 +18,7 @@ mod tests {
 
     #[test]
     fn test_grpc_egress_result_err_variant_carries_error() {
-        use crate::api::value_object::GrpcStatusCode;
+        use crate::api::value::GrpcStatusCode;
         let r: GrpcEgressResult<u32> = Err(GrpcEgressError::Status(
             GrpcStatusCode::NotFound,
             "gone".into(),

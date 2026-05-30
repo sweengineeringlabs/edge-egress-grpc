@@ -1,9 +1,9 @@
-//! gRPC breaker SAF — factory methods on [`GrpcBreakerSvc`].
+//! gRPC breaker SAF — factory methods on [`GrpcBreakerSvc`] and free-function wrappers.
 
 use swe_edge_configbuilder::ConfigLoaderFactory;
 use swe_edge_egress_grpc::GrpcEgress;
 
-use crate::api::breaker_config::GrpcBreakerConfig;
+use crate::api::breaker::config::GrpcBreakerConfig;
 use crate::api::types::breaker_svc::GrpcBreakerSvc;
 use crate::api::types::GrpcBreakerClient;
 
@@ -21,15 +21,33 @@ impl GrpcBreakerSvc {
         inner: T,
         config: GrpcBreakerConfig,
     ) -> GrpcBreakerClient<T> {
-        let client = GrpcBreakerClient::new(inner, config);
-        client
+        GrpcBreakerClient::new(inner, config)
     }
 
     /// Wrap `inner` with the default breaker policy.
     pub fn create_breaker_client<T: GrpcEgress + Send + Sync + 'static>(
         inner: T,
     ) -> GrpcBreakerClient<T> {
-        let client = GrpcBreakerClient::new(inner, GrpcBreakerConfig::default());
-        client
+        GrpcBreakerClient::new(inner, GrpcBreakerConfig::default())
     }
+}
+
+/// Return a config builder pre-seeded with this crate's name and version.
+pub fn create_config_builder() -> swe_edge_configbuilder::ConfigBuilderImpl {
+    GrpcBreakerSvc::create_config_builder()
+}
+
+/// Wrap `inner` with the supplied breaker policy.
+pub fn wrap_breaker<T: GrpcEgress + Send + Sync + 'static>(
+    inner: T,
+    config: GrpcBreakerConfig,
+) -> GrpcBreakerClient<T> {
+    GrpcBreakerSvc::wrap_breaker(inner, config)
+}
+
+/// Wrap `inner` with the default breaker policy.
+pub fn create_breaker_client<T: GrpcEgress + Send + Sync + 'static>(
+    inner: T,
+) -> GrpcBreakerClient<T> {
+    GrpcBreakerSvc::create_breaker_client(inner)
 }

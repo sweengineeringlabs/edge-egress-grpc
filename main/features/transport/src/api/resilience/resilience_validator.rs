@@ -6,7 +6,7 @@
 //! The concrete implementation lives in `core/resilience/` and is wired
 //! through the SAF layer.
 
-use crate::api::value_object::ResilienceConfig;
+use crate::api::value::ResilienceConfig;
 
 /// Validates a [`ResilienceConfig`] before it is applied to a gRPC channel.
 ///

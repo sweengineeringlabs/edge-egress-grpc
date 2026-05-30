@@ -5,7 +5,7 @@ use futures::future::BoxFuture;
 use crate::api::port::grpc::grpc_egress_error::GrpcEgressError;
 use crate::api::port::grpc::grpc_egress_result::GrpcEgressResult;
 use crate::api::port::grpc::grpc_message_stream::GrpcMessageStream;
-use crate::api::value_object::{GrpcMetadata, GrpcRequest, GrpcResponse, GrpcStatusCode};
+use crate::api::value::{GrpcMetadata, GrpcRequest, GrpcResponse, GrpcStatusCode};
 
 /// Makes outbound gRPC calls to remote services.
 pub trait GrpcEgress: Send + Sync {
@@ -81,7 +81,7 @@ pub trait GrpcEgress: Send + Sync {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::api::value_object::GrpcMetadata;
+    use crate::api::value::GrpcMetadata;
     use std::time::Duration;
 
     struct UnaryOnlyClient;

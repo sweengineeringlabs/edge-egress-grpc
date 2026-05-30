@@ -21,11 +21,11 @@ use crate::api::interceptor::GrpcEgressInterceptorChain;
 use crate::api::port::{
     GrpcChannelConfigError, GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcMessageStream,
 };
-use crate::api::value_object::{
+use crate::api::value::{
     CompressionMode, GrpcChannelConfig, GrpcMetadata, GrpcRequest, GrpcResponse, GrpcStatusCode,
     DEFAULT_MAX_MESSAGE_BYTES,
 };
-use crate::core::status_codes::from_wire;
+use crate::core::status::from_wire;
 
 const SANITIZED_INTERNAL_MSG: &str = "internal client error";
 
@@ -234,7 +234,7 @@ impl TonicGrpcClient {
     /// [`GrpcChannelConfigError::PlaintextRejected`] before any
     /// transport setup.
     pub(crate) fn from_config(config: &GrpcChannelConfig) -> Result<Self, GrpcChannelConfigError> {
-        use crate::api::value_object::DEFAULT_REQUEST_TIMEOUT_SECS;
+        use crate::api::value::DEFAULT_REQUEST_TIMEOUT_SECS;
         if config.tls_required && is_plaintext_endpoint(&config.endpoint) {
             return Err(GrpcChannelConfigError::PlaintextRejected(
                 config.endpoint.clone(),
@@ -768,8 +768,8 @@ mod tests {
         rustls::crypto::aws_lc_rs::default_provider()
             .install_default()
             .ok();
-        let cfg = crate::api::value_object::GrpcChannelConfig::new("http://localhost:50051")
-            .allow_plaintext();
+        let cfg =
+            crate::api::value::GrpcChannelConfig::new("http://localhost:50051").allow_plaintext();
         assert!(TonicGrpcClient::from_config(&cfg).is_ok());
     }
 
@@ -778,7 +778,7 @@ mod tests {
         rustls::crypto::aws_lc_rs::default_provider()
             .install_default()
             .ok();
-        let cfg = crate::api::value_object::GrpcChannelConfig::new("http://localhost:50051")
+        let cfg = crate::api::value::GrpcChannelConfig::new("http://localhost:50051")
             .allow_plaintext()
             .with_request_timeout(Duration::from_secs(120));
         let client = TonicGrpcClient::from_config(&cfg).unwrap();
@@ -790,8 +790,8 @@ mod tests {
         rustls::crypto::aws_lc_rs::default_provider()
             .install_default()
             .ok();
-        let cfg = crate::api::value_object::GrpcChannelConfig::new("http://localhost:50051")
-            .allow_plaintext();
+        let cfg =
+            crate::api::value::GrpcChannelConfig::new("http://localhost:50051").allow_plaintext();
         let client = TonicGrpcClient::from_config(&cfg).unwrap();
         assert_eq!(client.timeout, Duration::from_secs(30));
     }

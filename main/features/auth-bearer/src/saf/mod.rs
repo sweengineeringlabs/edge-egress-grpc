@@ -1,6 +1,6 @@
 //! SAF layer — public facade.
 
-mod auth_bearer_svc;
+mod bearer_svc;
 
 pub use crate::api::types::GrpcAuthBearerSvc;
 

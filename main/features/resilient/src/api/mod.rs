@@ -1,6 +1,9 @@
-//! API layer — error types and interface contracts.
+//! API layer — error types, traits, and interface contracts.
+
 pub mod error;
-pub mod factory;
+pub use error::*;
+
+pub mod traits;
 
 pub mod types;
 pub use types::*;

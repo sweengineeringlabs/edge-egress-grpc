@@ -1,9 +1,9 @@
 //! gRPC outbound interceptor traits and built-in types.
 
-pub mod grpc_egress;
-pub mod trace_context;
+pub mod grpc;
+pub mod trace;
 
-pub use grpc_egress::GrpcEgressInterceptor;
-pub use grpc_egress::GrpcEgressInterceptorChain;
-pub use trace_context::TraceContextInterceptor;
-pub use trace_context::TraceContextSource;
+pub use grpc::GrpcEgressInterceptor;
+pub use grpc::GrpcEgressInterceptorChain;
+pub use trace::TraceContextInterceptor;
+pub use trace::TraceContextSource;

@@ -22,3 +22,8 @@ mod saf;
 
 mod gateway;
 pub use gateway::*;
+
+pub use saf::{
+    create_config_builder, create_resilient_transport_from_config, ApplicationConfigBuilder,
+    GrpcResilientSvc, ResilientTransportError,
+};

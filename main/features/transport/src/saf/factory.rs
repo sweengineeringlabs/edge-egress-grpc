@@ -12,23 +12,23 @@ pub fn create_config_builder() -> swe_edge_configbuilder::ConfigBuilderImpl {
         .with_version(env!("CARGO_PKG_VERSION"))
 }
 
-/// Build an outbound transport from a [`crate::api::value_object::GrpcChannelConfig`].
+/// Build an outbound transport from a [`crate::api::value::GrpcChannelConfig`].
 ///
 /// Returns [`GrpcChannelConfigError::PlaintextRejected`] when
 /// `config.tls_required = true` and the endpoint scheme is `http://`.
 pub fn create_transport_from_config(
-    config: &crate::api::value_object::GrpcChannelConfig,
+    config: &crate::api::value::GrpcChannelConfig,
 ) -> Result<Arc<dyn GrpcEgress>, GrpcChannelConfigError> {
     Ok(Arc::new(TonicGrpcClient::from_config(config)?))
 }
 
-/// Build a concrete [`TonicGrpcClient`] from a [`crate::api::value_object::GrpcChannelConfig`].
+/// Build a concrete [`TonicGrpcClient`] from a [`crate::api::value::GrpcChannelConfig`].
 ///
 /// Unlike [`create_transport_from_config`], returns the concrete type so that
 /// callers (e.g. `swe-edge-egress-grpc-resilient`) can wrap it in decorator
 /// layers before erasing the type to `Arc<dyn GrpcEgress>`.
 pub fn create_tonic_client_from_config(
-    config: &crate::api::value_object::GrpcChannelConfig,
+    config: &crate::api::value::GrpcChannelConfig,
 ) -> Result<TonicGrpcClient, GrpcChannelConfigError> {
     TonicGrpcClient::from_config(config)
 }
@@ -36,7 +36,7 @@ pub fn create_tonic_client_from_config(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::api::value_object::GrpcChannelConfig;
+    use crate::api::value::GrpcChannelConfig;
 
     /// @covers: create_transport_from_config
     #[test]

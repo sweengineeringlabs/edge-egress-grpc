@@ -17,12 +17,42 @@ service_type = "processor"
 [lib]
 path = "src/lib.rs"
 
+[[example]]
+name = "auth_bearer"
+path = "examples/auth_bearer.rs"
+
+[[test]]
+name = "jwt_claims_int_test"
+path = "tests/jwt_claims_int_test.rs"
+
+[[test]]
+name = "bearer_auth_error_int_test"
+path = "tests/bearer_auth_error_int_test.rs"
+
+[[test]]
+name = "bearer_secret_int_test"
+path = "tests/bearer_secret_int_test.rs"
+
+[[test]]
+name = "bearer_egress_interceptor_int_test"
+path = "tests/bearer_egress_interceptor_int_test.rs"
+
+[[test]]
+name = "metadata_keys_int_test"
+path = "tests/metadata_keys_int_test.rs"
+
+[[test]]
+name = "grpc_auth_bearer_svc_int_test"
+path = "tests/grpc_auth_bearer_svc_int_test.rs"
+
+[[test]]
+name = "application_config_builder_int_test"
+path = "tests/application_config_builder_int_test.rs"
+
 [dependencies]
 swe-edge-egress-grpc = { workspace = true }
 thiserror    = { workspace = true }
-futures       = { workspace = true }
 serde         = { workspace = true }
-toml          = { workspace = true }
 tracing       = { workspace = true }
 # JWT sign + verify (HS256 / RS256).  Default features include
 # `use_pem` which we need for RS256 PEM-key construction.

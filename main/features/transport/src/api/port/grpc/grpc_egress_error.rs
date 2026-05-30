@@ -2,7 +2,7 @@
 
 use thiserror::Error;
 
-use crate::api::value_object::GrpcStatusCode;
+use crate::api::value::GrpcStatusCode;
 
 /// Error type for gRPC outbound operations.
 ///

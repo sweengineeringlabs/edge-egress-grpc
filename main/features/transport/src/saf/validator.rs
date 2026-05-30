@@ -1,7 +1,7 @@
 //! SAF wrapper for the `Validator` trait on resilience configuration.
 
 use crate::api::traits::Validator;
-use crate::api::value_object::ResilienceConfig;
+use crate::api::value::ResilienceConfig;
 
 /// Validate a [`ResilienceConfig`] using the [`Validator`] contract.
 ///

@@ -3,13 +3,12 @@
 //! Per SEA rule 160, public type *declarations* live here.  Impl
 //! blocks live in `core/`.
 
-pub(crate) mod breaker_client;
-pub(crate) mod breaker_config;
-pub(crate) mod breaker_state;
-pub(crate) mod error;
-pub(crate) mod failure_kind;
-pub(crate) mod traits;
-pub(crate) mod transitions;
+pub(crate) mod breaker;
 
 pub mod types;
 pub use types::*;
+
+pub use breaker::BreakerState;
+pub use breaker::Error;
+pub use breaker::GrpcBreakerClient;
+pub use breaker::GrpcBreakerConfig;

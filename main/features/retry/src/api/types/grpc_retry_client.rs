@@ -1,4 +1,61 @@
-//! `GrpcRetryClient` — re-declared in api/types/ per SEA rule 211.
+//! Public type — the retry decorator that wraps any [`GrpcEgress`].
+//!
+//! Per SEA rule 160, the type *declaration* lives in api/.
+//! The `GrpcEgress` impl block lives in `core/retry_decorator/`.
 
-/// Type alias so the SAF return type is traceable to api/types/.
-pub type GrpcRetryClient<T> = crate::api::retry_client::GrpcRetryClient<T>;
+use std::sync::Arc;
+
+use crate::api::types::grpc_retry_config::GrpcRetryConfig;
+
+/// Decorator that wraps an inner [`GrpcEgress`] with the
+/// retry semantics described at the crate root.
+///
+/// `T` is the inner type; the wrapper is `T + 'static + Send + Sync`
+/// so it can flow across `.await` boundaries inside the runtime.
+///
+/// Construct via the [`builder()`](crate::builder) entry point
+/// (loads the SWE baseline) or directly via
+/// [`GrpcRetryClient::new`].
+pub struct GrpcRetryClient<T> {
+    pub(crate) inner: T,
+    pub(crate) config: Arc<GrpcRetryConfig>,
+}
+
+impl<T> std::fmt::Debug for GrpcRetryClient<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("GrpcRetryClient")
+            .field("max_attempts", &self.config.max_attempts)
+            .field("initial_backoff_ms", &self.config.initial_backoff_ms)
+            .field("backoff_multiplier", &self.config.backoff_multiplier)
+            .field("jitter_factor", &self.config.jitter_factor)
+            .field("max_backoff_ms", &self.config.max_backoff_ms)
+            .field(
+                "rate_limit_max_attempts",
+                &self.config.rate_limit_max_attempts,
+            )
+            .field(
+                "rate_limit_initial_backoff_ms",
+                &self.config.rate_limit_initial_backoff_ms,
+            )
+            .field(
+                "rate_limit_max_backoff_ms",
+                &self.config.rate_limit_max_backoff_ms,
+            )
+            .finish()
+    }
+}
+
+impl<T> GrpcRetryClient<T> {
+    /// Construct a new retry decorator around `inner`.
+    pub fn new(inner: T, config: GrpcRetryConfig) -> Self {
+        Self {
+            inner,
+            config: Arc::new(config),
+        }
+    }
+
+    /// Borrow the active retry policy.
+    pub fn config(&self) -> &GrpcRetryConfig {
+        &self.config
+    }
+}

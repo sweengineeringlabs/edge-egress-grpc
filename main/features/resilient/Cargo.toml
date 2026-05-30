@@ -23,6 +23,7 @@ swe-edge-egress-grpc-retry   = { workspace = true }
 swe-edge-egress-grpc-breaker = { workspace = true }
 thiserror              = { workspace = true }
 swe-edge-configbuilder = { workspace = true }
+futures                = { workspace = true }
 
 [dev-dependencies]
 tokio   = { workspace = true, features = ["rt-multi-thread", "macros", "time"] }

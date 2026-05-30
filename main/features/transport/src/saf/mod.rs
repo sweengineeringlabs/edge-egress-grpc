@@ -17,7 +17,7 @@ pub use crate::api::interceptor::{
 pub use crate::api::port::{
     GrpcChannelConfigError, GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcMessageStream,
 };
-pub use crate::api::value_object::{
+pub use crate::api::value::{
     CompressionMode, GrpcChannelConfig, GrpcMetadata, GrpcRequest, GrpcResponse, GrpcStatusCode,
     KeepAliveConfig, MtlsConfig, ResilienceConfig, ResilienceConfigBuilder,
     DEFAULT_MAX_MESSAGE_BYTES,

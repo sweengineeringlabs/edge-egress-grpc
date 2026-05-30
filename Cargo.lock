@@ -883,7 +883,6 @@ dependencies = [
 name = "swe-edge-egress-grpc-auth-bearer"
 version = "0.1.0"
 dependencies = [
- "futures",
  "jsonwebtoken",
  "serde",
  "subtle",
@@ -891,7 +890,6 @@ dependencies = [
  "swe-edge-egress-grpc-transport",
  "thiserror 2.0.18",
  "tokio",
- "toml",
  "tracing",
 ]
 
