@@ -1,4 +1,4 @@
-//! gRPC breaker SAF — factory methods on [`GrpcBreakerSvc`] and free-function wrappers.
+//! gRPC breaker SAF — factory methods on [`GrpcBreakerSvc`].
 
 use swe_edge_configbuilder::ConfigLoaderFactory;
 use swe_edge_egress_grpc::GrpcEgress;
@@ -30,24 +30,4 @@ impl GrpcBreakerSvc {
     ) -> GrpcBreakerClient<T> {
         GrpcBreakerClient::new(inner, GrpcBreakerConfig::default())
     }
-}
-
-/// Return a config builder pre-seeded with this crate's name and version.
-pub fn create_config_builder() -> swe_edge_configbuilder::ConfigBuilderImpl {
-    GrpcBreakerSvc::create_config_builder()
-}
-
-/// Wrap `inner` with the supplied breaker policy.
-pub fn wrap_breaker<T: GrpcEgress + Send + Sync + 'static>(
-    inner: T,
-    config: GrpcBreakerConfig,
-) -> GrpcBreakerClient<T> {
-    GrpcBreakerSvc::wrap_breaker(inner, config)
-}
-
-/// Wrap `inner` with the default breaker policy.
-pub fn create_breaker_client<T: GrpcEgress + Send + Sync + 'static>(
-    inner: T,
-) -> GrpcBreakerClient<T> {
-    GrpcBreakerSvc::create_breaker_client(inner)
 }

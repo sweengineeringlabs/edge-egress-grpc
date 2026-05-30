@@ -17,9 +17,7 @@ use swe_edge_egress_grpc::{
     GrpcResponse, GrpcStatusCode, ResilienceConfig,
 };
 use swe_edge_egress_grpc_breaker::{BreakerState, GrpcBreakerClient, GrpcBreakerConfig};
-use swe_edge_egress_grpc_resilient::{
-    create_resilient_transport_from_config, ResilientTransportError,
-};
+use swe_edge_egress_grpc_resilient::{GrpcResilientSvc, ResilientTransportError};
 use swe_edge_egress_grpc_retry::{GrpcRetryClient, GrpcRetryConfig};
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -137,36 +135,36 @@ fn fast_retry(max_attempts: u32) -> GrpcRetryConfig {
 
 // ── factory smoke tests ───────────────────────────────────────────────────────
 
-/// @covers: create_resilient_transport_from_config — no resilience returns ok
+/// @covers: GrpcResilientSvc::create_resilient_transport_from_config — no resilience returns ok
 #[test]
 fn test_factory_without_resilience_returns_ok() {
     ensure_tls_provider();
     let config = GrpcChannelConfig::new("http://127.0.0.1:50051").allow_plaintext();
-    assert!(create_resilient_transport_from_config(&config).is_ok());
+    assert!(GrpcResilientSvc::create_resilient_transport_from_config(&config).is_ok());
 }
 
-/// @covers: create_resilient_transport_from_config — with valid resilience returns ok
+/// @covers: GrpcResilientSvc::create_resilient_transport_from_config — with valid resilience returns ok
 #[test]
 fn test_factory_with_valid_resilience_returns_ok() {
     ensure_tls_provider();
     let config = GrpcChannelConfig::new("http://127.0.0.1:50051")
         .allow_plaintext()
         .with_resilience(valid_resilience());
-    assert!(create_resilient_transport_from_config(&config).is_ok());
+    assert!(GrpcResilientSvc::create_resilient_transport_from_config(&config).is_ok());
 }
 
-/// @covers: create_resilient_transport_from_config — TLS required rejects plaintext
+/// @covers: GrpcResilientSvc::create_resilient_transport_from_config — TLS required rejects plaintext
 #[test]
 fn test_factory_tls_required_rejects_plaintext_endpoint() {
     ensure_tls_provider();
     let config = GrpcChannelConfig::new("http://127.0.0.1:50051");
     assert!(matches!(
-        create_resilient_transport_from_config(&config),
+        GrpcResilientSvc::create_resilient_transport_from_config(&config),
         Err(ResilientTransportError::ChannelConfig(_))
     ));
 }
 
-/// @covers: create_resilient_transport_from_config — invalid resilience config is rejected
+/// @covers: GrpcResilientSvc::create_resilient_transport_from_config — invalid resilience config is rejected
 #[test]
 fn test_factory_invalid_resilience_config_returns_error() {
     ensure_tls_provider();
@@ -176,7 +174,7 @@ fn test_factory_invalid_resilience_config_returns_error() {
         .allow_plaintext()
         .with_resilience(r);
     assert!(matches!(
-        create_resilient_transport_from_config(&config),
+        GrpcResilientSvc::create_resilient_transport_from_config(&config),
         Err(ResilientTransportError::InvalidResilience(_))
     ));
 }

@@ -28,7 +28,7 @@ impl Processor for GrpcResilientSvc {
 mod tests {
     use super::*;
 
-    /// @covers: GrpcResilientSvc::describe — returns correct label
+    /// @covers: GrpcResilientSvc::describe
     #[test]
     fn test_describe_returns_grpc_resilient_label() {
         let svc = GrpcResilientSvc;

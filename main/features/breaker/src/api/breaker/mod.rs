@@ -17,6 +17,6 @@ pub(crate) use failure_kind::classify;
 pub(crate) use node::BreakerNode;
 pub(crate) use outcome::Outcome;
 pub use state::BreakerState;
-pub(crate) use transitions::BreakerTransitions;
+pub(crate) use transitions::BreakerTransition;
 
 pub(crate) mod state;

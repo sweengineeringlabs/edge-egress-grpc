@@ -7,7 +7,6 @@ use crate::api::error::resilient_transport_error::ResilientTransportError;
 /// Primary processing trait — required because `service_type = "processor"` in Cargo.toml.
 ///
 /// Implemented by `GrpcResilientSvc` in `core/`.
-#[allow(dead_code)]
 pub trait Processor: Send + Sync {
     /// Assemble and return a resilient gRPC transport.
     ///

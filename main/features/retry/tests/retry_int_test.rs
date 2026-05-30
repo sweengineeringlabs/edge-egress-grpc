@@ -13,9 +13,7 @@ use swe_edge_egress_grpc::{
     GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcMetadata, GrpcRequest, GrpcResponse,
     GrpcStatusCode,
 };
-use swe_edge_egress_grpc_retry::{
-    create_config_builder, create_retry_client, wrap_retry, GrpcRetryClient, GrpcRetryConfig,
-};
+use swe_edge_egress_grpc_retry::{GrpcRetryClient, GrpcRetryConfig, GrpcRetrySvc};
 
 /// Stub `GrpcEgress` that returns a scripted sequence of
 /// outcomes and counts how many times `call_unary` was invoked.
@@ -113,7 +111,7 @@ fn wrap(
     inner: Arc<ScriptedClient>,
     config: GrpcRetryConfig,
 ) -> GrpcRetryClient<SharedClient<ScriptedClient>> {
-    wrap_retry(SharedClient::new(inner), config)
+    GrpcRetrySvc::wrap_retry(SharedClient::new(inner), config)
 }
 
 /// @covers: GrpcRetryConfig::default — SWE default has positive max_attempts.
@@ -406,29 +404,29 @@ async fn test_retry_honors_caller_deadline_as_total_budget() {
     );
 }
 
-/// @covers: create_retry_client
+/// @covers: GrpcRetrySvc::create_retry_client
 #[test]
 fn test_create_retry_client_wraps_inner_with_default_config() {
     let inner = SharedClient::new(Arc::new(ScriptedClient::new(vec![Outcome::Ok])));
-    let client = create_retry_client(inner);
+    let client = GrpcRetrySvc::create_retry_client(inner);
     drop(client);
 }
 
-/// @covers: wrap_retry
+/// @covers: GrpcRetrySvc::wrap_retry
 #[test]
 fn test_wrap_retry_produces_retry_client_with_supplied_config() {
     let inner = SharedClient::new(Arc::new(ScriptedClient::new(vec![Outcome::Ok])));
     let cfg = fast_config();
     let max = cfg.max_attempts;
-    let client = wrap_retry(inner, cfg);
+    let client = GrpcRetrySvc::wrap_retry(inner, cfg);
     drop(client);
     assert!(max >= 1);
 }
 
-/// @covers: create_config_builder
+/// @covers: GrpcRetrySvc::create_config_builder
 #[test]
 fn test_create_config_builder_builds_loader() {
-    let _loader = create_config_builder().build_loader();
+    let _loader = GrpcRetrySvc::create_config_builder().build_loader();
 }
 
 /// @covers: GrpcRetryConfig::section_name

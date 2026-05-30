@@ -11,7 +11,7 @@ use swe_edge_egress_grpc::{
 use crate::api::bearer::bearer_secret::BearerSecret;
 use crate::api::traits::processor::Processor;
 use crate::api::{BearerAuthError, BearerEgressInterceptor, AUTHORIZATION_HEADER};
-use crate::core::bearer::jwt_claims::JwtClaims;
+use crate::core::bearer::JwtClaims;
 
 impl Processor for BearerEgressInterceptor {}
 

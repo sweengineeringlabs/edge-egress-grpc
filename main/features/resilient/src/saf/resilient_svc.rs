@@ -25,19 +25,3 @@ impl GrpcResilientSvc {
         ResilientAssembler::assemble(config)
     }
 }
-
-/// Return a config builder pre-seeded with this crate's name and version.
-///
-/// Delegates to [`GrpcResilientSvc::create_config_builder`].
-pub fn create_config_builder() -> swe_edge_configbuilder::ConfigBuilderImpl {
-    GrpcResilientSvc::create_config_builder()
-}
-
-/// Build a resilient outbound gRPC transport from a [`GrpcChannelConfig`].
-///
-/// Calls [`crate::core::factory::ResilientAssembler::assemble`] directly.
-pub fn create_resilient_transport_from_config(
-    config: &swe_edge_egress_grpc::GrpcChannelConfig,
-) -> Result<Arc<dyn GrpcEgress>, ResilientTransportError> {
-    ResilientAssembler::assemble(config)
-}

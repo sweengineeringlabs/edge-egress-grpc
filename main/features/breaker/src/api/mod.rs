@@ -4,6 +4,8 @@
 //! blocks live in `core/`.
 
 pub(crate) mod breaker;
+pub mod error;
+pub mod traits;
 
 pub mod types;
 pub use types::*;

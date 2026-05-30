@@ -17,9 +17,7 @@ use crate::api::breaker::outcome::Outcome;
 /// instantiate the trait (Rust has no way to "implement" a
 /// trait of associated functions for a module), so the trait
 /// itself is unused at the type-system level — the
-/// `#[allow(dead_code)]` is intentional.
-#[allow(dead_code)]
-pub(crate) trait BreakerTransitions {
+pub(crate) trait BreakerTransition {
     /// Decide whether to admit a new request.
     fn admit(node: &mut BreakerNode, config: &GrpcBreakerConfig) -> Admission;
 

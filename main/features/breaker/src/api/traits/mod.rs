@@ -1,4 +1,4 @@
-//! Primary trait declarations for `swe_edge_egress_grpc_retry`.
+//! Primary trait declarations for `swe_edge_egress_grpc_breaker`.
 
 pub mod processor;
 pub mod validator;

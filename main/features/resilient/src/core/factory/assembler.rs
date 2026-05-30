@@ -81,7 +81,7 @@ mod tests {
         });
     }
 
-    /// @covers: ResilientAssembler::assemble — no resilience returns bare transport
+    /// @covers: ResilientAssembler::assemble
     #[test]
     fn test_assemble_without_resilience_returns_ok() {
         ensure_tls_provider();
@@ -89,7 +89,7 @@ mod tests {
         assert!(ResilientAssembler::assemble(&config).is_ok());
     }
 
-    /// @covers: ResilientAssembler::assemble — with valid resilience config returns ok
+    /// @covers: ResilientAssembler::assemble
     #[test]
     fn test_assemble_with_valid_resilience_returns_ok() {
         ensure_tls_provider();
@@ -99,7 +99,7 @@ mod tests {
         assert!(ResilientAssembler::assemble(&config).is_ok());
     }
 
-    /// @covers: ResilientAssembler::assemble — TLS required rejects plaintext endpoint
+    /// @covers: ResilientAssembler::assemble
     #[test]
     fn test_assemble_tls_required_rejects_plaintext_endpoint() {
         ensure_tls_provider();
@@ -112,7 +112,7 @@ mod tests {
         ));
     }
 
-    /// @covers: ResilientAssembler::assemble — invalid resilience config returns error
+    /// @covers: ResilientAssembler::assemble
     #[test]
     fn test_assemble_invalid_resilience_config_returns_error() {
         ensure_tls_provider();

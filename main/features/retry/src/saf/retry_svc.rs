@@ -1,12 +1,11 @@
-//! gRPC retry SAF — factory methods on [`GrpcRetrySvc`] and crate-public
-//! convenience functions.
+//! gRPC retry SAF — factory methods on [`GrpcRetrySvc`].
 
 use swe_edge_configbuilder::ConfigLoaderFactory;
 use swe_edge_egress_grpc::GrpcEgress;
 
 use crate::api::types::grpc_retry_client::GrpcRetryClient;
 use crate::api::types::grpc_retry_config::GrpcRetryConfig;
-use crate::api::types::retry_svc::GrpcRetrySvc;
+use crate::api::types::grpc_retry_svc::GrpcRetrySvc;
 
 impl GrpcRetrySvc {
     /// Return a config builder pre-seeded with this crate's name and version.
@@ -30,26 +29,4 @@ impl GrpcRetrySvc {
     ) -> GrpcRetryClient<T> {
         GrpcRetryClient::new(inner, GrpcRetryConfig::default())
     }
-}
-
-/// Return a config builder pre-seeded with this crate's name and version.
-pub fn create_config_builder() -> swe_edge_configbuilder::ConfigBuilderImpl {
-    ConfigLoaderFactory::create_config_builder()
-        .with_name(env!("CARGO_PKG_NAME"))
-        .with_version(env!("CARGO_PKG_VERSION"))
-}
-
-/// Wrap `inner` with the supplied retry policy.
-pub fn wrap_retry<T: swe_edge_egress_grpc::GrpcEgress + Send + Sync + 'static>(
-    inner: T,
-    config: GrpcRetryConfig,
-) -> GrpcRetryClient<T> {
-    GrpcRetryClient::new(inner, config)
-}
-
-/// Wrap `inner` with the default retry policy.
-pub fn create_retry_client<T: swe_edge_egress_grpc::GrpcEgress + Send + Sync + 'static>(
-    inner: T,
-) -> GrpcRetryClient<T> {
-    GrpcRetryClient::new(inner, GrpcRetryConfig::default())
 }

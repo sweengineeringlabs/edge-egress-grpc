@@ -21,5 +21,5 @@ pub use resource_exhausted_context::ResourceExhaustedContext;
 pub mod retry_decision;
 pub use retry_decision::RetryDecision;
 
-pub mod retry_svc;
-pub use retry_svc::GrpcRetrySvc;
+pub mod grpc_retry_svc;
+pub use grpc_retry_svc::GrpcRetrySvc;

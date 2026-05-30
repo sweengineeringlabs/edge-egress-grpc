@@ -1,6 +1,6 @@
 //! `swe_edge_egress_grpc_resilient` — assembled resilient gRPC transport.
 //!
-//! Provides [`create_resilient_transport_from_config`], which builds a
+//! Use [`GrpcResilientSvc::create_resilient_transport_from_config`] to build a
 //! [`swe_edge_egress_grpc::TonicGrpcClient`] and, when
 //! [`swe_edge_egress_grpc::GrpcChannelConfig::resilience`] is `Some`,
 //! wraps it in a [`swe_edge_egress_grpc_retry::GrpcRetryClient`] then a
@@ -22,8 +22,3 @@ mod saf;
 
 mod gateway;
 pub use gateway::*;
-
-pub use saf::{
-    create_config_builder, create_resilient_transport_from_config, ApplicationConfigBuilder,
-    GrpcResilientSvc, ResilientTransportError,
-};

@@ -10,8 +10,7 @@ use swe_edge_egress_grpc::{
     GrpcStatusCode,
 };
 use swe_edge_egress_grpc_breaker::{
-    create_breaker_client, create_config_builder, wrap_breaker, BreakerState, GrpcBreakerClient,
-    GrpcBreakerConfig,
+    BreakerState, GrpcBreakerClient, GrpcBreakerConfig, GrpcBreakerSvc,
 };
 
 /// Stub `GrpcEgress` whose outcome the test toggles at runtime.
@@ -246,15 +245,15 @@ async fn test_intermittent_success_keeps_breaker_closed() {
     assert_eq!(client.state().await, BreakerState::Closed);
 }
 
-/// @covers: create_breaker_client
+/// @covers: GrpcBreakerSvc::create_breaker_client
 #[test]
 fn test_create_breaker_client_wraps_inner_with_default_config() {
     let inner = Shared(Arc::new(ToggleClient::new(0)));
-    let client = create_breaker_client(inner);
+    let client = GrpcBreakerSvc::create_breaker_client(inner);
     drop(client);
 }
 
-/// @covers: wrap_breaker
+/// @covers: GrpcBreakerSvc::wrap_breaker
 #[test]
 fn test_wrap_breaker_produces_client_with_supplied_config() {
     let cfg = GrpcBreakerConfig {
@@ -264,15 +263,15 @@ fn test_wrap_breaker_produces_client_with_supplied_config() {
     };
     let threshold = cfg.failure_threshold;
     let inner = Shared(Arc::new(ToggleClient::new(0)));
-    let client = wrap_breaker(inner, cfg);
+    let client = GrpcBreakerSvc::wrap_breaker(inner, cfg);
     drop(client);
     assert_eq!(threshold, 3);
 }
 
-/// @covers: create_config_builder
+/// @covers: GrpcBreakerSvc::create_config_builder
 #[test]
 fn test_create_config_builder_builds_loader() {
-    let _loader = create_config_builder().build_loader();
+    let _loader = GrpcBreakerSvc::create_config_builder().build_loader();
 }
 
 /// @covers: GrpcBreakerConfig::section_name
