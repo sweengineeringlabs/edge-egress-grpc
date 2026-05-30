@@ -1,15 +1,3 @@
-//! Shared JWT claims schema.
+//! Re-exports the public JwtClaims type from api/ for use within the core layer.
 
-use serde::{Deserialize, Serialize};
-
-/// Standard JWT claims set used by the bearer interceptors.  Custom
-/// claims are intentionally not modelled — extending this struct is
-/// the migration path when a deployment needs additional fields.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub(crate) struct JwtClaims {
-    pub iss: String,
-    pub aud: String,
-    pub sub: String,
-    pub exp: u64,
-    pub iat: u64,
-}
+pub(crate) use crate::api::bearer::jwt_claims::JwtClaims;

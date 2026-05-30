@@ -49,6 +49,14 @@ path = "tests/grpc_auth_bearer_svc_int_test.rs"
 name = "application_config_builder_int_test"
 path = "tests/application_config_builder_int_test.rs"
 
+[[test]]
+name = "validator_int_test"
+path = "tests/validator_int_test.rs"
+
+[[test]]
+name = "bearer_egress_config_int_test"
+path = "tests/bearer_egress_config_int_test.rs"
+
 [dependencies]
 swe-edge-egress-grpc = { workspace = true }
 thiserror    = { workspace = true }

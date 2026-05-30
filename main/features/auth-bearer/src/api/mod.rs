@@ -2,8 +2,7 @@
 
 pub(crate) mod bearer;
 pub mod error;
-pub(crate) mod processor;
-pub(crate) mod traits;
+pub mod traits;
 pub mod types;
 
 pub use bearer::{
@@ -11,3 +10,4 @@ pub use bearer::{
     EXTRACTED_BEARER_SUBJECT,
 };
 pub use error::BearerAuthError;
+pub use traits::{Processor, Validator};

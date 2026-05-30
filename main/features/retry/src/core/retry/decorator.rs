@@ -39,7 +39,7 @@ use tracing::{debug, trace, warn};
 
 use crate::api::types::grpc_retry_client::GrpcRetryClient;
 use crate::api::types::retry_decision::RetryDecision;
-use crate::core::backoff_scheduler::{next_backoff, rate_limit_backoff, JitterRng};
+use crate::core::backoff::{next_backoff, rate_limit_backoff, JitterRng};
 
 impl<T: GrpcEgress + Send + Sync + 'static> GrpcEgress for GrpcRetryClient<T> {
     fn call_unary(&self, request: GrpcRequest) -> BoxFuture<'_, GrpcEgressResult<GrpcResponse>> {
