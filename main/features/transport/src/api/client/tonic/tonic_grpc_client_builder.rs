@@ -23,7 +23,6 @@ use crate::api::value::{CompressionMode, DEFAULT_MAX_MESSAGE_BYTES};
 ///     .max_message_bytes(8 * 1024 * 1024)
 ///     .build();
 /// ```
-#[allow(dead_code)]
 pub struct TonicGrpcClientBuilder {
     base_uri: String,
     timeout: Duration,
@@ -32,7 +31,6 @@ pub struct TonicGrpcClientBuilder {
     compression: CompressionMode,
 }
 
-#[allow(dead_code)]
 impl TonicGrpcClientBuilder {
     /// Create a builder targeting `base_uri`.
     ///

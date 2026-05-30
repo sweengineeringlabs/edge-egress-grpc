@@ -4,7 +4,6 @@ use crate::api::traits::Validator;
 use crate::api::value::ResilienceConfig;
 
 /// Zero-size marker identifying this as the `Validator` implementation site.
-#[allow(dead_code)]
 pub(crate) struct ResilienceValidator;
 
 impl Validator for ResilienceConfig {

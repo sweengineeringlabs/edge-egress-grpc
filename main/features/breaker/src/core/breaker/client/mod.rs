@@ -1,3 +1,3 @@
 //! Core implementation for [`GrpcBreakerClient`].
 
-mod r#impl;
+mod grpc_breaker_client;

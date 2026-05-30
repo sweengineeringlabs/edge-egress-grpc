@@ -4,7 +4,6 @@
 ///
 /// The concrete builder lives in `core/`; callers use
 /// [`crate::create_transport_from_config`] instead of direct construction.
-#[allow(dead_code)]
 pub struct GrpcClientBuilder;
 
 #[cfg(test)]

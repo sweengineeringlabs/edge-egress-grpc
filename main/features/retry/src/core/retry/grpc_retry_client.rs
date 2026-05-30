@@ -39,7 +39,7 @@ use tracing::{debug, trace, warn};
 
 use crate::api::types::grpc_retry_client::GrpcRetryClient;
 use crate::api::types::retry_decision::RetryDecision;
-use crate::core::backoff::{next_backoff, rate_limit_backoff, JitterRng};
+use crate::core::backoff::{BackoffScheduler, JitterRng};
 
 impl<T: GrpcEgress + Send + Sync + 'static> GrpcEgress for GrpcRetryClient<T> {
     fn call_unary(&self, request: GrpcRequest) -> BoxFuture<'_, GrpcEgressResult<GrpcResponse>> {
@@ -120,7 +120,11 @@ impl<T: GrpcEgress + Send + Sync + 'static> GrpcRetryClient<T> {
                         break;
                     }
 
-                    let sleep_for = next_backoff(&self.config, standard_attempt, rng.next_unit());
+                    let sleep_for = BackoffScheduler::next_backoff(
+                        &self.config,
+                        standard_attempt,
+                        rng.next_unit(),
+                    );
                     standard_attempt += 1;
 
                     if !self.budget_allows_sleep(started, total_budget, sleep_for, attempt) {
@@ -150,8 +154,12 @@ impl<T: GrpcEgress + Send + Sync + 'static> GrpcRetryClient<T> {
                         }
                     });
 
-                    let sleep_for =
-                        rate_limit_backoff(&self.config, rate_lim_attempt, hint, rng.next_unit());
+                    let sleep_for = BackoffScheduler::rate_limit_backoff(
+                        &self.config,
+                        rate_lim_attempt,
+                        hint,
+                        rng.next_unit(),
+                    );
                     rate_lim_attempt += 1;
 
                     if !self.budget_allows_sleep(started, total_budget, sleep_for, attempt) {

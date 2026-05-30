@@ -8,7 +8,6 @@ use crate::api::value::resilience::resilience_config::ResilienceConfig;
 
 /// Builder for [`GrpcChannelConfig`].
 #[derive(Debug, Default)]
-#[allow(dead_code)]
 pub struct GrpcChannelConfigBuilder {
     endpoint: Option<String>,
     tls_required: bool,
@@ -19,7 +18,6 @@ pub struct GrpcChannelConfigBuilder {
     resilience: Option<ResilienceConfig>,
 }
 
-#[allow(dead_code)]
 impl GrpcChannelConfigBuilder {
     pub fn new() -> Self {
         Self {

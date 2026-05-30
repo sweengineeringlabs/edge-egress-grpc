@@ -24,7 +24,7 @@ use crate::api::types::grpc_retry_config::GrpcRetryConfig;
 /// Uses the standard exponential schedule (`initial_backoff_ms`,
 /// `max_backoff_ms`).  For the rate-limit track, use
 /// [`rate_limit_backoff`] instead.
-pub(crate) fn next_backoff(config: &GrpcRetryConfig, attempt: u32, random_unit: f64) -> Duration {
+fn next_backoff(config: &GrpcRetryConfig, attempt: u32, random_unit: f64) -> Duration {
     debug_assert!((0.0..1.0).contains(&random_unit));
     exponential_jitter(
         config.initial_backoff_ms,
@@ -42,7 +42,7 @@ pub(crate) fn next_backoff(config: &GrpcRetryConfig, attempt: u32, random_unit: 
 /// the transport extracted it from the upstream `Retry-After` header and
 /// we should honour it exactly.  Otherwise, the computed exponential
 /// schedule from the rate-limit config fields is used.
-pub(crate) fn rate_limit_backoff(
+fn rate_limit_backoff(
     config: &GrpcRetryConfig,
     attempt: u32,
     retry_after_hint: Option<Duration>,
@@ -120,5 +120,32 @@ impl JitterRng {
         z ^= z >> 31;
         // Take the high 53 bits → uniform in [0, 1).
         ((z >> 11) as f64) * (1.0 / (1u64 << 53) as f64)
+    }
+}
+
+/// Stateless backoff computation helper.
+///
+/// Wraps the free-standing backoff schedule functions as associated methods
+/// to satisfy SEA rule 191 (all functions must be methods on a type).
+pub(crate) struct BackoffScheduler;
+
+impl BackoffScheduler {
+    /// Compute next standard-retry backoff.
+    pub(crate) fn next_backoff(
+        config: &GrpcRetryConfig,
+        attempt: u32,
+        random_unit: f64,
+    ) -> Duration {
+        next_backoff(config, attempt, random_unit)
+    }
+
+    /// Compute rate-limit backoff.
+    pub(crate) fn rate_limit_backoff(
+        config: &GrpcRetryConfig,
+        attempt: u32,
+        retry_after_hint: Option<Duration>,
+        random_unit: f64,
+    ) -> Duration {
+        rate_limit_backoff(config, attempt, retry_after_hint, random_unit)
     }
 }

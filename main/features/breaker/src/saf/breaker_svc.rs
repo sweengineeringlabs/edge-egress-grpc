@@ -3,8 +3,8 @@
 use swe_edge_configbuilder::ConfigLoaderFactory;
 use swe_edge_egress_grpc::GrpcEgress;
 
-use crate::api::breaker::config::GrpcBreakerConfig;
-use crate::api::types::breaker_svc::GrpcBreakerSvc;
+use crate::api::breaker::grpc_breaker_config::GrpcBreakerConfig;
+use crate::api::types::grpc_breaker_svc::GrpcBreakerSvc;
 use crate::api::types::GrpcBreakerClient;
 
 impl GrpcBreakerSvc {

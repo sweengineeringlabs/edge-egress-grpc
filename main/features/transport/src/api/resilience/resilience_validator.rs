@@ -13,7 +13,6 @@ use crate::api::value::ResilienceConfig;
 /// Returns `Err` with a human-readable description when the configuration
 /// contains values that would produce unsafe or undefined retry / breaker
 /// behaviour (e.g. `max_attempts == 0`, `backoff_multiplier <= 0.0`).
-#[allow(dead_code)]
 pub trait ResilienceValidator: Send + Sync {
     /// Validate `config` and return `Err(reason)` on the first violation.
     fn validate_config(&self, config: &ResilienceConfig) -> Result<(), String>;

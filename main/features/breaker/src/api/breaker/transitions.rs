@@ -6,7 +6,7 @@
 //! has an api/ counterpart.
 
 use crate::api::breaker::admission::Admission;
-use crate::api::breaker::config::GrpcBreakerConfig;
+use crate::api::breaker::grpc_breaker_config::GrpcBreakerConfig;
 use crate::api::breaker::node::BreakerNode;
 use crate::api::breaker::outcome::Outcome;
 
@@ -17,7 +17,7 @@ use crate::api::breaker::outcome::Outcome;
 /// instantiate the trait (Rust has no way to "implement" a
 /// trait of associated functions for a module), so the trait
 /// itself is unused at the type-system level — the
-pub(crate) trait BreakerTransition {
+pub trait BreakerTransition {
     /// Decide whether to admit a new request.
     fn admit(node: &mut BreakerNode, config: &GrpcBreakerConfig) -> Admission;
 

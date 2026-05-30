@@ -1,4 +1,4 @@
-//! SEA interface contract — primary traits for `swe-edge-egress-grpc-resilient`.
+//! Primary trait declarations for `swe-edge-egress-grpc-resilient`.
 //!
 //! | Trait | Contract |
 //! |---|---|
@@ -6,12 +6,7 @@
 //! | [`Validator`] | Configuration validation contract |
 
 pub mod processor;
-pub use processor::Processor;
+pub mod validator;
 
-/// Configuration validation contract for the resilient transport.
-pub trait Validator: Send + Sync {
-    /// Validate the given channel configuration.
-    ///
-    /// Returns `Ok(())` when valid; an error string describing the violation otherwise.
-    fn validate(&self, config: &swe_edge_egress_grpc::GrpcChannelConfig) -> Result<(), String>;
-}
+pub use processor::Processor;
+pub use validator::Validator;

@@ -5,7 +5,6 @@
 /// The struct fields live in `api/client/tonic_grpc_client.rs` (the public type);
 /// this marker makes the file structurally compliant with SEA Rule 89 — every
 /// `core/` file must contain at least one struct, trait, or enum definition.
-#[allow(dead_code)]
 pub(crate) struct TonicGrpcClientCore;
 
 use std::time::Duration;
@@ -205,7 +204,6 @@ fn check_grpc_status(
 // ── constructor helpers ───────────────────────────────────────────────────────
 
 impl TonicGrpcClient {
-    #[allow(dead_code)]
     /// Create a client with an explicit fallback timeout.
     pub(crate) fn with_timeout(base_uri: impl Into<String>, timeout: Duration) -> Self {
         let connector = hyper_rustls::HttpsConnectorBuilder::new()
@@ -251,21 +249,18 @@ impl TonicGrpcClient {
         Ok(client)
     }
 
-    #[allow(dead_code)]
     /// Attach an interceptor chain to the client.  Replaces any previous chain.
     pub(crate) fn with_interceptors(mut self, chain: GrpcEgressInterceptorChain) -> Self {
         self.interceptors = chain;
         self
     }
 
-    #[allow(dead_code)]
     /// Override the max-message-bytes cap.
     pub(crate) fn with_max_message_bytes(mut self, bytes: usize) -> Self {
         self.max_message_bytes = bytes;
         self
     }
 
-    #[allow(dead_code)]
     /// Override the compression mode.
     pub(crate) fn with_compression(mut self, mode: CompressionMode) -> Self {
         self.compression = mode;
@@ -645,14 +640,12 @@ impl GrpcEgress for TonicGrpcClient {
 /// construction site exercises the 3-arg signature; if the signature ever
 /// regresses to 2 args this fails to build, which is the gate.
 #[doc(hidden)]
-#[allow(dead_code)]
 pub(crate) fn _grpc_request_new_requires_deadline_compile_check() -> GrpcRequest {
     GrpcRequest::new("svc/Method", Vec::new(), Duration::from_secs(1))
 }
 
 // Quiet the dead-code warning on a public-only-by-import symbol for some
 // downstream test wirings.
-#[allow(dead_code)]
 fn _suppress_status_code_unused_import_warning(c: GrpcStatusCode) -> GrpcStatusCode {
     c
 }

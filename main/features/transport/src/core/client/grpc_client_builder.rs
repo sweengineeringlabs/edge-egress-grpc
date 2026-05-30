@@ -7,7 +7,6 @@ use crate::api::interceptor::GrpcEgressInterceptorChain;
 use crate::api::value::{CompressionMode, DEFAULT_MAX_MESSAGE_BYTES};
 
 /// Builder for [`TonicGrpcClient`].
-#[allow(dead_code)]
 pub(crate) struct TonicGrpcClientBuilder {
     base_uri: String,
     timeout: Duration,
@@ -16,7 +15,6 @@ pub(crate) struct TonicGrpcClientBuilder {
     compression: CompressionMode,
 }
 
-#[allow(dead_code)]
 impl TonicGrpcClientBuilder {
     pub(crate) fn new(base_uri: impl Into<String>) -> Self {
         Self {

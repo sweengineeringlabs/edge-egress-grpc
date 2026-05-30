@@ -65,3 +65,13 @@ pub(crate) fn classify<T>(result: &Result<T, GrpcEgressError>) -> Outcome {
         GrpcEgressError::Timeout(_) | GrpcEgressError::Cancelled(_) => Outcome::Success,
     }
 }
+
+/// Stateless classifier for gRPC egress results.
+pub(crate) struct FailureClassifier;
+
+impl FailureClassifier {
+    /// Classify an outbound result into the breaker's outcome.
+    pub(crate) fn classify<T>(result: &Result<T, GrpcEgressError>) -> Outcome {
+        classify(result)
+    }
+}

@@ -9,7 +9,6 @@ use super::grpc_request::GrpcRequest;
 
 /// Builder for [`GrpcRequest`].
 #[derive(Debug, Default)]
-#[allow(dead_code)]
 pub struct GrpcRequestBuilder {
     method: Option<String>,
     body: Vec<u8>,
@@ -18,7 +17,6 @@ pub struct GrpcRequestBuilder {
     cancellation_token: Option<CancellationToken>,
 }
 
-#[allow(dead_code)]
 impl GrpcRequestBuilder {
     pub fn new() -> Self {
         Self::default()

@@ -19,8 +19,8 @@ use swe_edge_egress_grpc::{
 };
 
 use crate::api::breaker::admission::Admission;
-use crate::api::breaker::client::GrpcBreakerClient;
 use crate::api::breaker::failure_kind::classify;
+use crate::api::breaker::grpc_breaker_client::GrpcBreakerClient;
 use crate::core::transitions::admit;
 use crate::core::transitions::record;
 

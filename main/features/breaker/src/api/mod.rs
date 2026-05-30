@@ -6,6 +6,7 @@
 pub(crate) mod breaker;
 pub mod error;
 pub mod traits;
+pub(crate) mod transitions;
 
 pub mod types;
 pub use types::*;

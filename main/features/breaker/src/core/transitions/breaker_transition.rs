@@ -10,10 +10,10 @@ use std::time::Instant;
 use tracing::{debug, info, warn};
 
 use crate::api::breaker::admission::Admission;
-use crate::api::breaker::config::GrpcBreakerConfig;
+use crate::api::breaker::breaker_state::BreakerState;
+use crate::api::breaker::grpc_breaker_config::GrpcBreakerConfig;
 use crate::api::breaker::node::BreakerNode;
 use crate::api::breaker::outcome::Outcome;
-use crate::api::breaker::state::BreakerState;
 
 /// Decide whether to admit a new request.  May promote
 /// Open → HalfOpen if the cool-down has elapsed.

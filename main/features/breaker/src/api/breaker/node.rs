@@ -1,6 +1,6 @@
 //! Internal state container for the circuit breaker.
 
-use crate::api::breaker::state::BreakerState;
+use crate::api::breaker::breaker_state::BreakerState;
 
 /// Internal state container.  Crate-private; consumers observe
 /// state via [`GrpcBreakerClient::state`](crate::saf::GrpcBreakerClient::state).

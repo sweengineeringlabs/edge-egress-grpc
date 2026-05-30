@@ -7,7 +7,6 @@ use crate::api::port::GrpcEgressError;
 /// Primary processing trait — required because `service_type = "processor"` in Cargo.toml.
 ///
 /// Implemented by `TonicGrpcClient` and `ResilientGrpcClient`.
-#[allow(dead_code)]
 pub trait Processor: Send + Sync {
     /// Execute this processor unit's primary operation.
     ///

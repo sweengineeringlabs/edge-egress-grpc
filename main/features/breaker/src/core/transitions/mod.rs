@@ -1,5 +1,5 @@
 //! Core state-transition logic for the circuit breaker.
 
-mod r#impl;
+mod breaker_transition;
 
-pub(crate) use r#impl::{admit, record};
+pub(crate) use breaker_transition::{admit, record};

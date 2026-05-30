@@ -12,7 +12,6 @@ use crate::api::port::{GrpcEgress, GrpcEgressError};
 /// The concrete implementation lives in `core/resilience/`; consumers interact
 /// with the type-erased `Arc<dyn GrpcEgress>` surface returned by the SAF
 /// factory functions.
-#[allow(dead_code)]
 pub trait ResilientGrpcClientPort: GrpcEgress + Send + Sync {
     /// Return the current circuit-breaker state label for observability.
     ///

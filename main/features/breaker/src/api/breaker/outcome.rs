@@ -2,7 +2,7 @@
 
 /// Outcome of a dispatched request, as seen by the breaker.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(crate) enum Outcome {
+pub enum Outcome {
     /// Call returned `Ok` (or a non-breaker-failure error).
     Success,
     /// Call returned a result classified as a breaker failure

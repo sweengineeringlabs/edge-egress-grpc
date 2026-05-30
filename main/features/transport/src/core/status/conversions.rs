@@ -12,7 +12,6 @@ use crate::api::value::GrpcStatusCode;
 /// All conversion logic is exposed as `pub(crate) fn` in this file; this
 /// struct satisfies SEA Rule 89 (core/ files must define a primary type)
 /// while keeping the actual API as free functions.
-#[allow(dead_code)]
 pub(crate) struct Conversions;
 
 /// Convert a [`tonic::Code`] (server-side / wire-side enum) into the
