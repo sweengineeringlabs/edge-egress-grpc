@@ -41,6 +41,9 @@ use crate::api::types::grpc_retry_client::GrpcRetryClient;
 use crate::api::types::retry_decision::RetryDecision;
 use crate::core::backoff::{BackoffScheduler, JitterRng};
 
+/// Type alias pointing to the retry client implementation.
+pub(crate) type RetryClientImpl<T> = crate::api::types::GrpcRetryClient<T>;
+
 impl<T: GrpcEgress + Send + Sync + 'static> GrpcEgress for GrpcRetryClient<T> {
     fn call_unary(&self, request: GrpcRequest) -> BoxFuture<'_, GrpcEgressResult<GrpcResponse>> {
         Box::pin(self.run_with_retry(request))

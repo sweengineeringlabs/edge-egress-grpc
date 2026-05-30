@@ -2,7 +2,7 @@
 
 /// Decision returned when a new request arrives at the breaker.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(crate) enum Admission {
+pub enum Admission {
     /// Pass through — record the outcome afterward.
     Proceed,
     /// Breaker is open — fail fast without calling the inner client.

@@ -1,4 +1,4 @@
 //! Error types for the gRPC retry decorator.
 
-mod error;
+pub mod error;
 pub use error::Error;
