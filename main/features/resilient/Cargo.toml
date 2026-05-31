@@ -58,3 +58,7 @@ path = "tests/assembly_int_test.rs"
 [[test]]
 name = "processor_int_test"
 path = "tests/processor_int_test.rs"
+
+[[test]]
+name = "validator_int_test"
+path = "tests/validator_int_test.rs"

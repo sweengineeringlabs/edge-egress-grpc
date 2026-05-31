@@ -66,3 +66,28 @@ impl BackoffScheduler {
         Duration::from_millis(final_ms.round() as u64)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::api::types::grpc_retry_config::GrpcRetryConfig;
+
+    fn default_config() -> GrpcRetryConfig {
+        GrpcRetryConfig::default()
+    }
+
+    #[test]
+    fn test_next_backoff_attempt_zero_returns_initial_ms() {
+        let cfg = default_config();
+        let d = BackoffScheduler::next_backoff(&cfg, 0, 0.5);
+        assert!(d.as_millis() > 0);
+    }
+
+    #[test]
+    fn test_rate_limit_backoff_hint_overrides_exponential() {
+        let cfg = default_config();
+        let hint = Duration::from_secs(10);
+        let d = BackoffScheduler::rate_limit_backoff(&cfg, 0, Some(hint), 0.5);
+        assert_eq!(d, hint);
+    }
+}

@@ -1,2 +1,2 @@
 pub(crate) mod conversions;
-pub(crate) use conversions::from_wire;
+pub(crate) use conversions::Conversions;

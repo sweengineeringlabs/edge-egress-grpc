@@ -3,6 +3,7 @@
 pub(crate) mod admission;
 pub(crate) mod breaker_state;
 pub(crate) mod breaker_transition;
+pub(crate) mod client;
 pub(crate) mod error;
 pub(crate) mod failure_kind;
 pub(crate) mod grpc;

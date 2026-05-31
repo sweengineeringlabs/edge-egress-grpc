@@ -2,5 +2,5 @@
 
 pub mod error;
 pub use error::Error;
-pub mod domain_error;
-pub use domain_error::BreakerDomainError;
+pub mod breaker_domain_error;
+pub use breaker_domain_error::BreakerDomainError;

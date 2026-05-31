@@ -89,3 +89,57 @@ impl BreakerTransition {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::api::breaker::admission::Admission;
+    use crate::api::breaker::node::BreakerNode;
+    use crate::api::breaker::outcome::Outcome;
+    use crate::api::breaker::{BreakerState, GrpcBreakerConfig};
+    use std::time::Instant;
+
+    fn closed_node() -> BreakerNode {
+        BreakerNode::new()
+    }
+
+    fn cfg() -> GrpcBreakerConfig {
+        GrpcBreakerConfig {
+            failure_threshold: 2,
+            cool_down_seconds: 60,
+            half_open_probe_count: 1,
+        }
+    }
+
+    #[test]
+    fn test_admit_closed_node_returns_proceed() {
+        let mut node = closed_node();
+        assert_eq!(
+            BreakerTransition::admit(&mut node, &cfg()),
+            Admission::Proceed
+        );
+    }
+
+    #[test]
+    fn test_record_failure_at_threshold_opens_breaker() {
+        let mut node = closed_node();
+        BreakerTransition::record(&mut node, &cfg(), Outcome::Failure);
+        BreakerTransition::record(&mut node, &cfg(), Outcome::Failure);
+        assert!(matches!(node.state, BreakerState::Open { .. }));
+    }
+
+    #[test]
+    fn test_admit_open_node_returns_reject() {
+        let mut node = BreakerNode {
+            state: BreakerState::Open {
+                since: Instant::now(),
+            },
+            consecutive_failures: 2,
+            consecutive_successes: 0,
+        };
+        assert_eq!(
+            BreakerTransition::admit(&mut node, &cfg()),
+            Admission::RejectOpen
+        );
+    }
+}

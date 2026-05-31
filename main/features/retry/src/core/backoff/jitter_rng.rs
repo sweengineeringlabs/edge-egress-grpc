@@ -37,3 +37,35 @@ impl JitterRng {
         ((z >> 11) as f64) * (1.0 / (1u64 << 53) as f64)
     }
 }
+
+impl crate::api::backoff::jitter_rng::JitterRng for JitterRng {
+    fn next_unit(&mut self) -> f64 {
+        self.next_unit()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_new_produces_value_in_unit_interval() {
+        let mut rng = JitterRng::new(42);
+        let v = rng.next_unit();
+        assert!((0.0..1.0).contains(&v), "expected [0, 1), got {v}");
+    }
+
+    #[test]
+    fn test_from_clock_produces_value_in_unit_interval() {
+        let mut rng = JitterRng::from_clock();
+        let v = rng.next_unit();
+        assert!((0.0..1.0).contains(&v), "expected [0, 1), got {v}");
+    }
+
+    #[test]
+    fn test_next_unit_is_deterministic_for_same_seed() {
+        let v1 = JitterRng::new(99).next_unit();
+        let v2 = JitterRng::new(99).next_unit();
+        assert_eq!(v1, v2);
+    }
+}

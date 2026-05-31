@@ -7,7 +7,7 @@ use crate::api::port::{GrpcChannelConfigError, GrpcEgress};
 use crate::api::traits::Validator;
 use crate::api::types::{TonicGrpcClient, TransportSvc};
 use crate::api::value::{GrpcChannelConfig, ResilienceConfig, DEFAULT_REQUEST_TIMEOUT_SECS};
-use crate::core::client::tonic_grpc_client::is_plaintext_endpoint;
+use crate::core::client::tonic_grpc_client::TonicGrpcClientCore;
 
 impl TransportSvc {
     pub fn create_config_builder() -> swe_edge_configbuilder::ConfigBuilderImpl {
@@ -28,7 +28,7 @@ impl TransportSvc {
     pub fn create_tonic_client_from_config(
         config: &GrpcChannelConfig,
     ) -> Result<TonicGrpcClient, GrpcChannelConfigError> {
-        if config.tls_required && is_plaintext_endpoint(&config.endpoint) {
+        if config.tls_required && TonicGrpcClientCore::is_plaintext_endpoint(&config.endpoint) {
             return Err(GrpcChannelConfigError::PlaintextRejected(
                 config.endpoint.clone(),
             ));

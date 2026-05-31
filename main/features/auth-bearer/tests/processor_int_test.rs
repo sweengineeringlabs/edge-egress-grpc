@@ -18,7 +18,7 @@ fn test_config() -> BearerEgressConfig {
 
 /// @covers: Processor — BearerEgressInterceptor satisfies marker trait
 #[test]
-fn grpc_auth_bearer_processor_is_satisfied_by_interceptor_int_test() {
+fn bearer_processor_is_satisfied_by_interceptor_int_test() {
     fn _assert<T: Processor>(_: T) {}
     let interceptor = BearerEgressInterceptor::from_config(test_config());
     _assert(interceptor);
@@ -26,6 +26,6 @@ fn grpc_auth_bearer_processor_is_satisfied_by_interceptor_int_test() {
 
 /// @covers: Processor — trait is object-safe
 #[test]
-fn grpc_auth_bearer_processor_is_object_safe_int_test() {
+fn bearer_processor_is_object_safe_int_test() {
     fn _assert(_: &dyn Processor) {}
 }
