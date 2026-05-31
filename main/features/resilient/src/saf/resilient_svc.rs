@@ -20,7 +20,6 @@ impl GrpcResilientSvc {
 
     /// Build a resilient outbound gRPC transport from a [`GrpcChannelConfig`].
     pub fn create_resilient_transport_from_config(
-        // @allow: saf_no_wrapper_methods — ResilientAssembler::assemble contains domain logic, not a redundant delegation
         config: &GrpcChannelConfig,
     ) -> Result<Arc<dyn GrpcEgress>, ResilientTransportError> {
         ResilientAssembler::assemble(config)
