@@ -7,6 +7,7 @@ pub use crate::api::client::tonic::tonic_grpc_client_builder::TonicGrpcClientBui
 pub use crate::api::resilience::resilience_validator::ResilienceValidator;
 pub use crate::api::resilience::resilient_grpc_client_port::ResilientGrpcClientPort;
 pub use crate::api::status::conversions::Conversions;
+pub use crate::api::types::ApplicationConfigBuilder;
 pub use crate::api::types::{TonicGrpcClient, TransportSvc};
 
 pub use crate::api::interceptor::{

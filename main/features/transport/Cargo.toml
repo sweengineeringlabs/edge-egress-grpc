@@ -183,3 +183,7 @@ missing_docs = "warn"
 [lints.clippy]
 unwrap_used = "deny"
 expect_used = "deny"
+
+[[test]]
+name = "application_config_builder_int_test"
+path = "tests/application_config_builder_int_test.rs"

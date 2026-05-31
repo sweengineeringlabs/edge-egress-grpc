@@ -89,3 +89,11 @@ path = "tests/processor_int_test.rs"
 [[test]]
 name = "subtle_int_test"
 path = "tests/subtle_int_test.rs"
+
+[[test]]
+name = "bearer_egress_config_builder_int_test"
+path = "tests/bearer_egress_config_builder_int_test.rs"
+
+[[test]]
+name = "jwt_claims_builder_int_test"
+path = "tests/jwt_claims_builder_int_test.rs"

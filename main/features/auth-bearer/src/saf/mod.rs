@@ -5,6 +5,7 @@ mod bearer_svc;
 pub use crate::api::types::GrpcAuthBearerSvc;
 
 pub use crate::api::{
-    BearerAuthError, BearerEgressConfig, BearerEgressInterceptor, BearerSecret, Processor,
-    Validator, AUTHORIZATION_HEADER, EXTRACTED_BEARER_SUBJECT,
+    BearerAuthError, BearerEgressConfig, BearerEgressConfigBuilder, BearerEgressInterceptor,
+    BearerSecret, JwtClaims, JwtClaimsBuilder, Processor, Validator, AUTHORIZATION_HEADER,
+    EXTRACTED_BEARER_SUBJECT,
 };

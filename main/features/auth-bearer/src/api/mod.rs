@@ -6,8 +6,8 @@ pub mod traits;
 pub mod types;
 
 pub use bearer::{
-    BearerEgressConfig, BearerEgressInterceptor, BearerSecret, AUTHORIZATION_HEADER,
-    EXTRACTED_BEARER_SUBJECT,
+    BearerEgressConfig, BearerEgressConfigBuilder, BearerEgressInterceptor, BearerSecret,
+    JwtClaims, JwtClaimsBuilder, AUTHORIZATION_HEADER, EXTRACTED_BEARER_SUBJECT,
 };
 pub use error::BearerAuthError;
 pub use traits::{Processor, Validator};
