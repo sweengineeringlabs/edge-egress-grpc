@@ -6,9 +6,9 @@
 //! has an api/ counterpart.
 
 use crate::api::breaker::admission::Admission;
-use crate::api::breaker::grpc_breaker_config::GrpcBreakerConfig;
 use crate::api::breaker::node::BreakerNode;
 use crate::api::breaker::outcome::Outcome;
+use crate::api::breaker::GrpcBreakerConfig;
 
 /// Interface for the breaker's state-transition primitives.
 /// Implemented as free functions in `core::transitions`; this

@@ -11,9 +11,9 @@ use tracing::{debug, info, warn};
 
 use crate::api::breaker::admission::Admission;
 use crate::api::breaker::breaker_state::BreakerState;
-use crate::api::breaker::grpc_breaker_config::GrpcBreakerConfig;
 use crate::api::breaker::node::BreakerNode;
 use crate::api::breaker::outcome::Outcome;
+use crate::api::breaker::GrpcBreakerConfig;
 
 /// Pure state-machine helper — all transition logic lives here as associated functions.
 pub(crate) struct BreakerTransition;

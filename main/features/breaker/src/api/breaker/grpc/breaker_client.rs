@@ -7,8 +7,8 @@ use std::sync::Arc;
 
 use tokio::sync::Mutex;
 
-use crate::api::breaker::grpc_breaker_config::GrpcBreakerConfig;
 use crate::api::breaker::node::BreakerNode;
+use crate::api::breaker::GrpcBreakerConfig;
 
 /// Decorator that wraps an inner [`GrpcEgress`] with a
 /// three-state circuit breaker.

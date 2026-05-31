@@ -20,7 +20,7 @@ use swe_edge_egress_grpc::{
 
 use crate::api::breaker::admission::Admission;
 use crate::api::breaker::failure_kind::FailureClassifier;
-use crate::api::breaker::grpc_breaker_client::GrpcBreakerClient;
+use crate::api::breaker::grpc::GrpcBreakerClient;
 use crate::core::transitions::BreakerTransition;
 
 impl<T: GrpcEgress + Send + Sync + 'static> GrpcEgress for GrpcBreakerClient<T> {
