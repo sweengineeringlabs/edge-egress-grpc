@@ -1,7 +1,7 @@
 //! [`GrpcEgress`] impl for [`GrpcRetryClient`].
 
 /// Impl unit — satisfies SEA rule 89.
-pub(crate) struct DefaultGrpcEgress;
+pub(crate) struct RetryEgress;
 
 use std::time::Instant;
 

@@ -1,7 +1,7 @@
 //! [`GrpcEgress`] impl for [`GrpcBreakerClient`].
 
 /// Impl unit — satisfies SEA rule 89 (core/ file must define a primary type).
-pub(crate) struct DefaultGrpcEgress;
+pub(crate) struct BreakerEgress;
 
 use futures::future::BoxFuture;
 use swe_edge_egress_grpc::{

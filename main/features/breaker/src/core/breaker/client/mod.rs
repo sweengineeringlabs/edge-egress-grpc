@@ -1,3 +1,3 @@
 //! Core implementation for [`GrpcBreakerClient`].
 
-pub(crate) mod grpc_egress_impl;
+pub(crate) mod breaker_egress;

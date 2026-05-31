@@ -1,3 +1,3 @@
 //! Core retry impl.
 
-pub(crate) mod grpc_egress_impl;
+pub(crate) mod retry_egress;
