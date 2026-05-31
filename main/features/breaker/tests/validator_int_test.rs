@@ -4,6 +4,6 @@ use swe_edge_egress_grpc_breaker::Validator;
 
 /// @covers: Validator — trait is object-safe
 #[test]
-fn breaker_validator_is_object_safe_int_test() {
+fn breaker_trait_validator_is_object_safe_int_test() {
     fn _assert(_: &dyn Validator) {}
 }

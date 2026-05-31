@@ -12,7 +12,7 @@ impl Processor for AlwaysOk {
 
 /// @covers: Processor — trait is implementable
 #[test]
-fn retry_processor_custom_impl_accepts_config_int_test() {
+fn retry_trait_processor_custom_impl_accepts_config_int_test() {
     let p = AlwaysOk;
     let config = GrpcRetryConfig::default();
     assert!(p.validate(&config).is_ok());
@@ -20,6 +20,6 @@ fn retry_processor_custom_impl_accepts_config_int_test() {
 
 /// @covers: Processor — trait is object-safe
 #[test]
-fn retry_processor_is_object_safe_int_test() {
+fn retry_trait_processor_is_object_safe_int_test() {
     fn _assert(_: &dyn Processor) {}
 }

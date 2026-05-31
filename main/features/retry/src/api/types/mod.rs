@@ -6,20 +6,14 @@ pub use application_config_builder::ApplicationConfigBuilder;
 pub mod backoff_schedule;
 pub use backoff_schedule::BackoffSchedule;
 
-pub mod grpc_retry_client;
-pub use grpc_retry_client::GrpcRetryClient;
-
-pub mod grpc_retry_config;
-pub use grpc_retry_config::GrpcRetryConfig;
-
-pub mod grpc_retry_config_builder;
-pub use grpc_retry_config_builder::GrpcRetryConfigBuilder;
+pub mod grpc;
+pub use grpc::GrpcRetryClient;
+pub use grpc::GrpcRetryConfig;
+pub use grpc::GrpcRetryConfigBuilder;
+pub use grpc::GrpcRetrySvc;
 
 pub mod resource_exhausted_context;
 pub use resource_exhausted_context::ResourceExhaustedContext;
 
 pub mod retry_decision;
 pub use retry_decision::RetryDecision;
-
-pub mod grpc_retry_svc;
-pub use grpc_retry_svc::GrpcRetrySvc;

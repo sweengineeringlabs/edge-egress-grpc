@@ -4,7 +4,7 @@
 //! without a TOML file. In production, prefer [`GrpcRetryConfig::from_config`].
 
 use crate::api::error::Error;
-use crate::api::types::grpc_retry_config::GrpcRetryConfig;
+use crate::api::types::grpc::grpc_retry_config::GrpcRetryConfig;
 
 /// Fluent builder for [`GrpcRetryConfig`].
 ///

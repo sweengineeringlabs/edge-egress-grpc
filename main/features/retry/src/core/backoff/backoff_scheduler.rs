@@ -2,7 +2,7 @@
 
 use std::time::Duration;
 
-use crate::api::types::grpc_retry_config::GrpcRetryConfig;
+use crate::api::types::grpc::grpc_retry_config::GrpcRetryConfig;
 
 /// Stateless backoff computation helper.
 pub(crate) struct BackoffScheduler;
@@ -70,7 +70,7 @@ impl BackoffScheduler {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::api::types::grpc_retry_config::GrpcRetryConfig;
+    use crate::api::types::grpc::grpc_retry_config::GrpcRetryConfig;
 
     fn default_config() -> GrpcRetryConfig {
         GrpcRetryConfig::default()
