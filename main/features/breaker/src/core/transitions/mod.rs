@@ -2,4 +2,4 @@
 
 mod breaker_transition;
 
-pub(crate) use breaker_transition::{admit, record};
+pub(crate) use breaker_transition::BreakerTransition;

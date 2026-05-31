@@ -19,10 +19,9 @@ use swe_edge_egress_grpc::{
 };
 
 use crate::api::breaker::admission::Admission;
-use crate::api::breaker::failure_kind::classify;
+use crate::api::breaker::failure_kind::FailureClassifier;
 use crate::api::breaker::grpc_breaker_client::GrpcBreakerClient;
-use crate::core::transitions::admit;
-use crate::core::transitions::record;
+use crate::core::transitions::BreakerTransition;
 
 impl<T: GrpcEgress + Send + Sync + 'static> GrpcEgress for GrpcBreakerClient<T> {
     fn call_unary(&self, request: GrpcRequest) -> BoxFuture<'_, GrpcEgressResult<GrpcResponse>> {
@@ -30,7 +29,7 @@ impl<T: GrpcEgress + Send + Sync + 'static> GrpcEgress for GrpcBreakerClient<T> 
             // Admission decision under the lock.
             let decision = {
                 let mut node = self.node.lock().await;
-                admit(&mut node, &self.config)
+                BreakerTransition::admit(&mut node, &self.config)
             };
 
             match decision {
@@ -39,10 +38,10 @@ impl<T: GrpcEgress + Send + Sync + 'static> GrpcEgress for GrpcBreakerClient<T> 
                 )),
                 Admission::Proceed => {
                     let result = self.inner.call_unary(request).await;
-                    let outcome = classify(&result);
+                    let outcome = FailureClassifier::classify(&result);
                     {
                         let mut node = self.node.lock().await;
-                        record(&mut node, &self.config, outcome);
+                        BreakerTransition::record(&mut node, &self.config, outcome);
                     }
                     result
                 }

@@ -4,31 +4,65 @@ use std::time::Duration;
 
 use crate::api::types::grpc_retry_config::GrpcRetryConfig;
 
-use super::jitter_rng::{next_backoff, rate_limit_backoff};
-
 /// Stateless backoff computation helper.
-///
-/// Wraps the free-standing backoff schedule functions as associated methods
-/// to satisfy SEA rule 191 (all functions must be methods on a type).
 pub(crate) struct BackoffScheduler;
 
 impl BackoffScheduler {
-    /// Compute next standard-retry backoff.
+    /// Compute next standard-retry backoff for the given attempt index (0-based).
+    ///
+    /// `random_unit` is a uniform value in `[0.0, 1.0)`.
     pub(crate) fn next_backoff(
         config: &GrpcRetryConfig,
         attempt: u32,
         random_unit: f64,
     ) -> Duration {
-        next_backoff(config, attempt, random_unit)
+        debug_assert!((0.0..1.0).contains(&random_unit));
+        Self::exponential_jitter(
+            config.initial_backoff_ms,
+            config.max_backoff_ms,
+            config.backoff_multiplier,
+            config.jitter_factor,
+            attempt,
+            random_unit,
+        )
     }
 
     /// Compute rate-limit backoff.
+    ///
+    /// When `retry_after_hint` is `Some`, that value is returned directly.
     pub(crate) fn rate_limit_backoff(
         config: &GrpcRetryConfig,
         attempt: u32,
         retry_after_hint: Option<Duration>,
         random_unit: f64,
     ) -> Duration {
-        rate_limit_backoff(config, attempt, retry_after_hint, random_unit)
+        if let Some(hint) = retry_after_hint {
+            return hint;
+        }
+        debug_assert!((0.0..1.0).contains(&random_unit));
+        Self::exponential_jitter(
+            config.rate_limit_initial_backoff_ms,
+            config.rate_limit_max_backoff_ms,
+            config.backoff_multiplier,
+            config.jitter_factor,
+            attempt,
+            random_unit,
+        )
+    }
+
+    fn exponential_jitter(
+        initial_ms: u64,
+        max_ms: u64,
+        multiplier: f64,
+        jitter_factor: f64,
+        attempt: u32,
+        random_unit: f64,
+    ) -> Duration {
+        let base_ms = (initial_ms as f64) * multiplier.powi(attempt as i32);
+        let capped_ms = base_ms.min(max_ms as f64);
+        let jitter_mult = 1.0 - jitter_factor + (2.0 * jitter_factor * random_unit);
+        let jittered_ms = capped_ms * jitter_mult;
+        let final_ms = jittered_ms.min(max_ms as f64).max(0.0);
+        Duration::from_millis(final_ms.round() as u64)
     }
 }

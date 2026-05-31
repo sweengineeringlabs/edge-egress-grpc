@@ -1,4 +1,4 @@
-//! `impl Processor for GrpcResilientSvc` — satisfies `service_type = "processor"`.
+﻿//! `impl Processor for GrpcResilientSvc` — satisfies `service_type = "processor"`.
 
 use std::sync::Arc;
 
@@ -19,7 +19,8 @@ impl Processor for GrpcResilientSvc {
     }
 
     fn describe(&self) -> &'static str {
-        "grpc-resilient"
+        const LABEL: &str = "grpc-resilient";
+        LABEL
     }
 }
 

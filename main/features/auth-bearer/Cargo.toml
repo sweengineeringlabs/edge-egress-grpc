@@ -80,3 +80,7 @@ missing_docs = "warn"
 [lints.clippy]
 unwrap_used = "deny"
 expect_used = "deny"
+
+[[test]]
+name = "processor_int_test"
+path = "tests/processor_int_test.rs"

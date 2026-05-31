@@ -1,4 +1,4 @@
-//! `TonicGrpcClient` — concrete `GrpcEgress` implementation backed by hyper HTTP/2.
+﻿//! `TonicGrpcClient` — concrete `GrpcEgress` implementation backed by hyper HTTP/2.
 
 /// Core implementation unit for `TonicGrpcClient`.
 ///
@@ -314,7 +314,8 @@ impl crate::api::processor::Processor for TonicGrpcClient {
     }
 
     fn describe(&self) -> &'static str {
-        "tonic-grpc-client"
+        const LABEL: &str = "tonic-grpc-client";
+        LABEL
     }
 }
 

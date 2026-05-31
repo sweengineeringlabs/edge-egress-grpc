@@ -29,49 +29,41 @@ use swe_edge_egress_grpc::{GrpcEgressError, GrpcStatusCode};
 
 use crate::api::breaker::outcome::Outcome;
 
-/// Classify an outbound result into the breaker's outcome.
-pub(crate) fn classify<T>(result: &Result<T, GrpcEgressError>) -> Outcome {
-    let err = match result {
-        Ok(_) => return Outcome::Success,
-        Err(e) => e,
-    };
-    match err {
-        GrpcEgressError::Unavailable(_)
-        | GrpcEgressError::ConnectionFailed(_)
-        | GrpcEgressError::Internal(_) => Outcome::Failure,
-
-        GrpcEgressError::Status(code, _) => match code {
-            GrpcStatusCode::Unavailable | GrpcStatusCode::Internal => Outcome::Failure,
-            // Explicit non-failure variants — exhaustive so a
-            // new variant on `GrpcStatusCode` causes a compile
-            // error here, not a silent default.
-            GrpcStatusCode::Ok
-            | GrpcStatusCode::Cancelled
-            | GrpcStatusCode::Unknown
-            | GrpcStatusCode::InvalidArgument
-            | GrpcStatusCode::DeadlineExceeded
-            | GrpcStatusCode::NotFound
-            | GrpcStatusCode::AlreadyExists
-            | GrpcStatusCode::PermissionDenied
-            | GrpcStatusCode::ResourceExhausted
-            | GrpcStatusCode::FailedPrecondition
-            | GrpcStatusCode::Aborted
-            | GrpcStatusCode::OutOfRange
-            | GrpcStatusCode::Unimplemented
-            | GrpcStatusCode::DataLoss
-            | GrpcStatusCode::Unauthenticated => Outcome::Success,
-        },
-
-        GrpcEgressError::Timeout(_) | GrpcEgressError::Cancelled(_) => Outcome::Success,
-    }
-}
-
 /// Stateless classifier for gRPC egress results.
 pub(crate) struct FailureClassifier;
 
 impl FailureClassifier {
     /// Classify an outbound result into the breaker's outcome.
     pub(crate) fn classify<T>(result: &Result<T, GrpcEgressError>) -> Outcome {
-        classify(result)
+        let err = match result {
+            Ok(_) => return Outcome::Success,
+            Err(e) => e,
+        };
+        match err {
+            GrpcEgressError::Unavailable(_)
+            | GrpcEgressError::ConnectionFailed(_)
+            | GrpcEgressError::Internal(_) => Outcome::Failure,
+
+            GrpcEgressError::Status(code, _) => match code {
+                GrpcStatusCode::Unavailable | GrpcStatusCode::Internal => Outcome::Failure,
+                GrpcStatusCode::Ok
+                | GrpcStatusCode::Cancelled
+                | GrpcStatusCode::Unknown
+                | GrpcStatusCode::InvalidArgument
+                | GrpcStatusCode::DeadlineExceeded
+                | GrpcStatusCode::NotFound
+                | GrpcStatusCode::AlreadyExists
+                | GrpcStatusCode::PermissionDenied
+                | GrpcStatusCode::ResourceExhausted
+                | GrpcStatusCode::FailedPrecondition
+                | GrpcStatusCode::Aborted
+                | GrpcStatusCode::OutOfRange
+                | GrpcStatusCode::Unimplemented
+                | GrpcStatusCode::DataLoss
+                | GrpcStatusCode::Unauthenticated => Outcome::Success,
+            },
+
+            GrpcEgressError::Timeout(_) | GrpcEgressError::Cancelled(_) => Outcome::Success,
+        }
     }
 }

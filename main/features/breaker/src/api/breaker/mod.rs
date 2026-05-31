@@ -14,7 +14,7 @@ pub(crate) use admission::Admission;
 pub use breaker_state::BreakerState;
 pub(crate) use breaker_transition::BreakerTransition;
 pub use error::Error;
-pub(crate) use failure_kind::classify;
+pub(crate) use failure_kind::FailureClassifier;
 pub use grpc_breaker_client::GrpcBreakerClient;
 pub use grpc_breaker_config::GrpcBreakerConfig;
 pub(crate) use node::BreakerNode;
