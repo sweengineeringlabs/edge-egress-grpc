@@ -1,4 +1,3 @@
-//! Factory submodule — transport assembly.
+//! Core factory module — assembly logic lives in the SAF layer.
 
 pub(crate) mod assembler;
-pub(crate) use assembler::ResilientAssembler;

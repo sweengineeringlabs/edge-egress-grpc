@@ -50,3 +50,7 @@ missing_docs = "warn"
 [lints.clippy]
 unwrap_used = "deny"
 expect_used = "deny"
+
+[[test]]
+name = "assembly_int_test"
+path = "tests/assembly_int_test.rs"

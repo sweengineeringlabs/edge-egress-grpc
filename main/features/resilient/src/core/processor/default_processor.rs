@@ -8,14 +8,13 @@ use swe_edge_egress_grpc::{GrpcChannelConfig, GrpcEgress};
 use crate::api::error::resilient_transport_error::ResilientTransportError;
 use crate::api::traits::Processor;
 use crate::api::types::grpc_resilient_svc::GrpcResilientSvc;
-use crate::core::factory::ResilientAssembler;
 
 impl Processor for GrpcResilientSvc {
     fn process(
         &self,
         config: &GrpcChannelConfig,
     ) -> BoxFuture<'_, Result<Arc<dyn GrpcEgress>, ResilientTransportError>> {
-        let result = ResilientAssembler::assemble(config);
+        let result = GrpcResilientSvc::create_resilient_transport_from_config(config);
         Box::pin(std::future::ready(result))
     }
 

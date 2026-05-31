@@ -231,7 +231,7 @@ impl TonicGrpcClient {
     /// endpoint URL has an `http://` scheme, returns
     /// [`GrpcChannelConfigError::PlaintextRejected`] before any
     /// transport setup.
-    pub(crate) fn from_config(config: &GrpcChannelConfig) -> Result<Self, GrpcChannelConfigError> {
+    fn from_config(config: &GrpcChannelConfig) -> Result<Self, GrpcChannelConfigError> {
         use crate::api::value::DEFAULT_REQUEST_TIMEOUT_SECS;
         if config.tls_required && is_plaintext_endpoint(&config.endpoint) {
             return Err(GrpcChannelConfigError::PlaintextRejected(
@@ -269,7 +269,7 @@ impl TonicGrpcClient {
 }
 
 /// Returns `true` when `endpoint` starts with `http://` (case-insensitive).
-fn is_plaintext_endpoint(endpoint: &str) -> bool {
+pub(crate) fn is_plaintext_endpoint(endpoint: &str) -> bool {
     endpoint.len() >= 7 && endpoint[..7].eq_ignore_ascii_case("http://")
 }
 

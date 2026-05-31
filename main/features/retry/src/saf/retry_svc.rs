@@ -10,9 +10,10 @@ use crate::api::types::grpc_retry_svc::GrpcRetrySvc;
 impl GrpcRetrySvc {
     /// Return a config builder pre-seeded with this crate's name and version.
     pub fn create_config_builder() -> swe_edge_configbuilder::ConfigBuilderImpl {
-        ConfigLoaderFactory::create_config_builder()
-            .with_name(env!("CARGO_PKG_NAME"))
-            .with_version(env!("CARGO_PKG_VERSION"))
+        swe_edge_configbuilder::ConfigBuilderImpl::for_crate(
+            env!("CARGO_PKG_NAME"),
+            env!("CARGO_PKG_VERSION"),
+        )
     }
 
     /// Wrap `inner` with the supplied retry policy.
