@@ -39,6 +39,7 @@ impl Default for GrpcBreakerConfig {
 
 impl swe_edge_configbuilder::ConfigSection for GrpcBreakerConfig {
     fn section_name() -> &'static str {
+        // @allow: no_stub_fn_bodies
         "grpc_breaker"
     }
 }
