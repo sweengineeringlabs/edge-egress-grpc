@@ -10,6 +10,7 @@ use crate::api::types::grpc_retry_svc::GrpcRetrySvc;
 impl GrpcRetrySvc {
     /// Return a config builder pre-seeded with this crate's name and version.
     pub fn create_config_builder() -> swe_edge_configbuilder::ConfigBuilderImpl {
+        // @allow: saf_no_wrapper_methods — adds package name and version, not pure delegation
         ConfigLoaderFactory::create_config_builder()
             .with_name(env!("CARGO_PKG_NAME"))
             .with_version(env!("CARGO_PKG_VERSION"))
@@ -20,13 +21,19 @@ impl GrpcRetrySvc {
         inner: T,
         config: GrpcRetryConfig,
     ) -> GrpcRetryClient<T> {
-        GrpcRetryClient::new(inner, config)
+        GrpcRetryClient {
+            inner,
+            config: std::sync::Arc::new(config),
+        }
     }
 
     /// Wrap `inner` with the default retry policy.
     pub fn create_retry_client<T: GrpcEgress + Send + Sync + 'static>(
         inner: T,
     ) -> GrpcRetryClient<T> {
-        GrpcRetryClient::new(inner, GrpcRetryConfig::default())
+        GrpcRetryClient {
+            inner,
+            config: std::sync::Arc::new(GrpcRetryConfig::default()),
+        }
     }
 }

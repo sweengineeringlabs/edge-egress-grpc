@@ -21,13 +21,25 @@ impl GrpcBreakerSvc {
         inner: T,
         config: GrpcBreakerConfig,
     ) -> GrpcBreakerClient<T> {
-        GrpcBreakerClient::new(inner, config)
+        GrpcBreakerClient {
+            inner,
+            config: std::sync::Arc::new(config),
+            node: std::sync::Arc::new(tokio::sync::Mutex::new(
+                crate::api::breaker::node::BreakerNode::new(),
+            )),
+        }
     }
 
     /// Wrap `inner` with the default breaker policy.
     pub fn create_breaker_client<T: GrpcEgress + Send + Sync + 'static>(
         inner: T,
     ) -> GrpcBreakerClient<T> {
-        GrpcBreakerClient::new(inner, GrpcBreakerConfig::default())
+        GrpcBreakerClient {
+            inner,
+            config: std::sync::Arc::new(GrpcBreakerConfig::default()),
+            node: std::sync::Arc::new(tokio::sync::Mutex::new(
+                crate::api::breaker::node::BreakerNode::new(),
+            )),
+        }
     }
 }
