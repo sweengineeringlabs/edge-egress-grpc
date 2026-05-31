@@ -1,14 +1,14 @@
-//! Integration tests for `GrpcChannelConfig` and `create_transport_from_config`.
+//! Integration tests for `GrpcChannelConfig` and `TransportSvc::create_transport_from_config`.
 //!
 //! Verifies the **fail-closed TLS-by-default invariant** at the
-//! public-facade boundary via the `create_transport_from_config` factory.
+//! public-facade boundary via the `TransportSvc::create_transport_from_config` factory.
 
 use std::sync::Arc;
 
 use swe_edge_egress_grpc_transport::{
-    create_transport_from_config, CompressionMode, GrpcChannelConfig, GrpcChannelConfigError,
-    GrpcEgress, GrpcEgressError, GrpcEgressInterceptor, GrpcEgressInterceptorChain, GrpcRequest,
-    GrpcResponse, GrpcStatusCode, TraceContextInterceptor,
+    CompressionMode, GrpcChannelConfig, GrpcChannelConfigError, GrpcEgress, GrpcEgressError,
+    GrpcEgressInterceptor, GrpcEgressInterceptorChain, GrpcRequest, GrpcResponse, GrpcStatusCode,
+    TraceContextInterceptor, TransportSvc,
 };
 
 fn ensure_rustls_provider() {
@@ -26,12 +26,12 @@ fn transport_struct_channel_config_default_requires_tls_int_test() {
     assert!(cfg.tls_required, "TLS-by-default invariant must hold");
 }
 
-/// @covers: create_transport_from_config — plaintext endpoint rejected when tls_required.
+/// @covers: TransportSvc::create_transport_from_config — plaintext endpoint rejected when tls_required.
 #[test]
 fn transport_struct_channel_config_from_config_rejects_plaintext_int_test() {
     ensure_rustls_provider();
     let cfg = GrpcChannelConfig::new("http://localhost:50051");
-    let result = create_transport_from_config(&cfg);
+    let result = TransportSvc::create_transport_from_config(&cfg);
     match result {
         Err(GrpcChannelConfigError::PlaintextRejected(endpoint)) => {
             assert!(
@@ -44,20 +44,20 @@ fn transport_struct_channel_config_from_config_rejects_plaintext_int_test() {
     }
 }
 
-/// @covers: create_transport_from_config — plaintext accepted with allow_plaintext().
+/// @covers: TransportSvc::create_transport_from_config — plaintext accepted with allow_plaintext().
 #[test]
 fn transport_struct_channel_config_from_config_accepts_plaintext_with_opt_in_int_test() {
     ensure_rustls_provider();
     let cfg = GrpcChannelConfig::new("http://localhost:50051").allow_plaintext();
-    assert!(create_transport_from_config(&cfg).is_ok());
+    assert!(TransportSvc::create_transport_from_config(&cfg).is_ok());
 }
 
-/// @covers: create_transport_from_config — https endpoint accepted.
+/// @covers: TransportSvc::create_transport_from_config — https endpoint accepted.
 #[test]
 fn transport_struct_channel_config_from_config_accepts_https_int_test() {
     ensure_rustls_provider();
     let cfg = GrpcChannelConfig::new("https://example.com:443");
-    assert!(create_transport_from_config(&cfg).is_ok());
+    assert!(TransportSvc::create_transport_from_config(&cfg).is_ok());
 }
 
 /// @covers: GrpcEgressInterceptorChain — accepts a TraceContextInterceptor.
@@ -89,7 +89,7 @@ async fn transport_struct_channel_config_interceptor_short_circuits_int_test() {
     }
 
     let cfg = GrpcChannelConfig::new("http://127.0.0.1:1").allow_plaintext();
-    let base = create_transport_from_config(&cfg).expect("transport");
+    let base = TransportSvc::create_transport_from_config(&cfg).expect("transport");
     let chain = GrpcEgressInterceptorChain::new().push(Arc::new(Deny));
 
     struct WithChain {

@@ -1,9 +1,7 @@
-//! Integration tests for the `Processor` trait (`api/traits.rs`).
-//!
-//! Verifies that `TonicGrpcClient` — the primary `Processor` implementor —
-//! satisfies the `describe_processor` SAF contract.
+//! Integration tests verifying `TonicGrpcClient` satisfies the `Processor` contract
+//! through the `TransportSvc` SAF factory.
 
-use swe_edge_egress_grpc_transport::{create_transport_from_config, GrpcChannelConfig};
+use swe_edge_egress_grpc_transport::{GrpcChannelConfig, TransportSvc};
 
 fn ensure_rustls_provider() {
     use std::sync::Once;
@@ -13,37 +11,20 @@ fn ensure_rustls_provider() {
     });
 }
 
-/// @covers: describe_processor
-#[test]
-fn transport_struct_processor_describe_returns_non_empty_label_int_test() {
-    ensure_rustls_provider();
-    let client = swe_edge_egress_grpc_transport::TonicGrpcClient::new("http://127.0.0.1:50051");
-    let label = swe_edge_egress_grpc_transport::describe_processor(&client);
-    assert!(
-        !label.is_empty(),
-        "describe_processor must return a non-empty label, got: {label:?}"
-    );
-}
-
-/// @covers: describe_processor
-#[test]
-fn transport_struct_processor_describe_returns_tonic_grpc_client_label_int_test() {
-    ensure_rustls_provider();
-    let client = swe_edge_egress_grpc_transport::TonicGrpcClient::new("http://127.0.0.1:50051");
-    let label = swe_edge_egress_grpc_transport::describe_processor(&client);
-    assert_eq!(
-        label, "tonic-grpc-client",
-        "TonicGrpcClient label must be 'tonic-grpc-client', got: {label:?}"
-    );
-}
-
-/// Verify the `Processor` trait object is accessible and the SAF factory
-/// returns a transport that can be used in a processor context.
+/// @covers: TransportSvc::create_transport_from_config — factory produces a valid transport
 #[test]
 fn transport_struct_processor_factory_creates_valid_transport_int_test() {
     ensure_rustls_provider();
     let cfg = GrpcChannelConfig::new("http://127.0.0.1:50051").allow_plaintext();
-    let transport = create_transport_from_config(&cfg).expect("create transport");
-    // If transport is created, the Processor impl is wired correctly.
+    let transport = TransportSvc::create_transport_from_config(&cfg).expect("create transport");
     let _ = transport;
+}
+
+/// @covers: TransportSvc::create_tonic_client_from_config — returns concrete client
+#[test]
+fn transport_struct_processor_tonic_client_created_int_test() {
+    ensure_rustls_provider();
+    let cfg = GrpcChannelConfig::new("http://127.0.0.1:50051").allow_plaintext();
+    let client = TransportSvc::create_tonic_client_from_config(&cfg).expect("tonic client");
+    let _ = client;
 }

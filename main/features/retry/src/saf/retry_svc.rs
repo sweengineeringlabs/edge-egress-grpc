@@ -1,4 +1,4 @@
-//! gRPC retry SAF — factory methods on [`GrpcRetrySvc`].
+﻿//! gRPC retry SAF — factory methods on [`GrpcRetrySvc`].
 
 use swe_edge_configbuilder::ConfigLoaderFactory;
 use swe_edge_egress_grpc::GrpcEgress;
@@ -10,10 +10,10 @@ use crate::api::types::grpc_retry_svc::GrpcRetrySvc;
 impl GrpcRetrySvc {
     /// Return a config builder pre-seeded with this crate's name and version.
     pub fn create_config_builder() -> swe_edge_configbuilder::ConfigBuilderImpl {
-        swe_edge_configbuilder::ConfigBuilderImpl::for_crate(
-            env!("CARGO_PKG_NAME"),
-            env!("CARGO_PKG_VERSION"),
-        )
+        let mut b = swe_edge_configbuilder::ConfigBuilderImpl::new();
+        b = b.with_name(env!("CARGO_PKG_NAME"));
+        b = b.with_version(env!("CARGO_PKG_VERSION"));
+        b
     }
 
     /// Wrap `inner` with the supplied retry policy.

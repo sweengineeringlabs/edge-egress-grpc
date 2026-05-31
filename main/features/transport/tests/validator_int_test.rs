@@ -1,6 +1,6 @@
-//! Integration tests for `validate_resilience_config` (the `Validator` SAF wrapper).
+//! Integration tests for `TransportSvc::validate_resilience_config`.
 
-use swe_edge_egress_grpc_transport::{validate_resilience_config, ResilienceConfig};
+use swe_edge_egress_grpc_transport::{ResilienceConfig, TransportSvc};
 
 fn valid() -> ResilienceConfig {
     ResilienceConfig {
@@ -18,24 +18,24 @@ fn valid() -> ResilienceConfig {
     }
 }
 
-/// @covers: validate_resilience_config — valid config is accepted.
+/// @covers: TransportSvc::validate_resilience_config — valid config is accepted.
 #[test]
 fn transport_struct_resilience_config_valid_config_is_accepted_int_test() {
-    assert!(validate_resilience_config(&valid()).is_ok());
+    assert!(TransportSvc::validate_resilience_config(&valid()).is_ok());
 }
 
-/// @covers: validate_resilience_config — zero max_attempts is rejected.
+/// @covers: TransportSvc::validate_resilience_config — zero max_attempts is rejected.
 #[test]
 fn transport_struct_resilience_config_zero_max_attempts_rejected_int_test() {
     let mut r = valid();
     r.max_attempts = 0;
-    assert!(validate_resilience_config(&r).is_err());
+    assert!(TransportSvc::validate_resilience_config(&r).is_err());
 }
 
-/// @covers: validate_resilience_config — jitter_factor out of range is rejected.
+/// @covers: TransportSvc::validate_resilience_config — jitter_factor out of range is rejected.
 #[test]
 fn transport_struct_resilience_config_jitter_out_of_range_rejected_int_test() {
     let mut r = valid();
     r.jitter_factor = 1.5;
-    assert!(validate_resilience_config(&r).is_err());
+    assert!(TransportSvc::validate_resilience_config(&r).is_err());
 }

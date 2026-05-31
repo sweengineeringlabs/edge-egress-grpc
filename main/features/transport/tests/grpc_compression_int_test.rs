@@ -13,7 +13,7 @@ use http_body::Frame;
 use http_body_util::{BodyExt as _, StreamBody};
 
 use swe_edge_egress_grpc_transport::{
-    create_transport_from_config, CompressionMode, GrpcChannelConfig, GrpcRequest,
+    CompressionMode, GrpcChannelConfig, GrpcRequest, TransportSvc,
 };
 
 /// Install rustls's aws-lc-rs CryptoProvider exactly once per process.
@@ -77,7 +77,7 @@ async fn tonic_grpc_client_struct_advertises_grpc_encoding_when_gzip_set_int_tes
     });
     tokio::time::sleep(Duration::from_millis(20)).await;
 
-    let client = create_transport_from_config(
+    let client = TransportSvc::create_transport_from_config(
         &GrpcChannelConfig::new(format!("http://{addr}"))
             .allow_plaintext()
             .with_compression(CompressionMode::Gzip),
@@ -137,7 +137,7 @@ async fn tonic_grpc_client_struct_does_not_set_grpc_encoding_when_none_int_test(
     });
     tokio::time::sleep(Duration::from_millis(20)).await;
 
-    let client = create_transport_from_config(
+    let client = TransportSvc::create_transport_from_config(
         &GrpcChannelConfig::new(format!("http://{addr}")).allow_plaintext(),
     )
     .expect("transport");

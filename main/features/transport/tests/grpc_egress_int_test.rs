@@ -1,4 +1,4 @@
-//! Integration tests for `GrpcEgress` (via `create_transport_from_config`).
+//! Integration tests for `GrpcEgress` (via `TransportSvc::create_transport_from_config`).
 //!
 //! Tests spin up a minimal in-process HTTP/2 echo server using `hyper_util`.
 
@@ -13,15 +13,15 @@ use http_body::Frame;
 use http_body_util::{BodyExt as _, Full, StreamBody};
 
 use swe_edge_egress_grpc_transport::{
-    create_transport_from_config, GrpcChannelConfig, GrpcEgress, GrpcEgressError,
-    GrpcMessageStream, GrpcMetadata, GrpcRequest, GrpcResponse, GrpcStatusCode,
+    GrpcChannelConfig, GrpcEgress, GrpcEgressError, GrpcMessageStream, GrpcMetadata, GrpcRequest,
+    GrpcResponse, GrpcStatusCode, TransportSvc,
 };
 
 fn make_client(addr: SocketAddr) -> Arc<dyn GrpcEgress> {
-    create_transport_from_config(
+    TransportSvc::create_transport_from_config(
         &GrpcChannelConfig::new(format!("http://{addr}")).allow_plaintext(),
     )
-    .expect("create_transport_from_config")
+    .expect("TransportSvc::create_transport_from_config")
 }
 
 // ── gRPC frame helpers (duplicated here to keep test self-contained) ─────────

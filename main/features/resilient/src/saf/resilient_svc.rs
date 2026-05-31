@@ -1,11 +1,8 @@
-//! gRPC resilient SAF — factory methods on [`GrpcResilientSvc`].
+﻿//! gRPC resilient SAF — factory methods on [`GrpcResilientSvc`].
 
 use std::sync::Arc;
 
-use swe_edge_configbuilder::ConfigLoaderFactory;
-use swe_edge_egress_grpc::{
-    create_tonic_client_from_config, validate_resilience_config, GrpcChannelConfig, GrpcEgress,
-};
+use swe_edge_egress_grpc::{GrpcChannelConfig, GrpcEgress, TransportSvc};
 use swe_edge_egress_grpc_breaker::{GrpcBreakerClient, GrpcBreakerConfig};
 use swe_edge_egress_grpc_retry::{GrpcRetryClient, GrpcRetryConfig};
 
@@ -15,10 +12,10 @@ use crate::api::types::grpc_resilient_svc::GrpcResilientSvc;
 impl GrpcResilientSvc {
     /// Return a config builder pre-seeded with this crate's name and version.
     pub fn create_config_builder() -> swe_edge_configbuilder::ConfigBuilderImpl {
-        swe_edge_configbuilder::ConfigBuilderImpl::for_crate(
-            env!("CARGO_PKG_NAME"),
-            env!("CARGO_PKG_VERSION"),
-        )
+        let mut b = swe_edge_configbuilder::ConfigBuilderImpl::new();
+        b = b.with_name(env!("CARGO_PKG_NAME"));
+        b = b.with_version(env!("CARGO_PKG_VERSION"));
+        b
     }
 
     /// Build a resilient outbound gRPC transport from a [`GrpcChannelConfig`].
@@ -28,12 +25,12 @@ impl GrpcResilientSvc {
     pub fn create_resilient_transport_from_config(
         config: &GrpcChannelConfig,
     ) -> Result<Arc<dyn GrpcEgress>, ResilientTransportError> {
-        let base = create_tonic_client_from_config(config)?;
+        let base = TransportSvc::create_tonic_client_from_config(config)?;
 
         match &config.resilience {
             None => Ok(Arc::new(base)),
             Some(r) => {
-                validate_resilience_config(r)
+                TransportSvc::validate_resilience_config(r)
                     .map_err(ResilientTransportError::InvalidResilience)?;
 
                 let retry_cfg = GrpcRetryConfig {

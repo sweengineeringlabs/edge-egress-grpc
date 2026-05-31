@@ -14,9 +14,7 @@ use std::time::Duration;
 use http_body_util::Full;
 use hyper_util::rt::{TokioExecutor, TokioIo};
 
-use swe_edge_egress_grpc_transport::{
-    create_transport_from_config, GrpcChannelConfig, GrpcRequest,
-};
+use swe_edge_egress_grpc_transport::{GrpcChannelConfig, GrpcRequest, TransportSvc};
 
 fn ensure_rustls_provider() {
     use std::sync::Once;
@@ -92,7 +90,8 @@ async fn test_hyper_util_tokio_executor_drives_http2_client_round_trip() {
     let addr = spawn_hyper_util_http2_server(listener).await;
 
     let cfg = GrpcChannelConfig::new(format!("http://{addr}")).allow_plaintext();
-    let client = create_transport_from_config(&cfg).expect("create_transport_from_config");
+    let client = TransportSvc::create_transport_from_config(&cfg)
+        .expect("TransportSvc::create_transport_from_config");
 
     let req = GrpcRequest::new("svc/Method", b"ping".to_vec(), Duration::from_secs(5));
     let resp = client
@@ -117,7 +116,8 @@ async fn test_hyper_util_tokio_io_adapts_tcp_stream_for_http2_handshake() {
     let addr = spawn_hyper_util_http2_server(listener).await;
 
     let cfg = GrpcChannelConfig::new(format!("http://{addr}")).allow_plaintext();
-    let client = create_transport_from_config(&cfg).expect("create_transport_from_config");
+    let client = TransportSvc::create_transport_from_config(&cfg)
+        .expect("TransportSvc::create_transport_from_config");
 
     // health_check opens a TCP connection — proves TokioIo wrapping works.
     client
@@ -135,7 +135,8 @@ async fn test_hyper_util_client_legacy_handles_sequential_requests() {
     let addr = spawn_hyper_util_http2_server(listener).await;
 
     let cfg = GrpcChannelConfig::new(format!("http://{addr}")).allow_plaintext();
-    let client = create_transport_from_config(&cfg).expect("create_transport_from_config");
+    let client = TransportSvc::create_transport_from_config(&cfg)
+        .expect("TransportSvc::create_transport_from_config");
 
     for i in 0..3_u8 {
         let payload = vec![i];

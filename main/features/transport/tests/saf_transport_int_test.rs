@@ -1,7 +1,7 @@
-//! SAF-level integration tests for `create_transport_from_config`.
+//! SAF-level integration tests for `TransportSvc::create_transport_from_config`.
 
 use swe_edge_egress_grpc_transport::{
-    create_transport_from_config, GrpcChannelConfig, GrpcChannelConfigError, ResilienceConfig,
+    GrpcChannelConfig, GrpcChannelConfigError, ResilienceConfig, TransportSvc,
 };
 
 fn ensure_rustls_provider() {
@@ -28,31 +28,31 @@ fn resilience() -> ResilienceConfig {
     }
 }
 
-/// @covers: create_transport_from_config — bare transport without resilience.
+/// @covers: TransportSvc::create_transport_from_config — bare transport without resilience.
 #[test]
 fn transport_struct_transport_create_without_resilience_returns_ok_int_test() {
     ensure_rustls_provider();
     let cfg = GrpcChannelConfig::new("http://127.0.0.1:50051").allow_plaintext();
-    assert!(create_transport_from_config(&cfg).is_ok());
+    assert!(TransportSvc::create_transport_from_config(&cfg).is_ok());
 }
 
-/// @covers: create_transport_from_config — resilient transport with resilience config.
+/// @covers: TransportSvc::create_transport_from_config — resilient transport with resilience config.
 #[test]
 fn transport_struct_transport_create_with_resilience_returns_ok_int_test() {
     ensure_rustls_provider();
     let cfg = GrpcChannelConfig::new("http://127.0.0.1:50051")
         .allow_plaintext()
         .with_resilience(resilience());
-    assert!(create_transport_from_config(&cfg).is_ok());
+    assert!(TransportSvc::create_transport_from_config(&cfg).is_ok());
 }
 
-/// @covers: create_transport_from_config — rejects plaintext when tls_required.
+/// @covers: TransportSvc::create_transport_from_config — rejects plaintext when tls_required.
 #[test]
 fn transport_struct_transport_create_rejects_plaintext_when_tls_required_int_test() {
     ensure_rustls_provider();
     let cfg = GrpcChannelConfig::new("http://127.0.0.1:50051");
     assert!(matches!(
-        create_transport_from_config(&cfg),
+        TransportSvc::create_transport_from_config(&cfg),
         Err(GrpcChannelConfigError::PlaintextRejected(_))
     ));
 }

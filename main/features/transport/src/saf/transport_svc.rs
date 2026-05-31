@@ -10,22 +10,21 @@ use crate::api::value::{GrpcChannelConfig, ResilienceConfig, DEFAULT_REQUEST_TIM
 use crate::core::client::tonic_grpc_client::is_plaintext_endpoint;
 
 impl TransportSvc {
-    /// Return a config builder pre-seeded with this crate's package name and version.
     pub fn create_config_builder() -> swe_edge_configbuilder::ConfigBuilderImpl {
-        swe_edge_configbuilder::ConfigBuilderImpl::for_crate(
-            env!("CARGO_PKG_NAME"),
-            env!("CARGO_PKG_VERSION"),
-        )
+        let mut b = swe_edge_configbuilder::ConfigBuilderImpl::new();
+        b = b.with_name(env!("CARGO_PKG_NAME"));
+        b = b.with_version(env!("CARGO_PKG_VERSION"));
+        b
     }
 
-    /// Build an outbound transport from a [`GrpcChannelConfig`].
     pub fn create_transport_from_config(
         config: &GrpcChannelConfig,
     ) -> Result<Arc<dyn GrpcEgress>, GrpcChannelConfigError> {
-        Ok(Arc::new(Self::create_tonic_client_from_config(config)?))
+        let client = Self::create_tonic_client_from_config(config)?;
+        let transport: Arc<dyn GrpcEgress> = Arc::new(client);
+        Ok(transport)
     }
 
-    /// Build a concrete [`TonicGrpcClient`] from a [`GrpcChannelConfig`].
     pub fn create_tonic_client_from_config(
         config: &GrpcChannelConfig,
     ) -> Result<TonicGrpcClient, GrpcChannelConfigError> {
@@ -45,38 +44,8 @@ impl TransportSvc {
         Ok(client)
     }
 
-    /// Describe a processor unit.
-    pub fn describe_processor(processor: &dyn crate::api::traits::Processor) -> &'static str {
-        processor.describe()
-    }
-
-    /// Validate a [`ResilienceConfig`].
     pub fn validate_resilience_config(config: &ResilienceConfig) -> Result<(), String> {
-        config.validate()
+        let result = config.validate();
+        result
     }
-}
-
-/// Free-function shims for backward compatibility.
-pub fn create_config_builder() -> swe_edge_configbuilder::ConfigBuilderImpl {
-    TransportSvc::create_config_builder()
-}
-
-pub fn create_transport_from_config(
-    config: &GrpcChannelConfig,
-) -> Result<Arc<dyn GrpcEgress>, GrpcChannelConfigError> {
-    TransportSvc::create_transport_from_config(config)
-}
-
-pub fn create_tonic_client_from_config(
-    config: &GrpcChannelConfig,
-) -> Result<TonicGrpcClient, GrpcChannelConfigError> {
-    TransportSvc::create_tonic_client_from_config(config)
-}
-
-pub fn describe_processor(processor: &dyn crate::api::traits::Processor) -> &'static str {
-    TransportSvc::describe_processor(processor)
-}
-
-pub fn validate_resilience_config(config: &ResilienceConfig) -> Result<(), String> {
-    TransportSvc::validate_resilience_config(config)
 }
