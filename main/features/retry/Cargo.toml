@@ -50,3 +50,67 @@ path = "tests/processor_int_test.rs"
 [[test]]
 name = "validator_int_test"
 path = "tests/validator_int_test.rs"
+
+[[test]]
+name = "backoff_schedule_int_test"
+path = "tests/backoff_schedule_int_test.rs"
+
+[[test]]
+name = "error_int_test"
+path = "tests/error_int_test.rs"
+
+[[test]]
+name = "grpc_retry_client_int_test"
+path = "tests/grpc_retry_client_int_test.rs"
+
+[[test]]
+name = "retry_decision_int_test"
+path = "tests/retry_decision_int_test.rs"
+
+[[test]]
+name = "retry_int_test"
+path = "tests/retry_int_test.rs"
+
+[[test]]
+name = "backoff_scheduler_int_test"
+path = "tests/backoff_scheduler_int_test.rs"
+
+[[test]]
+name = "jitter_rng_int_test"
+path = "tests/jitter_rng_int_test.rs"
+
+[[test]]
+name = "retry_domain_error_int_test"
+path = "tests/retry_domain_error_int_test.rs"
+
+[[test]]
+name = "retry_egress_int_test"
+path = "tests/retry_egress_int_test.rs"
+
+[[test]]
+name = "application_config_builder_int_test"
+path = "tests/application_config_builder_int_test.rs"
+
+[[test]]
+name = "grpc_retry_config_int_test"
+path = "tests/grpc_retry_config_int_test.rs"
+
+[[test]]
+name = "grpc_retry_config_builder_int_test"
+path = "tests/grpc_retry_config_builder_int_test.rs"
+
+[[test]]
+name = "retry_egress_core_int_test"
+path = "tests/retry_egress_core_int_test.rs"
+
+[[test]]
+name = "grpc_retry_svc_int_test"
+path = "tests/grpc_retry_svc_int_test.rs"
+
+[[test]]
+name = "resource_exhausted_context_int_test"
+path = "tests/resource_exhausted_context_int_test.rs"
+
+[[test]]
+name = "default_processor_int_test"
+path = "tests/default_processor_int_test.rs"

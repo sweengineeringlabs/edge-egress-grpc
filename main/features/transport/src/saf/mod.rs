@@ -2,14 +2,21 @@
 
 mod transport_svc;
 
+pub use crate::api::client::grpc_client_builder::GrpcClientBuilder;
+pub use crate::api::client::tonic::tonic_grpc_client_builder::TonicGrpcClientBuilder;
+pub use crate::api::resilience::resilience_validator::ResilienceValidator;
+pub use crate::api::resilience::resilient_grpc_client_port::ResilientGrpcClientPort;
+pub use crate::api::status::conversions::Conversions;
 pub use crate::api::types::{TonicGrpcClient, TransportSvc};
 
 pub use crate::api::interceptor::{
-    GrpcEgressInterceptor, GrpcEgressInterceptorChain, TraceContextInterceptor,
+    GrpcEgressInterceptor, GrpcEgressInterceptorChain, TraceContextInterceptor, TraceContextSource,
 };
 pub use crate::api::port::{
     GrpcChannelConfigError, GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcMessageStream,
 };
+pub use crate::api::value::grpc::grpc_channel_config_builder::GrpcChannelConfigBuilder;
+pub use crate::api::value::grpc::grpc_request_builder::GrpcRequestBuilder;
 pub use crate::api::value::{
     CompressionMode, GrpcChannelConfig, GrpcMetadata, GrpcRequest, GrpcResponse, GrpcStatusCode,
     KeepAliveConfig, MtlsConfig, ResilienceConfig, ResilienceConfigBuilder,

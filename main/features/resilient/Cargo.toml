@@ -62,3 +62,23 @@ path = "tests/processor_int_test.rs"
 [[test]]
 name = "validator_int_test"
 path = "tests/validator_int_test.rs"
+
+[[test]]
+name = "resilient_transport_error_int_test"
+path = "tests/resilient_transport_error_int_test.rs"
+
+[[test]]
+name = "assembler_int_test"
+path = "tests/assembler_int_test.rs"
+
+[[test]]
+name = "application_config_builder_int_test"
+path = "tests/application_config_builder_int_test.rs"
+
+[[test]]
+name = "resilient_svc_int_test"
+path = "tests/resilient_svc_int_test.rs"
+
+[[test]]
+name = "grpc_resilient_svc_int_test"
+path = "tests/grpc_resilient_svc_int_test.rs"

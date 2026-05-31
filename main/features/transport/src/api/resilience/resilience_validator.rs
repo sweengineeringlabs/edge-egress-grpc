@@ -17,19 +17,3 @@ pub trait ResilienceValidator: Send + Sync {
     /// Validate `config` and return `Err(reason)` on the first violation.
     fn validate_config(&self, config: &ResilienceConfig) -> Result<(), String>;
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::api::traits::Validator;
-
-    #[test]
-    fn test_resilience_validator_is_object_safe() {
-        fn _assert(_: &dyn ResilienceValidator) {}
-    }
-
-    #[test]
-    fn test_validator_re_export_is_object_safe() {
-        fn _assert(_: &dyn Validator) {}
-    }
-}

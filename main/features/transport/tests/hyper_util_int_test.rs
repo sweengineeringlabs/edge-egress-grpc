@@ -84,7 +84,7 @@ async fn spawn_hyper_util_http2_server(listener: tokio::net::TcpListener) -> Soc
 /// `TonicGrpcClient` internals) against a server built with
 /// `hyper_util::rt::TokioIo` and `hyper_util::rt::TokioExecutor`.
 #[tokio::test]
-async fn test_hyper_util_tokio_executor_drives_http2_client_round_trip() {
+async fn transport_struct_hyper_util_tokio_executor_drives_http2_client_round_trip() {
     ensure_rustls_provider();
     let listener = bind_listener().await;
     let addr = spawn_hyper_util_http2_server(listener).await;
@@ -110,7 +110,7 @@ async fn test_hyper_util_tokio_executor_drives_http2_client_round_trip() {
 /// structural test: if `TokioIo` were broken, the server would never accept
 /// a connection and `health_check` would time out.
 #[tokio::test]
-async fn test_hyper_util_tokio_io_adapts_tcp_stream_for_http2_handshake() {
+async fn transport_struct_hyper_util_tokio_io_adapts_tcp_stream_for_http2_handshake() {
     ensure_rustls_provider();
     let listener = bind_listener().await;
     let addr = spawn_hyper_util_http2_server(listener).await;
@@ -129,7 +129,7 @@ async fn test_hyper_util_tokio_io_adapts_tcp_stream_for_http2_handshake() {
 /// Verify the hyper-util client-legacy builder connects to an HTTP/2 server
 /// and that multiple sequential requests succeed (connection reuse path).
 #[tokio::test]
-async fn test_hyper_util_client_legacy_handles_sequential_requests() {
+async fn transport_struct_hyper_util_client_legacy_handles_sequential_requests() {
     ensure_rustls_provider();
     let listener = bind_listener().await;
     let addr = spawn_hyper_util_http2_server(listener).await;

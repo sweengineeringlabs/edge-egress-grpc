@@ -70,7 +70,8 @@ jsonwebtoken  = "9"
 subtle        = "2"
 
 [dev-dependencies]
-tokio = { workspace = true, features = ["macros", "rt", "rt-multi-thread"] }
+tokio  = { workspace = true, features = ["macros", "rt", "rt-multi-thread"] }
+subtle = "2"
 
 
 [lints.rust]
@@ -84,3 +85,7 @@ expect_used = "deny"
 [[test]]
 name = "processor_int_test"
 path = "tests/processor_int_test.rs"
+
+[[test]]
+name = "subtle_int_test"
+path = "tests/subtle_int_test.rs"

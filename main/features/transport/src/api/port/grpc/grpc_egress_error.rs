@@ -36,22 +36,3 @@ pub enum GrpcEgressError {
     #[error("cancelled: {0}")]
     Cancelled(String),
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_status_variant_carries_code_and_message() {
-        let err = GrpcEgressError::Status(GrpcStatusCode::NotFound, "no such row".into());
-        let s = err.to_string();
-        assert!(s.contains("NotFound"));
-        assert!(s.contains("no such row"));
-    }
-
-    #[test]
-    fn test_cancelled_variant_renders_with_reason() {
-        let err = GrpcEgressError::Cancelled("token fired".into());
-        assert!(err.to_string().contains("token fired"));
-    }
-}

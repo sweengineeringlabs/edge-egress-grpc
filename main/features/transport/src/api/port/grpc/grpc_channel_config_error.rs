@@ -11,20 +11,3 @@ pub enum GrpcChannelConfigError {
     #[error("invalid resilience config: {0}")]
     Config(String),
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_plaintext_rejected_display_includes_endpoint() {
-        let e = GrpcChannelConfigError::PlaintextRejected("http://x".into());
-        assert!(e.to_string().contains("http://x"));
-    }
-
-    #[test]
-    fn test_config_display_includes_reason() {
-        let e = GrpcChannelConfigError::Config("max_attempts must be >= 1".into());
-        assert!(e.to_string().contains("max_attempts"));
-    }
-}

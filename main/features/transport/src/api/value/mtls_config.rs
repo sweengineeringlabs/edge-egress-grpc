@@ -38,25 +38,3 @@ impl MtlsConfig {
         }
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_new_leaves_pinned_ca_unset() {
-        let cfg = MtlsConfig::new("c.pem", "k.pem");
-        assert!(cfg.ca_pem_path.is_none());
-        assert_eq!(cfg.cert_pem_path, "c.pem");
-        assert_eq!(cfg.key_pem_path, "k.pem");
-    }
-
-    /// @covers: with_pinned_ca
-    #[test]
-    fn test_with_pinned_ca_stores_all_three_paths() {
-        let cfg = MtlsConfig::with_pinned_ca("c.pem", "k.pem", "ca.pem");
-        assert_eq!(cfg.cert_pem_path, "c.pem");
-        assert_eq!(cfg.key_pem_path, "k.pem");
-        assert_eq!(cfg.ca_pem_path.as_deref(), Some("ca.pem"));
-    }
-}

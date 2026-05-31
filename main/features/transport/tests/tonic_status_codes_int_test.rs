@@ -66,7 +66,7 @@ const STATUS_CODE_MAP: &[(tonic::Code, GrpcStatusCode, i32)] = &[
 /// This directly exercises the `tonic` dependency by comparing its enum
 /// discriminants against the canonical wire values defined in the spec.
 #[test]
-fn test_tonic_code_wire_values_match_grpc_spec() {
+fn transport_struct_tonic_code_wire_values_match_grpc_spec_int_test() {
     for &(tonic_code, _grpc_code, wire_int) in STATUS_CODE_MAP {
         assert_eq!(
             tonic_code as i32, wire_int,
@@ -79,7 +79,7 @@ fn test_tonic_code_wire_values_match_grpc_spec() {
 /// Verify that `GrpcStatusCode` variants are distinct (no two enum variants
 /// collide) — structural sanity check for the `tonic` mapping table.
 #[test]
-fn test_grpc_status_code_all_17_variants_are_distinct() {
+fn transport_struct_grpc_status_code_all_17_variants_are_distinct_int_test() {
     let codes: Vec<GrpcStatusCode> = STATUS_CODE_MAP
         .iter()
         .map(|&(_, grpc_code, _)| grpc_code)
@@ -95,7 +95,7 @@ fn test_grpc_status_code_all_17_variants_are_distinct() {
 /// Verify that `tonic::Code::from(i32)` handles the full 0–16 range — the
 /// same conversion path used internally by `core/status_codes/conversions.rs`.
 #[test]
-fn test_tonic_code_from_i32_covers_all_17_valid_codes() {
+fn transport_struct_tonic_code_from_i32_covers_all_17_valid_codes_int_test() {
     for &(tonic_code, _, wire_int) in STATUS_CODE_MAP {
         let derived = tonic::Code::from(wire_int);
         assert_eq!(
@@ -108,7 +108,7 @@ fn test_tonic_code_from_i32_covers_all_17_valid_codes() {
 /// Verify `tonic::Code::from` returns `Unknown` for out-of-range wire integers —
 /// the same defensive behaviour our `from_wire` wrapper relies on.
 #[test]
-fn test_tonic_code_from_out_of_range_wire_value_returns_unknown() {
+fn transport_struct_tonic_code_from_out_of_range_wire_value_returns_unknown_int_test() {
     assert_eq!(
         tonic::Code::from(99),
         tonic::Code::Unknown,

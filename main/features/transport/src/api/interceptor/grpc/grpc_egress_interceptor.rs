@@ -13,13 +13,3 @@ pub trait GrpcEgressInterceptor: Send + Sync {
     /// Returning `Err(_)` converts the call result to that error.
     fn after_call(&self, resp: &mut GrpcResponse) -> Result<(), GrpcEgressError>;
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_grpc_egress_interceptor_is_object_safe() {
-        fn _assert(_: &dyn GrpcEgressInterceptor) {}
-    }
-}

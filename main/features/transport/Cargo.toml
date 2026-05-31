@@ -24,6 +24,130 @@ default = []
 name = "basic_transport"
 path = "examples/basic_transport.rs"
 
+[[test]]
+name = "grpc_client_builder_int_test"
+path = "tests/grpc_client_builder_int_test.rs"
+
+[[test]]
+name = "trace_context_source_int_test"
+path = "tests/trace_context_source_int_test.rs"
+
+[[test]]
+name = "grpc_channel_config_error_int_test"
+path = "tests/grpc_channel_config_error_int_test.rs"
+
+[[test]]
+name = "grpc_egress_error_int_test"
+path = "tests/grpc_egress_error_int_test.rs"
+
+[[test]]
+name = "grpc_egress_result_int_test"
+path = "tests/grpc_egress_result_int_test.rs"
+
+[[test]]
+name = "conversions_int_test"
+path = "tests/conversions_int_test.rs"
+
+[[test]]
+name = "compression_mode_int_test"
+path = "tests/compression_mode_int_test.rs"
+
+[[test]]
+name = "grpc_metadata_int_test"
+path = "tests/grpc_metadata_int_test.rs"
+
+[[test]]
+name = "grpc_request_int_test"
+path = "tests/grpc_request_int_test.rs"
+
+[[test]]
+name = "grpc_response_int_test"
+path = "tests/grpc_response_int_test.rs"
+
+[[test]]
+name = "grpc_status_code_int_test"
+path = "tests/grpc_status_code_int_test.rs"
+
+[[test]]
+name = "mtls_config_int_test"
+path = "tests/mtls_config_int_test.rs"
+
+[[test]]
+name = "grpc_egress_interceptor_int_test"
+path = "tests/grpc_egress_interceptor_int_test.rs"
+
+[[test]]
+name = "grpc_egress_interceptor_chain_int_test"
+path = "tests/grpc_egress_interceptor_chain_int_test.rs"
+
+[[test]]
+name = "tonic_grpc_client_int_test"
+path = "tests/tonic_grpc_client_int_test.rs"
+
+[[test]]
+name = "transport_svc_int_test"
+path = "tests/transport_svc_int_test.rs"
+
+[[test]]
+name = "grpc_egress_int_test"
+path = "tests/grpc_egress_int_test.rs"
+
+[[test]]
+name = "processor_int_test"
+path = "tests/processor_int_test.rs"
+
+[[test]]
+name = "grpc_channel_config_int_test"
+path = "tests/grpc_channel_config_int_test.rs"
+
+[[test]]
+name = "validator_int_test"
+path = "tests/validator_int_test.rs"
+
+[[test]]
+name = "tonic_grpc_client_builder_int_test"
+path = "tests/tonic_grpc_client_builder_int_test.rs"
+
+[[test]]
+name = "trace_context_interceptor_int_test"
+path = "tests/trace_context_interceptor_int_test.rs"
+
+[[test]]
+name = "grpc_message_stream_int_test"
+path = "tests/grpc_message_stream_int_test.rs"
+
+[[test]]
+name = "resilience_validator_int_test"
+path = "tests/resilience_validator_int_test.rs"
+
+[[test]]
+name = "resilient_grpc_client_port_int_test"
+path = "tests/resilient_grpc_client_port_int_test.rs"
+
+[[test]]
+name = "traits_int_test"
+path = "tests/traits_int_test.rs"
+
+[[test]]
+name = "grpc_channel_config_builder_int_test"
+path = "tests/grpc_channel_config_builder_int_test.rs"
+
+[[test]]
+name = "grpc_request_builder_int_test"
+path = "tests/grpc_request_builder_int_test.rs"
+
+[[test]]
+name = "keep_alive_config_int_test"
+path = "tests/keep_alive_config_int_test.rs"
+
+[[test]]
+name = "resilience_config_int_test"
+path = "tests/resilience_config_int_test.rs"
+
+[[test]]
+name = "resilience_config_builder_int_test"
+path = "tests/resilience_config_builder_int_test.rs"
+
 [dependencies]
 serde.workspace       = true
 thiserror.workspace   = true

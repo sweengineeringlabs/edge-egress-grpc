@@ -16,13 +16,3 @@ pub trait Processor: Send + Sync {
     /// Identify this processor unit for logging and metrics.
     fn describe(&self) -> &'static str;
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_processor_is_object_safe() {
-        fn _assert(_: &dyn Processor) {}
-    }
-}

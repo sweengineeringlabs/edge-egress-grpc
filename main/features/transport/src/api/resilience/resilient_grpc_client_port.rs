@@ -28,18 +28,3 @@ pub trait ResilientGrpcClientPort: GrpcEgress + Send + Sync {
     /// and no retry storms have fired).
     fn last_error(&self) -> Option<&GrpcEgressError>;
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_resilient_grpc_client_port_is_object_safe() {
-        fn _assert(_: &dyn ResilientGrpcClientPort) {}
-    }
-
-    #[test]
-    fn test_grpc_egress_re_export_is_object_safe() {
-        fn _assert(_: &dyn GrpcEgress) {}
-    }
-}

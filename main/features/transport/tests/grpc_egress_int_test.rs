@@ -258,7 +258,7 @@ fn ensure_rustls_provider() {
 
 /// @covers: TonicGrpcClient::call_unary — happy path echo.
 #[tokio::test]
-async fn test_call_unary_sends_request_and_receives_response() {
+async fn transport_struct_call_unary_sends_request_and_receives_response() {
     ensure_rustls_provider();
     let listener = bind_listener().await;
     let addr = spawn_echo_server(listener).await;
@@ -275,7 +275,7 @@ async fn test_call_unary_sends_request_and_receives_response() {
 
 /// @covers: TonicGrpcClient::call_unary — grpc-status 13 maps to Status(Internal, _).
 #[tokio::test]
-async fn test_call_unary_propagates_grpc_error_status() {
+async fn transport_struct_call_unary_propagates_grpc_error_status() {
     let listener = bind_listener().await;
     let addr = spawn_error_server(listener).await;
 
@@ -299,7 +299,7 @@ async fn test_call_unary_propagates_grpc_error_status() {
 
 /// @covers: TonicGrpcClient::call_stream — multiple frames echoed back.
 #[tokio::test]
-async fn test_call_stream_sends_multiple_frames_and_receives_stream() {
+async fn transport_struct_call_stream_sends_multiple_frames_and_receives_stream() {
     let listener = bind_listener().await;
     let addr = spawn_echo_server(listener).await;
 
@@ -332,7 +332,7 @@ async fn test_call_stream_sends_multiple_frames_and_receives_stream() {
 
 /// @covers: TonicGrpcClient::health_check — succeeds when server is listening.
 #[tokio::test]
-async fn test_health_check_succeeds_when_server_is_listening() {
+async fn transport_struct_health_check_succeeds_when_server_is_listening() {
     let listener = bind_listener().await;
     let addr = spawn_echo_server(listener).await;
 
@@ -346,7 +346,7 @@ async fn test_health_check_succeeds_when_server_is_listening() {
 
 /// @covers: TonicGrpcClient::health_check — fails when nothing is listening.
 #[tokio::test]
-async fn test_health_check_fails_when_no_server_is_listening() {
+async fn transport_struct_health_check_fails_when_no_server_is_listening() {
     // Bind to get an OS-assigned port, then drop the listener so nothing is listening on it.
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
         .await
@@ -376,7 +376,7 @@ async fn test_health_check_fails_when_no_server_is_listening() {
 
 /// @covers: GrpcRequest::new — three-argument construction with deadline.
 #[test]
-fn test_grpc_request_holds_method_and_body() {
+fn transport_struct_grpc_request_holds_method_and_body_int_test() {
     let req = GrpcRequest::new("svc/Method", vec![1, 2, 3], Duration::from_secs(1));
     assert_eq!(req.method, "svc/Method");
     assert_eq!(req.body, vec![1, 2, 3]);
@@ -385,20 +385,20 @@ fn test_grpc_request_holds_method_and_body() {
 
 /// @covers: GrpcMetadata::default — starts with empty headers.
 #[test]
-fn test_grpc_metadata_default_has_empty_headers() {
+fn transport_struct_grpc_metadata_default_has_empty_headers_int_test() {
     let m = GrpcMetadata::default();
     assert!(m.headers.is_empty());
 }
 
 /// @covers: GrpcStatusCode — distinct variants.
 #[test]
-fn test_grpc_status_code_ok_is_distinct_from_internal() {
+fn transport_struct_grpc_status_code_ok_is_distinct_from_internal_int_test() {
     assert_ne!(GrpcStatusCode::Ok, GrpcStatusCode::Internal);
 }
 
 /// @covers: GrpcResponse — struct construction.
 #[test]
-fn test_grpc_response_holds_body_bytes() {
+fn transport_struct_grpc_response_holds_body_bytes_int_test() {
     let resp = GrpcResponse {
         body: vec![0x08, 0x01],
         metadata: GrpcMetadata::default(),
@@ -408,7 +408,7 @@ fn test_grpc_response_holds_body_bytes() {
 
 /// @covers: TonicGrpcClient::call_unary — response metadata from HTTP/2 trailers is preserved.
 #[tokio::test]
-async fn test_call_unary_receives_response_metadata_from_trailers() {
+async fn transport_struct_call_unary_receives_response_metadata_from_trailers() {
     let listener = bind_listener().await;
     let addr = spawn_metadata_server(listener).await;
 
@@ -434,7 +434,7 @@ async fn test_call_unary_receives_response_metadata_from_trailers() {
 
 /// @covers: TonicGrpcClient::call_unary — timeout fires when server does not respond.
 #[tokio::test]
-async fn test_call_unary_returns_timeout_error_when_server_stalls() {
+async fn transport_struct_call_unary_returns_timeout_error_when_server_stalls() {
     let listener = bind_listener().await;
     let addr = spawn_stalling_grpc_server(listener).await;
 
@@ -451,7 +451,7 @@ async fn test_call_unary_returns_timeout_error_when_server_stalls() {
 
 /// @covers: TonicGrpcClient::call_unary — ConnectionFailed when nothing listens on the port.
 #[tokio::test]
-async fn test_call_unary_returns_connection_failed_when_no_server_is_listening() {
+async fn transport_struct_call_unary_returns_connection_failed_when_no_server_is_listening() {
     let addr = {
         let l = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
         let a = l.local_addr().unwrap();
@@ -531,7 +531,7 @@ async fn spawn_timeout_recording_server(
 /// @covers: TonicGrpcClient::call_unary — request carries `grpc-timeout` header
 /// derived from the GrpcRequest deadline.
 #[tokio::test]
-async fn test_call_unary_sends_grpc_timeout_header_from_deadline() {
+async fn transport_struct_call_unary_sends_grpc_timeout_header_from_deadline() {
     let listener = bind_listener().await;
     let (addr, captured) = spawn_timeout_recording_server(listener).await;
 
@@ -563,7 +563,7 @@ async fn test_call_unary_sends_grpc_timeout_header_from_deadline() {
 /// @covers: TonicGrpcClient::call_unary — caller-supplied cancellation token aborts
 /// the in-flight request and yields `Cancelled` rather than `Timeout`.
 #[tokio::test]
-async fn test_call_unary_cancellation_token_aborts_in_flight_request() {
+async fn transport_struct_call_unary_cancellation_token_aborts_in_flight_request() {
     use tokio_util::sync::CancellationToken;
 
     let listener = bind_listener().await;
@@ -599,7 +599,7 @@ async fn test_call_unary_cancellation_token_aborts_in_flight_request() {
 /// @covers: GrpcEgressError::Status — all 17 GrpcStatusCode variants round-trip
 /// through the public error type without information loss.
 #[test]
-fn test_status_error_round_trips_all_17_grpc_status_code_variants() {
+fn transport_struct_status_error_round_trips_all_17_grpc_status_code_variants_int_test() {
     let all_17 = [
         GrpcStatusCode::Ok,
         GrpcStatusCode::Cancelled,
@@ -637,7 +637,7 @@ fn test_status_error_round_trips_all_17_grpc_status_code_variants() {
 /// by feeding a server that returns a malformed (truncated) gRPC frame in the
 /// response body.
 #[tokio::test]
-async fn test_call_unary_sanitizes_internal_error_message_on_truncated_response() {
+async fn transport_struct_call_unary_sanitizes_internal_error_message_on_truncated_response() {
     use std::convert::Infallible;
     let listener = bind_listener().await;
     let addr = listener.local_addr().expect("local_addr");
@@ -694,7 +694,7 @@ async fn test_call_unary_sanitizes_internal_error_message_on_truncated_response(
 
 /// @covers: call_server_stream
 #[tokio::test]
-async fn test_call_server_stream_sends_single_request_and_receives_response_stream() {
+async fn transport_struct_call_server_stream_sends_single_request_and_receives_response_stream() {
     let listener = bind_listener().await;
     let addr = spawn_echo_server(listener).await;
 
@@ -728,7 +728,7 @@ async fn test_call_server_stream_sends_single_request_and_receives_response_stre
 
 /// @covers: call_client_stream
 #[tokio::test]
-async fn test_call_client_stream_sends_multiple_frames_and_receives_single_response() {
+async fn transport_struct_call_client_stream_sends_multiple_frames_and_receives_single_response() {
     let listener = bind_listener().await;
     let addr = spawn_echo_server(listener).await;
 
@@ -755,7 +755,7 @@ async fn test_call_client_stream_sends_multiple_frames_and_receives_single_respo
 
 /// @covers: call_bidi_stream
 #[tokio::test]
-async fn test_call_bidi_stream_sends_multiple_frames_and_receives_stream() {
+async fn transport_struct_call_bidi_stream_sends_multiple_frames_and_receives_stream() {
     let listener = bind_listener().await;
     let addr = spawn_echo_server(listener).await;
 

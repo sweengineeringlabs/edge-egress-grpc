@@ -694,6 +694,37 @@ impl TonicGrpcClientCore {
 mod tests {
     use super::*;
 
+    // ── is_plaintext_endpoint (private fn — inline per rule 37) ──────────────
+
+    #[test]
+    fn test_is_plaintext_endpoint_returns_true_for_http_scheme() {
+        assert!(TonicGrpcClientCore::is_plaintext_endpoint(
+            "http://localhost:50051"
+        ));
+        assert!(TonicGrpcClientCore::is_plaintext_endpoint(
+            "HTTP://example.com:443"
+        ));
+    }
+
+    #[test]
+    fn test_is_plaintext_endpoint_returns_false_for_https_scheme() {
+        assert!(!TonicGrpcClientCore::is_plaintext_endpoint(
+            "https://secure.example.com:443"
+        ));
+    }
+
+    #[test]
+    fn test_is_plaintext_endpoint_returns_false_for_empty_string() {
+        assert!(!TonicGrpcClientCore::is_plaintext_endpoint(""));
+    }
+
+    #[test]
+    fn test_is_plaintext_endpoint_returns_false_for_short_string() {
+        assert!(!TonicGrpcClientCore::is_plaintext_endpoint("http:/"));
+    }
+
+    // ── other core tests ─────────────────────────────────────────────────────
+
     #[test]
     fn test_new_client_stores_base_uri() {
         rustls::crypto::aws_lc_rs::default_provider()

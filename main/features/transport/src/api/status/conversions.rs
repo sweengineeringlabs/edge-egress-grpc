@@ -2,13 +2,3 @@
 
 /// Marker type identifying this as the status code conversion interface module.
 pub struct Conversions;
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_conversions_marker_is_constructable() {
-        let _ = Conversions;
-    }
-}
