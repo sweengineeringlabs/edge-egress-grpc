@@ -1,6 +1,5 @@
 ﻿//! gRPC retry SAF — factory methods on [`GrpcRetrySvc`].
 
-use swe_edge_configbuilder::ConfigLoaderFactory;
 use swe_edge_egress_grpc::GrpcEgress;
 
 use crate::api::types::grpc::grpc_retry_client::GrpcRetryClient;

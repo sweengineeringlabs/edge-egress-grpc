@@ -31,6 +31,7 @@ impl JwtClaimsBuilder {
     }
 
     /// Set the `sub` (subject) claim.
+    #[allow(clippy::should_implement_trait)]
     pub fn sub(mut self, sub: impl Into<String>) -> Self {
         self.sub = Some(sub.into());
         self
@@ -50,15 +51,14 @@ impl JwtClaimsBuilder {
 
     /// Build the [`JwtClaims`].
     ///
-    /// # Panics
-    /// Panics if any required field has not been set.
-    pub fn build(self) -> JwtClaims {
-        JwtClaims {
-            iss: self.iss.expect("iss is required"),
-            aud: self.aud.expect("aud is required"),
-            sub: self.sub.expect("sub is required"),
-            exp: self.exp.expect("exp is required"),
-            iat: self.iat.expect("iat is required"),
-        }
+    /// Returns `Err` if any required field has not been set.
+    pub fn build(self) -> Result<JwtClaims, String> {
+        Ok(JwtClaims {
+            iss: self.iss.ok_or("iss is required")?,
+            aud: self.aud.ok_or("aud is required")?,
+            sub: self.sub.ok_or("sub is required")?,
+            exp: self.exp.ok_or("exp is required")?,
+            iat: self.iat.ok_or("iat is required")?,
+        })
     }
 }

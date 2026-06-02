@@ -1,6 +1,7 @@
 //! [`GrpcEgress`] impl for [`GrpcRetryClient`].
 
 /// Impl unit — satisfies SEA rule 89.
+#[expect(dead_code, reason = "SEA structural marker — impl site anchor, not instantiated")]
 pub(crate) struct RetryEgress;
 
 use std::time::Instant;
