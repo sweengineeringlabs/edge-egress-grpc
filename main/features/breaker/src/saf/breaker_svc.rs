@@ -1,6 +1,5 @@
 ﻿//! gRPC breaker SAF — factory methods on [`GrpcBreakerSvc`].
 
-use swe_edge_configbuilder::ConfigLoaderFactory;
 use swe_edge_egress_grpc::GrpcEgress;
 
 use crate::api::breaker::GrpcBreakerConfig;

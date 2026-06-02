@@ -7,7 +7,9 @@ pub enum TraceContextSource {
     PassThrough,
     /// Always inject a static `traceparent` (and optional `tracestate`).
     Static {
+        /// The W3C `traceparent` header value to inject.
         traceparent: String,
+        /// The optional W3C `tracestate` header value to inject.
         tracestate: Option<String>,
     },
 }

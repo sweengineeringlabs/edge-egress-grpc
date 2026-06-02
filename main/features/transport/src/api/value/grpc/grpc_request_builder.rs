@@ -18,25 +18,31 @@ pub struct GrpcRequestBuilder {
 }
 
 impl GrpcRequestBuilder {
+    /// Create a new empty builder.
     pub fn new() -> Self {
         Self::default()
     }
+    /// Set the gRPC method path (e.g. `/pkg.Service/Method`).
     pub fn method(mut self, v: impl Into<String>) -> Self {
         self.method = Some(v.into());
         self
     }
+    /// Set the encoded request payload bytes.
     pub fn body(mut self, v: Vec<u8>) -> Self {
         self.body = v;
         self
     }
+    /// Set the per-request deadline.
     pub fn deadline(mut self, v: Duration) -> Self {
         self.deadline = Some(v);
         self
     }
+    /// Attach outbound metadata headers.
     pub fn metadata(mut self, v: GrpcMetadata) -> Self {
         self.metadata = v;
         self
     }
+    /// Attach a cancellation token to abort the in-flight request.
     pub fn cancellation_token(mut self, v: CancellationToken) -> Self {
         self.cancellation_token = Some(v);
         self

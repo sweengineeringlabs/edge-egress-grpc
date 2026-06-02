@@ -16,7 +16,8 @@ use crate::api::breaker::GrpcBreakerConfig;
 /// documentation of the contract.  Free-function impls don't
 /// instantiate the trait (Rust has no way to "implement" a
 /// trait of associated functions for a module), so the trait
-/// itself is unused at the type-system level — the
+/// itself is unused at the type-system level.
+#[expect(dead_code, reason = "SEA api/ counterpart — structural anchor, not implemented by any type")]
 pub trait BreakerTransition {
     /// Decide whether to admit a new request.
     fn admit(node: &mut BreakerNode, config: &GrpcBreakerConfig) -> Admission;
