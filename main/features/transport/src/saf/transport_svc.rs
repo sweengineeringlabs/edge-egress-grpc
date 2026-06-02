@@ -10,6 +10,7 @@ use crate::api::value::{GrpcChannelConfig, ResilienceConfig, DEFAULT_REQUEST_TIM
 use crate::core::client::tonic_grpc_client::TonicGrpcClientCore;
 
 impl TransportSvc {
+    /// Create a config builder pre-populated with this crate's name and version.
     pub fn create_config_builder() -> swe_edge_configbuilder::ConfigBuilderImpl {
         let mut b = swe_edge_configbuilder::ConfigBuilderImpl::new();
         b = b.with_name(env!("CARGO_PKG_NAME"));
@@ -17,6 +18,7 @@ impl TransportSvc {
         b
     }
 
+    /// Construct a boxed [`GrpcEgress`] from a validated [`GrpcChannelConfig`].
     pub fn create_transport_from_config(
         config: &GrpcChannelConfig,
     ) -> Result<Arc<dyn GrpcEgress>, GrpcChannelConfigError> {
@@ -25,6 +27,7 @@ impl TransportSvc {
         Ok(transport)
     }
 
+    /// Construct a concrete [`TonicGrpcClient`] from a validated [`GrpcChannelConfig`].
     pub fn create_tonic_client_from_config(
         config: &GrpcChannelConfig,
     ) -> Result<TonicGrpcClient, GrpcChannelConfigError> {
@@ -44,8 +47,8 @@ impl TransportSvc {
         Ok(client)
     }
 
+    /// Validate a [`ResilienceConfig`], returning the first constraint violation as `Err`.
     pub fn validate_resilience_config(config: &ResilienceConfig) -> Result<(), String> {
-        let result = config.validate();
-        result
+        config.validate()
     }
 }

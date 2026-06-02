@@ -9,9 +9,3 @@ pub mod traits;
 pub(crate) mod transitions;
 
 pub mod types;
-pub use types::*;
-
-pub use breaker::BreakerState;
-pub use breaker::Error;
-pub use breaker::GrpcBreakerClient;
-pub use breaker::GrpcBreakerConfig;

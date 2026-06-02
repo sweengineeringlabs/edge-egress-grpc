@@ -16,6 +16,7 @@ pub(crate) struct TonicGrpcClientBuilder {
 }
 
 impl TonicGrpcClientBuilder {
+    #[expect(dead_code, reason = "only exercised in tests; production wiring pending")]
     pub(crate) fn new(base_uri: impl Into<String>) -> Self {
         Self {
             base_uri: base_uri.into(),
@@ -25,22 +26,27 @@ impl TonicGrpcClientBuilder {
             compression: CompressionMode::None,
         }
     }
+    #[expect(dead_code, reason = "only exercised in tests; production wiring pending")]
     pub(crate) fn timeout(mut self, v: Duration) -> Self {
         self.timeout = v;
         self
     }
+    #[expect(dead_code, reason = "only exercised in tests; production wiring pending")]
     pub(crate) fn interceptors(mut self, v: GrpcEgressInterceptorChain) -> Self {
         self.interceptors = v;
         self
     }
+    #[expect(dead_code, reason = "only exercised in tests; production wiring pending")]
     pub(crate) fn max_message_bytes(mut self, v: usize) -> Self {
         self.max_message_bytes = v;
         self
     }
+    #[expect(dead_code, reason = "only exercised in tests; production wiring pending")]
     pub(crate) fn compression(mut self, v: CompressionMode) -> Self {
         self.compression = v;
         self
     }
+    #[expect(dead_code, reason = "only exercised in tests; production wiring pending")]
     pub(crate) fn build(self) -> TonicGrpcClient {
         TonicGrpcClient::with_timeout(self.base_uri, self.timeout)
             .with_interceptors(self.interceptors)

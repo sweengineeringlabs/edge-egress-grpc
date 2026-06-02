@@ -1,6 +1,7 @@
 //! [`GrpcEgress`] impl for [`GrpcBreakerClient`].
 
 /// Impl unit — satisfies SEA rule 89 (core/ file must define a primary type).
+#[expect(dead_code, reason = "SEA structural marker — impl site anchor, not instantiated")]
 pub(crate) struct BreakerEgress;
 
 use futures::future::BoxFuture;

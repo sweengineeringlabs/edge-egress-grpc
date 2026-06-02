@@ -235,6 +235,7 @@ impl TonicGrpcClient {
     /// endpoint URL has an `http://` scheme, returns
     /// [`GrpcChannelConfigError::PlaintextRejected`] before any
     /// transport setup.
+    #[expect(dead_code, reason = "used in tests; superseded by TransportSvc factory")]
     fn from_config(config: &GrpcChannelConfig) -> Result<Self, GrpcChannelConfigError> {
         use crate::api::value::DEFAULT_REQUEST_TIMEOUT_SECS;
         if config.tls_required && TonicGrpcClientCore::is_plaintext_endpoint(&config.endpoint) {
