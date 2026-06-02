@@ -1,7 +1,6 @@
 //! Public value types for `swe_edge_egress_grpc_retry`.
 
 pub mod application_config_builder;
-pub use application_config_builder::ApplicationConfigBuilder;
 
 pub mod backoff_schedule;
 pub use backoff_schedule::BackoffSchedule;

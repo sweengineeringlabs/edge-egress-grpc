@@ -51,15 +51,14 @@ impl BearerEgressConfigBuilder {
 
     /// Build the [`BearerEgressConfig`].
     ///
-    /// # Panics
-    /// Panics if any required field has not been set.
-    pub fn build(self) -> BearerEgressConfig {
-        BearerEgressConfig {
-            secret: self.secret.expect("secret is required"),
-            issuer: self.issuer.expect("issuer is required"),
-            audience: self.audience.expect("audience is required"),
-            subject: self.subject.expect("subject is required"),
-            lifetime_seconds: self.lifetime_seconds.expect("lifetime_seconds is required"),
-        }
+    /// Returns `Err` if any required field has not been set.
+    pub fn build(self) -> Result<BearerEgressConfig, String> {
+        Ok(BearerEgressConfig {
+            secret: self.secret.ok_or("secret is required")?,
+            issuer: self.issuer.ok_or("issuer is required")?,
+            audience: self.audience.ok_or("audience is required")?,
+            subject: self.subject.ok_or("subject is required")?,
+            lifetime_seconds: self.lifetime_seconds.ok_or("lifetime_seconds is required")?,
+        })
     }
 }
