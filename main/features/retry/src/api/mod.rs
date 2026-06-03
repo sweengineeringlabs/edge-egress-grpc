@@ -7,7 +7,6 @@ pub mod error;
 pub mod traits;
 pub mod types;
 
-pub use error::Error;
 pub(crate) mod backoff;
 pub(crate) mod processor;
 pub(crate) mod retry;

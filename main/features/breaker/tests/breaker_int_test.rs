@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Integration tests for the gRPC circuit-breaker decorator.
 
 use std::sync::atomic::{AtomicU32, Ordering};

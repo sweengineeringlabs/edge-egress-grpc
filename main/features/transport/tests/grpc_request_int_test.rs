@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Integration tests for `api/value/grpc/grpc_request.rs`.
 
 use std::time::Duration;

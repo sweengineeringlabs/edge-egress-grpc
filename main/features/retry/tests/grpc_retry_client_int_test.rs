@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Integration tests for [`GrpcRetryClient`].
 
 use swe_edge_egress_grpc_retry::{GrpcRetryClient, GrpcRetryConfig};

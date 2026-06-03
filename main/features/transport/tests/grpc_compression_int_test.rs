@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Compression-mode wire test for the egress client.
 //!
 //! Verifies the toggle works end-to-end: a server records the

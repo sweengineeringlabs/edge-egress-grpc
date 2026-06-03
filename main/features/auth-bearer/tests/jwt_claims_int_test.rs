@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Integration tests covering jwt_claims and swe-edge-egress-grpc dependency.
 
 use swe_edge_egress_grpc_auth_bearer::BearerAuthError;

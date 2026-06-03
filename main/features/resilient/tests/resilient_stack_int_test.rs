@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Integration tests for the resilient gRPC transport stack.
 //!
 //! These tests use an in-memory [`CountingMock`] that implements

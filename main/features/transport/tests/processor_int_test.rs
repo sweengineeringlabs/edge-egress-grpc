@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Integration tests verifying `TonicGrpcClient` satisfies the `Processor` contract
 //! through the `TransportSvc` SAF factory.
 

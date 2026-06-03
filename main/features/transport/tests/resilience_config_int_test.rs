@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Integration tests for `ResilienceConfig`.
 
 use swe_edge_egress_grpc_transport::ResilienceConfig;

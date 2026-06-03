@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Integration tests for `api/interceptor/grpc/grpc_egress_interceptor_chain.rs`.
 
 use std::sync::atomic::{AtomicUsize, Ordering};

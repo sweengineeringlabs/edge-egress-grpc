@@ -9,7 +9,10 @@ use crate::api::types::grpc::grpc_retry_config::GrpcRetryConfig;
 
 /// Default [`Processor`] and [`Validator`] implementation for the
 /// gRPC retry crate.
-#[expect(dead_code, reason = "SEA structural marker — impl site anchor, not yet instantiated")]
+#[expect(
+    dead_code,
+    reason = "SEA structural marker — impl site anchor, not yet instantiated"
+)]
 pub(crate) struct DefaultProcessor;
 
 impl Processor for DefaultProcessor {

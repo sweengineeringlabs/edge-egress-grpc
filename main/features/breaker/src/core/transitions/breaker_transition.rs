@@ -94,9 +94,10 @@ impl BreakerTransition {
 mod tests {
     use super::*;
     use crate::api::breaker::admission::Admission;
+    use crate::api::breaker::breaker_state::BreakerState;
     use crate::api::breaker::node::BreakerNode;
     use crate::api::breaker::outcome::Outcome;
-    use crate::api::breaker::{BreakerState, GrpcBreakerConfig};
+    use crate::api::breaker::GrpcBreakerConfig;
     use std::time::Instant;
 
     fn closed_node() -> BreakerNode {
