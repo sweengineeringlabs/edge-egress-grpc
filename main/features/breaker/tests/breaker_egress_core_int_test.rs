@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Coverage stub for `src/core/breaker/client/breaker_egress.rs`.
 //!
 //! `BreakerEgress` in `core/` is `pub(crate)` — not part of the public

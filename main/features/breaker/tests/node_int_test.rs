@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Coverage stub for `src/api/breaker/node.rs`.
 //!
 //! `BreakerNode` is `pub(crate)` — not part of the public API.

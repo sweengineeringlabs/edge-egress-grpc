@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Integration tests for `GrpcEgress` (via `TransportSvc::create_transport_from_config`).
 //!
 //! Tests spin up a minimal in-process HTTP/2 echo server using `hyper_util`.

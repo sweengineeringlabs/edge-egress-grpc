@@ -4,7 +4,10 @@ use crate::api::traits::Validator;
 use crate::api::value::ResilienceConfig;
 
 /// Zero-size marker identifying this as the `Validator` implementation site.
-#[expect(dead_code, reason = "SEA structural marker — impl site anchor, not instantiated")]
+#[expect(
+    dead_code,
+    reason = "SEA structural marker — impl site anchor, not instantiated"
+)]
 pub(crate) struct ResilienceValidator;
 
 impl Validator for ResilienceConfig {

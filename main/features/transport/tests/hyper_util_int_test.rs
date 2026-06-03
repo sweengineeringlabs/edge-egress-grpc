@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Integration tests that directly exercise the `hyper-util` dependency used
 //! by `TonicGrpcClient`'s HTTP/2 transport layer.
 //!

@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Integration tests for `TraceContextInterceptor`.
 //!
 //! Tests that access the `pub(crate)` field `interceptor.source` are omitted.

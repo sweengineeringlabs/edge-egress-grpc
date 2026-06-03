@@ -6,7 +6,7 @@ use futures::future::BoxFuture;
 use swe_edge_egress_grpc::{GrpcChannelConfig, GrpcEgress};
 
 use crate::api::error::resilient_transport_error::ResilientTransportError;
-use crate::api::traits::Processor;
+use crate::api::processor::Processor;
 use crate::api::types::grpc_resilient_svc::GrpcResilientSvc;
 
 impl Processor for GrpcResilientSvc {

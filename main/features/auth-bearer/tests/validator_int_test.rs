@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Integration tests for the Validator trait and BearerEgressConfig validation.
 
 use swe_edge_egress_grpc_auth_bearer::{BearerEgressConfig, BearerSecret};

@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Integration tests for `GrpcChannelConfig` and `TransportSvc::create_transport_from_config`.
 //!
 //! Verifies the **fail-closed TLS-by-default invariant** at the

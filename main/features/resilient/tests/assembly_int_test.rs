@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Integration tests for `GrpcResilientSvc::create_resilient_transport_from_config`.
 
 use swe_edge_egress_grpc::{GrpcChannelConfig, ResilienceConfig};

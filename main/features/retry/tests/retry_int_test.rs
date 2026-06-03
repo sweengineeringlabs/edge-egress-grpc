@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Integration tests for the gRPC retry decorator.
 //!
 //! These exercise the public API end-to-end: a stub
