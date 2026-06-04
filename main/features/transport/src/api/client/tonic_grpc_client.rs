@@ -26,6 +26,12 @@ pub struct TonicGrpcClient {
 impl TonicGrpcClient {
     /// Create a client with a 30-second fallback timeout.
     pub fn new(base_uri: impl Into<String>) -> Self {
+        // rustls 0.23 requires a process-wide CryptoProvider before the first
+        // ClientConfig construction. hyper-rustls does not install one in any
+        // production code path. We own the transport construction so we own
+        // this precondition. Idempotent — Err means a provider is already set.
+        let _ = rustls::crypto::aws_lc_rs::default_provider().install_default();
+
         let connector = hyper_rustls::HttpsConnectorBuilder::new()
             .with_webpki_roots()
             .https_or_http()

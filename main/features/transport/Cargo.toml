@@ -157,6 +157,7 @@ http             = { workspace = true }
 http-body-util   = "0.1"
 hyper-util       = { version = "0.1", features = ["client-legacy", "tokio", "http2"] }
 hyper-rustls     = { version = "0.27", features = ["http2", "webpki-tokio"] }
+rustls           = { version = "0.23", features = ["aws-lc-rs"] }
 tokio                  = { version = "1", features = ["rt", "net", "time", "macros"] }
 swe-edge-configbuilder = { workspace = true }
 tokio-util       = { version = "0.7", default-features = false }
@@ -164,7 +165,6 @@ tonic            = { version = "0.12", default-features = false }
 tracing          = { workspace = true }
 
 [dev-dependencies]
-rustls     = { version = "0.23", features = ["aws-lc-rs"] }
 toml       = "0.8"
 tokio      = { version = "1", features = ["rt-multi-thread", "macros", "time", "net"] }
 hyper      = { version = "1", features = ["http2", "server"] }
