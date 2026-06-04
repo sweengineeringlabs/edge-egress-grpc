@@ -12,6 +12,29 @@ use serde::Deserialize;
 use crate::api::breaker::error::Error;
 
 /// gRPC circuit-breaker policy schema.
+///
+/// Construct via [`GrpcBreakerConfig::default`] for SWE baseline values or
+/// [`GrpcBreakerConfig::from_config`] to parse custom TOML. Both validate
+/// the constraints (`failure_threshold >= 1`, `half_open_probe_count >= 1`).
+///
+/// # Examples
+///
+/// ```rust
+/// use swe_edge_egress_grpc_breaker::GrpcBreakerConfig;
+/// use std::time::Duration;
+///
+/// // SWE baseline: 5 failures, 30s cool-down, 1 probe to close.
+/// let cfg = GrpcBreakerConfig::default();
+/// assert_eq!(cfg.failure_threshold, 5);
+/// assert_eq!(cfg.cool_down(), Duration::from_secs(30));
+///
+/// // Custom policy from TOML.
+/// let cfg = GrpcBreakerConfig::from_config(
+///     "failure_threshold = 3\ncool_down_seconds = 10\nhalf_open_probe_count = 2"
+/// ).unwrap();
+/// assert_eq!(cfg.failure_threshold, 3);
+/// assert_eq!(cfg.half_open_probe_count, 2);
+/// ```
 #[derive(Debug, Clone, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct GrpcBreakerConfig {
