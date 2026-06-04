@@ -34,7 +34,7 @@ swe-edge-egress-grpc-breaker     = { path = "main/features/breaker" }
 swe-edge-egress-grpc-resilient   = { path = "main/features/resilient" }
 
 # Config infrastructure
-swe-edge-configbuilder = { path = "../../configbuilder/main/features/configbuilder" }
+swe-edge-configbuilder = { path = "../../configbuilder/main/configbuilder" }
 
 [workspace.lints.clippy]
 unwrap_used = "deny"
