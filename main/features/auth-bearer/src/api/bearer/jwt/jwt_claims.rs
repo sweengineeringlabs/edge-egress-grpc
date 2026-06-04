@@ -7,6 +7,26 @@ use serde::{Deserialize, Serialize};
 ///
 /// Custom claims are intentionally not modelled — extending this struct is
 /// the migration path when a deployment needs additional fields.
+///
+/// `exp` and `iat` are seconds since the Unix epoch. The interceptor sets them
+/// automatically when minting; you only need to construct this for testing.
+///
+/// # Examples
+///
+/// ```rust
+/// use swe_edge_egress_grpc_auth_bearer::JwtClaims;
+///
+/// let claims = JwtClaims {
+///     iss: "my-service".to_string(),
+///     aud: "upstream".to_string(),
+///     sub: "service-account".to_string(),
+///     exp: 9_999_999_999,
+///     iat: 1_700_000_000,
+/// };
+///
+/// assert_eq!(claims.iss, "my-service");
+/// assert!(claims.exp > claims.iat);
+/// ```
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct JwtClaims {
     /// JWT `iss` (issuer) claim.

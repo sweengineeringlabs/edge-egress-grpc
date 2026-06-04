@@ -14,6 +14,16 @@ use std::time::Duration;
 /// retry loop drives the schedule internally.  The type is
 /// public for tests and observability tools that want to
 /// inspect the computed delay.
+///
+/// # Examples
+///
+/// ```rust
+/// use std::time::Duration;
+/// use swe_edge_egress_grpc_retry::BackoffSchedule;
+///
+/// let schedule = BackoffSchedule::from_duration(Duration::from_millis(200));
+/// assert_eq!(schedule.sleep, Duration::from_millis(200));
+/// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct BackoffSchedule {
     /// How long to sleep before the next retry.

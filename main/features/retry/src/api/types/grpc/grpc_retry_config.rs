@@ -17,6 +17,35 @@ use crate::api::error::Error;
 /// gRPC retry policy schema.  Construct via
 /// [`GrpcRetryConfig::from_config`] (custom TOML) or
 /// [`GrpcRetryConfig::swe_default`] (crate baseline).
+///
+/// Only `Unavailable` and `ResourceExhausted` gRPC status codes trigger retries;
+/// `Unauthenticated`, `PermissionDenied`, `DeadlineExceeded`, and `Internal`
+/// are never retried — the client must handle them directly.
+///
+/// # Examples
+///
+/// ```rust
+/// use swe_edge_egress_grpc_retry::GrpcRetryConfig;
+/// use std::time::Duration;
+///
+/// // SWE baseline defaults.
+/// let cfg = GrpcRetryConfig::default();
+/// assert_eq!(cfg.max_attempts, 5);
+/// assert_eq!(cfg.initial_backoff(), Duration::from_millis(100));
+/// assert_eq!(cfg.max_backoff(), Duration::from_secs(5));
+///
+/// // Custom policy from TOML.
+/// let toml = "max_attempts = 3
+/// initial_backoff_ms = 50
+/// backoff_multiplier = 2.0
+/// jitter_factor = 0.1
+/// max_backoff_ms = 2000
+/// rate_limit_max_attempts = 1
+/// rate_limit_initial_backoff_ms = 500
+/// rate_limit_max_backoff_ms = 5000";
+/// let cfg = GrpcRetryConfig::from_config(toml).unwrap();
+/// assert_eq!(cfg.max_attempts, 3);
+/// ```
 #[derive(Debug, Clone, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct GrpcRetryConfig {
