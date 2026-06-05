@@ -2,16 +2,17 @@
 
 mod transport_svc;
 
-pub use crate::api::client::grpc_client_builder::GrpcClientBuilder;
-pub use crate::api::client::tonic::tonic_grpc_client_builder::TonicGrpcClientBuilder;
-pub use crate::api::resilience::resilience_validator::ResilienceValidator;
-pub use crate::api::resilience::resilient_grpc_client_port::ResilientGrpcClientPort;
-pub use crate::api::status::conversions::Conversions;
+pub use crate::api::types::client::grpc_client_builder::GrpcClientBuilder;
+pub use crate::api::types::client::tonic_grpc_client_builder::TonicGrpcClientBuilder;
+pub use crate::api::traits::resilience::resilience_validator::ResilienceValidator;
+pub use crate::api::traits::resilience::resilient_grpc_client_port::ResilientGrpcClientPort;
+pub use crate::api::types::status::conversions::Conversions;
 pub use crate::api::types::ApplicationConfigBuilder;
 pub use crate::api::types::{TonicGrpcClient, TransportSvc};
 
-pub use crate::api::interceptor::{
-    GrpcEgressInterceptor, GrpcEgressInterceptorChain, TraceContextInterceptor, TraceContextSource,
+pub use crate::api::traits::interceptor::grpc_egress_interceptor::GrpcEgressInterceptor;
+pub use crate::api::types::interceptor::{
+    GrpcEgressInterceptorChain, TraceContextInterceptor, TraceContextSource,
 };
 pub use crate::api::error::{GrpcChannelConfigError, GrpcEgressError};
 pub use crate::api::traits::GrpcEgress;
