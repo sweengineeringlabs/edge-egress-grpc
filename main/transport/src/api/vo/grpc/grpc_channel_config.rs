@@ -2,10 +2,10 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::api::value::compression_mode::CompressionMode;
-use crate::api::value::keep_alive_config::KeepAliveConfig;
-use crate::api::value::mtls_config::MtlsConfig;
-use crate::api::value::resilience::resilience_config::ResilienceConfig;
+use crate::api::vo::compression_mode::CompressionMode;
+use crate::api::vo::keep_alive_config::KeepAliveConfig;
+use crate::api::vo::mtls_config::MtlsConfig;
+use crate::api::vo::resilience::resilience_config::ResilienceConfig;
 
 /// Default ceiling for inbound message bytes (4 MiB).
 pub const DEFAULT_MAX_MESSAGE_BYTES: usize = 4 * 1024 * 1024;

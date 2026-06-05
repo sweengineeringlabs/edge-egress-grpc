@@ -3,7 +3,7 @@
 use crate::api::traits::interceptor::grpc_egress_interceptor::GrpcEgressInterceptor;
 use crate::api::types::interceptor::trace_context_source::TraceContextSource;
 use crate::api::error::GrpcEgressError;
-use crate::api::value::{GrpcRequest, GrpcResponse};
+use crate::api::vo::{GrpcRequest, GrpcResponse};
 
 const TRACEPARENT: &str = "traceparent";
 const TRACESTATE: &str = "tracestate";
