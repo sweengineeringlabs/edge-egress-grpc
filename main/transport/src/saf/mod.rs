@@ -13,9 +13,9 @@ pub use crate::api::types::{TonicGrpcClient, TransportSvc};
 pub use crate::api::interceptor::{
     GrpcEgressInterceptor, GrpcEgressInterceptorChain, TraceContextInterceptor, TraceContextSource,
 };
-pub use crate::api::port::{
-    GrpcChannelConfigError, GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcMessageStream,
-};
+pub use crate::api::error::{GrpcChannelConfigError, GrpcEgressError};
+pub use crate::api::traits::GrpcEgress;
+pub use crate::api::types::{GrpcEgressResult, GrpcMessageStream};
 pub use crate::api::value::grpc::grpc_channel_config_builder::GrpcChannelConfigBuilder;
 pub use crate::api::value::grpc::grpc_request_builder::GrpcRequestBuilder;
 pub use crate::api::value::{

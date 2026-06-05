@@ -5,7 +5,8 @@
 //! from the SAF layer as `Arc<dyn GrpcEgress>` — this trait is the
 //! documentation anchor and extension point.
 
-use crate::api::port::{GrpcEgress, GrpcEgressError};
+use crate::api::error::GrpcEgressError;
+use crate::api::traits::GrpcEgress;
 
 /// Extension contract for a gRPC client that adds resilience (retry + circuit breaker).
 ///

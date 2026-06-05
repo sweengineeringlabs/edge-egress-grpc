@@ -3,7 +3,8 @@
 use std::sync::Arc;
 use std::time::Duration;
 
-use crate::api::port::{GrpcChannelConfigError, GrpcEgress};
+use crate::api::error::GrpcChannelConfigError;
+use crate::api::traits::GrpcEgress;
 use crate::api::traits::Validator;
 use crate::api::types::{TonicGrpcClient, TransportSvc};
 use crate::api::value::{GrpcChannelConfig, ResilienceConfig, DEFAULT_REQUEST_TIMEOUT_SECS};

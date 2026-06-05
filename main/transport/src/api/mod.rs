@@ -4,7 +4,6 @@ pub mod client;
 pub mod config;
 pub mod error;
 pub mod interceptor;
-pub mod port;
 pub mod processor;
 pub mod resilience;
 pub mod status;

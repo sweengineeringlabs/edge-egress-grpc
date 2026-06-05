@@ -17,9 +17,9 @@ use tokio_util::sync::CancellationToken;
 
 use crate::api::client::tonic_grpc_client::TonicGrpcClient;
 use crate::api::interceptor::GrpcEgressInterceptorChain;
-use crate::api::port::{
-    GrpcChannelConfigError, GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcMessageStream,
-};
+use crate::api::error::{GrpcChannelConfigError, GrpcEgressError};
+use crate::api::traits::GrpcEgress;
+use crate::api::types::{GrpcEgressResult, GrpcMessageStream};
 use crate::api::value::{
     CompressionMode, GrpcChannelConfig, GrpcMetadata, GrpcRequest, GrpcResponse, GrpcStatusCode,
     DEFAULT_MAX_MESSAGE_BYTES,

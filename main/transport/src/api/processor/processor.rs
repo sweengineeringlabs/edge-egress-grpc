@@ -2,7 +2,7 @@
 
 use futures::future::BoxFuture;
 
-use crate::api::port::GrpcEgressError;
+use crate::api::error::GrpcEgressError;
 
 /// Primary processing trait — required because `service_type = "processor"` in Cargo.toml.
 ///
