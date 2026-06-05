@@ -210,6 +210,7 @@ impl TonicGrpcClientCore {
 impl TonicGrpcClient {
     /// Create a client with an explicit fallback timeout.
     pub(crate) fn with_timeout(base_uri: impl Into<String>, timeout: Duration) -> Self {
+        let _ = rustls::crypto::aws_lc_rs::default_provider().install_default();
         let connector = hyper_rustls::HttpsConnectorBuilder::new()
             .with_webpki_roots()
             .https_or_http()
