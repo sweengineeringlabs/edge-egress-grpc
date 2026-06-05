@@ -1,6 +1,6 @@
 //! `GrpcMessageStream` — stream of gRPC message payloads.
 
-use crate::api::port::grpc::grpc_egress_result::GrpcEgressResult;
+use crate::api::types::GrpcEgressResult;
 
 /// A stream of gRPC message payloads (each item is a raw decoded frame body).
 pub type GrpcMessageStream =

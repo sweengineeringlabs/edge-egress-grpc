@@ -2,9 +2,9 @@
 
 use futures::future::BoxFuture;
 
-use crate::api::port::grpc::grpc_egress_error::GrpcEgressError;
-use crate::api::port::grpc::grpc_egress_result::GrpcEgressResult;
-use crate::api::port::grpc::grpc_message_stream::GrpcMessageStream;
+use crate::api::error::GrpcEgressError;
+use crate::api::types::GrpcEgressResult;
+use crate::api::types::GrpcMessageStream;
 use crate::api::value::{GrpcMetadata, GrpcRequest, GrpcResponse, GrpcStatusCode};
 
 /// Makes outbound gRPC calls to remote services.

@@ -2,7 +2,7 @@
 
 use crate::api::interceptor::grpc::GrpcEgressInterceptor;
 use crate::api::interceptor::TraceContextSource;
-use crate::api::port::GrpcEgressError;
+use crate::api::error::GrpcEgressError;
 use crate::api::value::{GrpcRequest, GrpcResponse};
 
 const TRACEPARENT: &str = "traceparent";

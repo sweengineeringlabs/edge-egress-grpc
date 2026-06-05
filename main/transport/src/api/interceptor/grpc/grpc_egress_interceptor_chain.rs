@@ -3,7 +3,7 @@
 use std::sync::Arc;
 
 use crate::api::interceptor::GrpcEgressInterceptor;
-use crate::api::port::GrpcEgressError;
+use crate::api::error::GrpcEgressError;
 use crate::api::value::{GrpcRequest, GrpcResponse};
 
 /// A registered chain of [`GrpcEgressInterceptor`]s.
