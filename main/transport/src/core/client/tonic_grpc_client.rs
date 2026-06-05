@@ -20,7 +20,7 @@ use crate::api::types::interceptor::GrpcEgressInterceptorChain;
 use crate::api::error::{GrpcChannelConfigError, GrpcEgressError};
 use crate::api::traits::GrpcEgress;
 use crate::api::types::{GrpcEgressResult, GrpcMessageStream};
-use crate::api::value::{
+use crate::api::vo::{
     CompressionMode, GrpcChannelConfig, GrpcMetadata, GrpcRequest, GrpcResponse, GrpcStatusCode,
     DEFAULT_MAX_MESSAGE_BYTES,
 };
@@ -244,7 +244,7 @@ impl TonicGrpcClient {
         )
     )]
     fn from_config(config: &GrpcChannelConfig) -> Result<Self, GrpcChannelConfigError> {
-        use crate::api::value::DEFAULT_REQUEST_TIMEOUT_SECS;
+        use crate::api::vo::DEFAULT_REQUEST_TIMEOUT_SECS;
         if config.tls_required && TonicGrpcClientCore::is_plaintext_endpoint(&config.endpoint) {
             return Err(GrpcChannelConfigError::PlaintextRejected(
                 config.endpoint.clone(),
@@ -848,7 +848,7 @@ mod tests {
             .install_default()
             .ok();
         let cfg =
-            crate::api::value::GrpcChannelConfig::new("http://localhost:50051").allow_plaintext();
+            crate::api::vo::GrpcChannelConfig::new("http://localhost:50051").allow_plaintext();
         assert!(TonicGrpcClient::from_config(&cfg).is_ok());
     }
 
@@ -857,7 +857,7 @@ mod tests {
         rustls::crypto::aws_lc_rs::default_provider()
             .install_default()
             .ok();
-        let cfg = crate::api::value::GrpcChannelConfig::new("http://localhost:50051")
+        let cfg = crate::api::vo::GrpcChannelConfig::new("http://localhost:50051")
             .allow_plaintext()
             .with_request_timeout(Duration::from_secs(120));
         let client = TonicGrpcClient::from_config(&cfg).unwrap();
@@ -870,7 +870,7 @@ mod tests {
             .install_default()
             .ok();
         let cfg =
-            crate::api::value::GrpcChannelConfig::new("http://localhost:50051").allow_plaintext();
+            crate::api::vo::GrpcChannelConfig::new("http://localhost:50051").allow_plaintext();
         let client = TonicGrpcClient::from_config(&cfg).unwrap();
         assert_eq!(client.timeout, Duration::from_secs(30));
     }

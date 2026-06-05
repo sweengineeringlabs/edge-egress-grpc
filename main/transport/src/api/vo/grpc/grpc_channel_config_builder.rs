@@ -1,10 +1,10 @@
 //! `GrpcChannelConfigBuilder` — builder for [`GrpcChannelConfig`].
 
 use super::grpc_channel_config::{GrpcChannelConfig, DEFAULT_MAX_MESSAGE_BYTES};
-use crate::api::value::compression_mode::CompressionMode;
-use crate::api::value::keep_alive_config::KeepAliveConfig;
-use crate::api::value::mtls_config::MtlsConfig;
-use crate::api::value::resilience::resilience_config::ResilienceConfig;
+use crate::api::vo::compression_mode::CompressionMode;
+use crate::api::vo::keep_alive_config::KeepAliveConfig;
+use crate::api::vo::mtls_config::MtlsConfig;
+use crate::api::vo::resilience::resilience_config::ResilienceConfig;
 
 /// Builder for [`GrpcChannelConfig`].
 #[derive(Debug, Default)]

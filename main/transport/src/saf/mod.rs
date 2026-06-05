@@ -17,9 +17,9 @@ pub use crate::api::types::interceptor::{
 pub use crate::api::error::{GrpcChannelConfigError, GrpcEgressError};
 pub use crate::api::traits::GrpcEgress;
 pub use crate::api::types::{GrpcEgressResult, GrpcMessageStream};
-pub use crate::api::value::grpc::grpc_channel_config_builder::GrpcChannelConfigBuilder;
-pub use crate::api::value::grpc::grpc_request_builder::GrpcRequestBuilder;
-pub use crate::api::value::{
+pub use crate::api::vo::grpc::grpc_channel_config_builder::GrpcChannelConfigBuilder;
+pub use crate::api::vo::grpc::grpc_request_builder::GrpcRequestBuilder;
+pub use crate::api::vo::{
     CompressionMode, GrpcChannelConfig, GrpcMetadata, GrpcRequest, GrpcResponse, GrpcStatusCode,
     KeepAliveConfig, MtlsConfig, ResilienceConfig, ResilienceConfigBuilder,
     DEFAULT_MAX_MESSAGE_BYTES,
