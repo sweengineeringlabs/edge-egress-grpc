@@ -1,7 +1,7 @@
 //! W3C Trace Context outbound interceptor — declaration and implementation.
 
-use crate::api::interceptor::grpc::GrpcEgressInterceptor;
-use crate::api::interceptor::TraceContextSource;
+use crate::api::traits::interceptor::grpc_egress_interceptor::GrpcEgressInterceptor;
+use crate::api::types::interceptor::trace_context_source::TraceContextSource;
 use crate::api::error::GrpcEgressError;
 use crate::api::value::{GrpcRequest, GrpcResponse};
 

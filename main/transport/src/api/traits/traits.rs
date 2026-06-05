@@ -5,7 +5,7 @@
 //! | [`Processor`] | Primary processing trait for this service_type = "processor" crate |
 //! | [`Validator`] | Configuration validation contract |
 
-pub use crate::api::processor::Processor;
+pub use crate::api::traits::processor::Processor;
 
 /// Configuration validation contract.
 ///

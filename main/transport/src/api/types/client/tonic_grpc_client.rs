@@ -6,7 +6,7 @@ use bytes::Bytes;
 use http_body_util::Full;
 use hyper_util::client::legacy::connect::HttpConnector;
 
-use crate::api::interceptor::GrpcEgressInterceptorChain;
+use crate::api::types::interceptor::GrpcEgressInterceptorChain;
 use crate::api::value::{CompressionMode, DEFAULT_MAX_MESSAGE_BYTES};
 
 /// Hyper HTTP/2 client type alias used by [`TonicGrpcClient`].

@@ -15,8 +15,8 @@ use futures::StreamExt as _;
 use http_body_util::{BodyExt as _, Full};
 use tokio_util::sync::CancellationToken;
 
-use crate::api::client::tonic_grpc_client::TonicGrpcClient;
-use crate::api::interceptor::GrpcEgressInterceptorChain;
+use crate::api::types::client::tonic_grpc_client::TonicGrpcClient;
+use crate::api::types::interceptor::GrpcEgressInterceptorChain;
 use crate::api::error::{GrpcChannelConfigError, GrpcEgressError};
 use crate::api::traits::GrpcEgress;
 use crate::api::types::{GrpcEgressResult, GrpcMessageStream};
@@ -320,7 +320,7 @@ impl TonicGrpcClientCore {
 
 // ── Processor impl ───────────────────────────────────────────────────────────
 
-impl crate::api::processor::Processor for TonicGrpcClient {
+impl crate::api::traits::processor::Processor for TonicGrpcClient {
     fn process(&self) -> futures::future::BoxFuture<'_, Result<(), GrpcEgressError>> {
         // Default: verify the endpoint is reachable — a no-op health probe.
         Box::pin(self.health_check())
