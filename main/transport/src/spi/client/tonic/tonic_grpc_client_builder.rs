@@ -1,6 +1,6 @@
-//! `TonicGrpcClientBuilder` — public API builder for [`crate::api::types::client::tonic_grpc_client::TonicGrpcClient`].
+//! `TonicGrpcClientBuilder` — public API builder for [`super::tonic_grpc_client::TonicGrpcClient`].
 //!
-//! Callers use this to construct a [`crate::api::types::client::tonic_grpc_client::TonicGrpcClient`] from individual
+//! Callers use this to construct a [`super::tonic_grpc_client::TonicGrpcClient`] from individual
 //! settings rather than a full [`crate::api::vo::GrpcChannelConfig`].
 //! For config-driven construction prefer
 //! [`crate::create_tonic_client_from_config`].
@@ -10,7 +10,7 @@ use std::time::Duration;
 use crate::api::types::interceptor::GrpcEgressInterceptorChain;
 use crate::api::vo::{CompressionMode, DEFAULT_MAX_MESSAGE_BYTES};
 
-/// Builder for [`crate::api::types::client::tonic_grpc_client::TonicGrpcClient`].
+/// Builder for [`super::tonic_grpc_client::TonicGrpcClient`].
 ///
 /// Each setter is a fluent method that returns `Self`; call [`Self::build`]
 /// when all settings are configured.
@@ -69,8 +69,8 @@ impl TonicGrpcClientBuilder {
         self
     }
 
-    /// Consume the builder and return a configured [`crate::api::types::client::tonic_grpc_client::TonicGrpcClient`].
-    pub fn build(self) -> crate::api::types::client::tonic_grpc_client::TonicGrpcClient {
-        crate::api::types::client::tonic_grpc_client::TonicGrpcClient::new(self.base_uri)
+    /// Consume the builder and return a configured [`super::tonic_grpc_client::TonicGrpcClient`].
+    pub fn build(self) -> super::tonic_grpc_client::TonicGrpcClient {
+        super::tonic_grpc_client::TonicGrpcClient::new(self.base_uri)
     }
 }

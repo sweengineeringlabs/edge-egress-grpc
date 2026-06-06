@@ -2,7 +2,7 @@
 
 use std::time::Duration;
 
-use crate::api::types::client::tonic_grpc_client::TonicGrpcClient;
+use super::tonic_grpc_client::TonicGrpcClient;
 use crate::api::types::interceptor::GrpcEgressInterceptorChain;
 use crate::api::vo::{CompressionMode, DEFAULT_MAX_MESSAGE_BYTES};
 

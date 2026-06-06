@@ -6,9 +6,9 @@ use std::time::Duration;
 use crate::api::error::GrpcChannelConfigError;
 use crate::api::traits::GrpcEgress;
 use crate::api::traits::Validator;
-use crate::api::types::{TonicGrpcClient, TransportSvc};
+use crate::api::types::TransportSvc;
 use crate::api::vo::{GrpcChannelConfig, ResilienceConfig, DEFAULT_REQUEST_TIMEOUT_SECS};
-use crate::core::client::tonic_grpc_client::TonicGrpcClientCore;
+use crate::spi::client::tonic::{TonicGrpcClient, TonicGrpcClientCore};
 
 impl TransportSvc {
     /// Create a config builder pre-populated with this crate's name and version.

@@ -2,8 +2,8 @@
 
 use std::sync::Arc;
 
-use crate::api::traits::interceptor::grpc_egress_interceptor::GrpcEgressInterceptor;
 use crate::api::error::GrpcEgressError;
+use crate::api::traits::interceptor::grpc_egress_interceptor::GrpcEgressInterceptor;
 use crate::api::vo::{GrpcRequest, GrpcResponse};
 
 /// A registered chain of [`GrpcEgressInterceptor`]s.
