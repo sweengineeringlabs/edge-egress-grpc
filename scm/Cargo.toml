@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members  = ["main/auth-bearer","main/breaker","main/resilient","main/retry","main/transport"]
+members  = ["transport", "auth-bearer", "breaker", "resilient", "retry"]
 
 [workspace.package]
 version      = "0.1.0"
@@ -23,11 +23,11 @@ edge-domain            = { git = "https://github.com/sweengineeringlabs/edge-dom
 swe-edge-configbuilder = { git = "https://github.com/sweengineeringlabs/edge-configbuilder.git", tag = "v0.1.0" }
 swe-observ-metrics     = { package = "swe_justobserv_metrics", git = "ssh://git@github.com/sweengineeringlabs/justobserv.git", tag = "v0.2.1" }
 swe_justobserv_context = { git = "ssh://git@github.com/sweengineeringlabs/justobserv.git", tag = "v0.2.1" }
-swe-edge-egress-grpc             = { package = "swe-edge-egress-grpc-transport", path = "main/transport" }
-swe-edge-egress-grpc-auth-bearer = { path = "main/auth-bearer" }
-swe-edge-egress-grpc-breaker     = { path = "main/breaker" }
-swe-edge-egress-grpc-resilient   = { path = "main/resilient" }
-swe-edge-egress-grpc-retry       = { path = "main/retry" }
+swe-edge-egress-grpc             = { package = "swe-edge-egress-grpc-transport", path = "transport" }
+swe-edge-egress-grpc-auth-bearer = { path = "auth-bearer" }
+swe-edge-egress-grpc-breaker     = { path = "breaker" }
+swe-edge-egress-grpc-resilient   = { path = "resilient" }
+swe-edge-egress-grpc-retry       = { path = "retry" }
 serde       = { version = "1.0", features = ["derive"] }
 thiserror   = "2"
 futures     = "0.3"
