@@ -1,3 +1,3 @@
-//! Core layer — outbound interceptor implementation.
+//! Core layer — in-house implementations of `api/` contracts.
 
-pub(crate) mod bearer;
+pub(crate) mod bearer_egress_config_validator;

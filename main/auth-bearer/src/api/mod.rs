@@ -1,13 +1,14 @@
 //! API layer — config, error, and contracts for the outbound bearer interceptor.
 
-pub(crate) mod bearer;
 pub mod error;
 pub mod traits;
 pub mod types;
+pub mod vo;
 
-pub use bearer::{
-    BearerEgressConfig, BearerEgressConfigBuilder, BearerEgressInterceptor, BearerSecret,
-    JwtClaims, JwtClaimsBuilder, AUTHORIZATION_HEADER, EXTRACTED_BEARER_SUBJECT,
-};
 pub use error::BearerAuthError;
 pub use traits::Validator;
+pub use types::BearerEgressInterceptor;
+pub use vo::{
+    BearerEgressConfig, BearerEgressConfigBuilder, BearerSecret, JwtClaims, JwtClaimsBuilder,
+    AUTHORIZATION_HEADER, EXTRACTED_BEARER_SUBJECT,
+};

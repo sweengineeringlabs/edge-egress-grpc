@@ -1,10 +1,10 @@
-﻿//! gRPC breaker SAF — factory methods on [`GrpcBreakerSvc`].
+//! gRPC breaker SAF — factory methods on [`GrpcBreakerSvc`].
 
 use swe_edge_egress_grpc::GrpcEgress;
 
-use crate::api::breaker::GrpcBreakerConfig;
-use crate::api::types::grpc::grpc_breaker_svc::GrpcBreakerSvc;
+use crate::api::types::grpc_breaker_svc::GrpcBreakerSvc;
 use crate::api::types::GrpcBreakerClient;
+use crate::api::vo::grpc_breaker_config::GrpcBreakerConfig;
 
 impl GrpcBreakerSvc {
     /// Return a config builder pre-seeded with this crate's name and version.
@@ -24,7 +24,7 @@ impl GrpcBreakerSvc {
             inner,
             config: std::sync::Arc::new(config),
             node: std::sync::Arc::new(tokio::sync::Mutex::new(
-                crate::api::breaker::node::BreakerNode::new(),
+                crate::api::types::breaker_node::BreakerNode::new(),
             )),
         }
     }
@@ -37,7 +37,7 @@ impl GrpcBreakerSvc {
             inner,
             config: std::sync::Arc::new(GrpcBreakerConfig::default()),
             node: std::sync::Arc::new(tokio::sync::Mutex::new(
-                crate::api::breaker::node::BreakerNode::new(),
+                crate::api::types::breaker_node::BreakerNode::new(),
             )),
         }
     }

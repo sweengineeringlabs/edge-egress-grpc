@@ -1,11 +1,11 @@
 //! `Validator` trait — configuration validation contract.
 
 use crate::api::error::Error;
-use crate::api::types::grpc::grpc_retry_config::GrpcRetryConfig;
+use crate::api::vo::grpc_retry_config::GrpcRetryConfig;
 
 /// Validates a [`GrpcRetryConfig`] for correctness.
 ///
-/// Implemented by [`DefaultProcessor`](crate::core::processor::DefaultProcessor)
+/// Implemented by [`DefaultProcessor`](crate::core::default_processor::DefaultProcessor)
 /// in `core/`.
 pub trait Validator {
     /// Check that all numeric fields are within their valid ranges.

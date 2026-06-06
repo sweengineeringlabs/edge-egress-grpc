@@ -1,4 +1,3 @@
-//! Core layer — factory implementation and trait impls.
+//! Core layer — trait impls for `GrpcResilientSvc`.
 
-pub(crate) mod factory;
-pub(crate) mod processor;
+pub(crate) mod default_processor;
