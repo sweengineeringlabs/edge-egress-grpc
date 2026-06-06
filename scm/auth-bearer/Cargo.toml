@@ -15,7 +15,7 @@ application_type = "lib"
 service_type = "processor"
 
 [lib]
-path = "src/lib.rs"
+path = "main/src/lib.rs"
 
 [[example]]
 name = "auth_bearer"
