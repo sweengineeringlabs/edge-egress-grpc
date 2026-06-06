@@ -2,9 +2,9 @@
 
 /// Core implementation unit for `TonicGrpcClient`.
 ///
-/// The struct fields live in `api/client/tonic_grpc_client.rs` (the public type);
-/// this marker makes the file structurally compliant with SEA Rule 89 — every
-/// `core/` file must contain at least one struct, trait, or enum definition.
+/// The struct fields live in `spi/client/tonic/tonic_grpc_client.rs` (the public
+/// type); this marker holds the protocol-encoding helper methods and the
+/// `GrpcEgress`/`Processor` impls for that type.
 pub(crate) struct TonicGrpcClientCore;
 
 use std::time::Duration;
@@ -15,10 +15,10 @@ use futures::StreamExt as _;
 use http_body_util::{BodyExt as _, Full};
 use tokio_util::sync::CancellationToken;
 
-use crate::api::types::client::tonic_grpc_client::TonicGrpcClient;
-use crate::api::types::interceptor::GrpcEgressInterceptorChain;
+use super::tonic_grpc_client::TonicGrpcClient;
 use crate::api::error::{GrpcChannelConfigError, GrpcEgressError};
 use crate::api::traits::GrpcEgress;
+use crate::api::types::interceptor::GrpcEgressInterceptorChain;
 use crate::api::types::{GrpcEgressResult, GrpcMessageStream};
 use crate::api::vo::{
     CompressionMode, GrpcChannelConfig, GrpcMetadata, GrpcRequest, GrpcResponse, GrpcStatusCode,

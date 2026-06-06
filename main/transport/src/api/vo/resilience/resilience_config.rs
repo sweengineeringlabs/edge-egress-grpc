@@ -25,9 +25,9 @@ use serde::{Deserialize, Serialize};
 ///
 /// Used by `swe_edge_egress_grpc_resilient::create_resilient_transport_from_config`
 /// to compose a [`swe_edge_egress_grpc_retry::GrpcRetryClient`] and
-/// [`swe_edge_egress_grpc_breaker::GrpcBreakerClient`] around the
-/// bare [`crate::TonicGrpcClient`] when present on a
-/// [`super::GrpcChannelConfig`].
+/// [`swe_edge_egress_grpc_breaker::GrpcBreakerClient`] around the bare
+/// [`GrpcEgress`](crate::api::traits::GrpcEgress) transport client when present
+/// on a [`super::GrpcChannelConfig`].
 ///
 /// ## Retry tracks
 ///
