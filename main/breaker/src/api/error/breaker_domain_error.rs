@@ -5,4 +5,4 @@
     dead_code,
     reason = "SEA api/ counterpart — re-exported name, not directly referenced yet"
 )]
-pub type BreakerDomainError = crate::api::breaker::error::Error;
+pub type BreakerDomainError = crate::api::error::error::Error;

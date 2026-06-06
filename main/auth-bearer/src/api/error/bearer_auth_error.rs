@@ -18,7 +18,7 @@
 pub enum BearerAuthError {
     /// The outbound interceptor failed to encode/sign the JWT.
     #[error("failed to mint bearer token")]
-    SignFailed(#[source] jsonwebtoken::errors::Error),
+    SignFailed(#[source] Box<dyn std::error::Error + Send + Sync>),
 
     /// System clock is before the Unix epoch — should never happen.
     #[error("system clock is before Unix epoch")]

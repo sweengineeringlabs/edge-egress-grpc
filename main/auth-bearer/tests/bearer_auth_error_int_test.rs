@@ -22,7 +22,7 @@ fn test_bearer_auth_error_sign_failed_wraps_source() {
     let bad_key = EncodingKey::from_rsa_pem(b"not-a-pem");
     match bad_key {
         Err(inner) => {
-            let e = BearerAuthError::SignFailed(inner);
+            let e = BearerAuthError::SignFailed(Box::new(inner));
             let _: &dyn std::error::Error = &e;
             assert!(
                 e.to_string().contains("mint"),
@@ -34,7 +34,7 @@ fn test_bearer_auth_error_sign_failed_wraps_source() {
             // EncodingKey::from_rsa_pem accepted garbage — construct error differently
             let dummy: jsonwebtoken::errors::Error =
                 jsonwebtoken::errors::Error::from(ErrorKind::InvalidAlgorithm);
-            let e = BearerAuthError::SignFailed(dummy);
+            let e = BearerAuthError::SignFailed(Box::new(dummy));
             assert!(e.to_string().contains("mint"));
         }
     }

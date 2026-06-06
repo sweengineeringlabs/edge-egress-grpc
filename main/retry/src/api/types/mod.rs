@@ -1,18 +1,8 @@
-//! Public value types for `swe_edge_egress_grpc_retry`.
+//! Types — behavioural type declarations whose impl blocks live in `core/`.
 
 pub mod application_config_builder;
+pub mod grpc_retry_client;
+pub mod grpc_retry_svc;
 
-pub mod backoff_schedule;
-pub use backoff_schedule::BackoffSchedule;
-
-pub mod grpc;
-pub use grpc::GrpcRetryClient;
-pub use grpc::GrpcRetryConfig;
-pub use grpc::GrpcRetryConfigBuilder;
-pub use grpc::GrpcRetrySvc;
-
-pub mod resource_exhausted_context;
-pub use resource_exhausted_context::ResourceExhaustedContext;
-
-pub mod retry_decision;
-pub use retry_decision::RetryDecision;
+pub use grpc_retry_client::GrpcRetryClient;
+pub use grpc_retry_svc::GrpcRetrySvc;

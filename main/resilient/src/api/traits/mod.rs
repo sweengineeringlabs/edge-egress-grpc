@@ -5,6 +5,7 @@
 //! | [`Processor`] | Primary processing trait for this service_type = "processor" crate |
 //! | [`Validator`] | Configuration validation contract |
 
+pub(crate) mod assembler;
 pub mod processor;
 pub mod validator;
 
