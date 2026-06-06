@@ -3,7 +3,7 @@ resolver = "2"
 members  = ["transport", "auth-bearer", "breaker", "resilient", "retry"]
 
 [workspace.package]
-version      = "0.1.0"
+version      = "0.4.0"
 edition      = "2021"
 license      = "MIT OR Apache-2.0"
 rust-version = "1.95"
@@ -19,8 +19,8 @@ unwrap_used = "deny"
 expect_used = "deny"
 
 [workspace.dependencies]
-edge-domain            = { git = "https://github.com/sweengineeringlabs/edge-domain.git", tag = "v0.1.0" }
-swe-edge-configbuilder = { git = "https://github.com/sweengineeringlabs/edge-configbuilder.git", tag = "v0.1.0" }
+edge-domain            = { git = "https://github.com/sweengineeringlabs/edge-domain.git", tag = "v0.3.0" }
+swe-edge-configbuilder = { git = "https://github.com/sweengineeringlabs/edge-configbuilder.git", tag = "v0.3.0" }
 swe-observ-metrics     = { package = "swe_justobserv_metrics", git = "ssh://git@github.com/sweengineeringlabs/justobserv.git", tag = "v0.2.1" }
 swe_justobserv_context = { git = "ssh://git@github.com/sweengineeringlabs/justobserv.git", tag = "v0.2.1" }
 swe-edge-egress-grpc             = { package = "swe-edge-egress-grpc-transport", path = "transport" }
