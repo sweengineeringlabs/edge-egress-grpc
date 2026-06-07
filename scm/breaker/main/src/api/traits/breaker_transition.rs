@@ -5,10 +5,10 @@
 //! satisfies the layer-boundary check that every core/ submodule
 //! has an api/ counterpart.
 
+use crate::api::types::admission::Admission;
 use crate::api::types::breaker_node::BreakerNode;
-use crate::api::vo::admission::Admission;
-use crate::api::vo::grpc_breaker_config::GrpcBreakerConfig;
-use crate::api::vo::outcome::Outcome;
+use crate::api::types::grpc_breaker_config::GrpcBreakerConfig;
+use crate::api::types::outcome::Outcome;
 
 /// Interface for the breaker's state-transition primitives.
 /// Implemented as associated functions in `core::breaker_transition`; this

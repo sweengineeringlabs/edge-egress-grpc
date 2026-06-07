@@ -27,7 +27,7 @@
 
 use swe_edge_egress_grpc::{GrpcEgressError, GrpcStatusCode};
 
-use crate::api::vo::outcome::Outcome;
+use crate::api::types::outcome::Outcome;
 
 /// Stateless classifier for gRPC egress results.
 pub(crate) struct FailureClassifier;

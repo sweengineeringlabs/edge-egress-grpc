@@ -1,6 +1,6 @@
 //! Struct declaration and constructors for [`BearerEgressInterceptor`].
 
-use crate::api::vo::bearer_egress_config::BearerEgressConfig;
+use crate::api::types::bearer_egress_config::BearerEgressConfig;
 
 /// `GrpcEgressInterceptor` that signs and attaches a JWT bearer token.
 pub struct BearerEgressInterceptor {

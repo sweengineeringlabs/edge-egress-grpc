@@ -7,7 +7,7 @@ use crate::api::error::GrpcChannelConfigError;
 use crate::api::traits::GrpcEgress;
 use crate::api::traits::Validator;
 use crate::api::types::TransportSvc;
-use crate::api::vo::{GrpcChannelConfig, ResilienceConfig, DEFAULT_REQUEST_TIMEOUT_SECS};
+use crate::api::types::{GrpcChannelConfig, ResilienceConfig, DEFAULT_REQUEST_TIMEOUT_SECS};
 use crate::spi::client::tonic::{TonicGrpcClient, TonicGrpcClientCore};
 
 impl TransportSvc {

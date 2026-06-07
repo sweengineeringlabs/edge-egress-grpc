@@ -1,7 +1,7 @@
 //! `Validator` trait — configuration validation contract.
 
 use crate::api::error::error::Error;
-use crate::api::vo::grpc_breaker_config::GrpcBreakerConfig;
+use crate::api::types::grpc_breaker_config::GrpcBreakerConfig;
 
 /// Validation contract for circuit-breaker configuration.
 pub trait Validator: Send + Sync {

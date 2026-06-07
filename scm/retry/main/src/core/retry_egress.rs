@@ -17,7 +17,7 @@ use swe_edge_egress_grpc::{
 use tracing::{debug, trace, warn};
 
 use crate::api::types::grpc_retry_client::GrpcRetryClient;
-use crate::api::vo::retry_decision::RetryDecision;
+use crate::api::types::retry_decision::RetryDecision;
 use crate::core::backoff_scheduler::BackoffScheduler;
 use crate::core::jitter_rng::JitterRng;
 

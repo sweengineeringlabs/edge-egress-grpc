@@ -13,8 +13,8 @@ use swe_edge_egress_grpc::{
     GrpcResponse,
 };
 
+use crate::api::types::admission::Admission;
 use crate::api::types::grpc_breaker_client::GrpcBreakerClient;
-use crate::api::vo::admission::Admission;
 use crate::core::breaker_transition::BreakerTransition;
 use crate::core::failure_classifier::FailureClassifier;
 

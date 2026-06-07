@@ -1,7 +1,7 @@
 //! `Validator` trait — configuration validation contract.
 
 use crate::api::error::Error;
-use crate::api::vo::grpc_retry_config::GrpcRetryConfig;
+use crate::api::types::grpc_retry_config::GrpcRetryConfig;
 
 /// Validates a [`GrpcRetryConfig`] for correctness.
 ///

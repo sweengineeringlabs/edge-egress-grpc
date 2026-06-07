@@ -9,7 +9,7 @@ pub use crate::api::traits::processor::Processor;
 
 /// Configuration validation contract.
 ///
-/// Implemented by configuration types (e.g. [`crate::api::vo::ResilienceConfig`])
+/// Implemented by configuration types (e.g. [`crate::api::types::ResilienceConfig`])
 /// to validate their fields before use.
 pub trait Validator {
     /// Validate the configuration.

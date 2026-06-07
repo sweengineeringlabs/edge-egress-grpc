@@ -2,9 +2,9 @@
 
 use swe_edge_egress_grpc::GrpcEgress;
 
+use crate::api::types::grpc_breaker_config::GrpcBreakerConfig;
 use crate::api::types::grpc_breaker_svc::GrpcBreakerSvc;
 use crate::api::types::GrpcBreakerClient;
-use crate::api::vo::grpc_breaker_config::GrpcBreakerConfig;
 
 impl GrpcBreakerSvc {
     /// Return a config builder pre-seeded with this crate's name and version.

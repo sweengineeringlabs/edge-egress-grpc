@@ -5,7 +5,7 @@ use futures::future::BoxFuture;
 use crate::api::error::GrpcEgressError;
 use crate::api::types::GrpcEgressResult;
 use crate::api::types::GrpcMessageStream;
-use crate::api::vo::{GrpcMetadata, GrpcRequest, GrpcResponse, GrpcStatusCode};
+use crate::api::types::{GrpcMetadata, GrpcRequest, GrpcResponse, GrpcStatusCode};
 
 /// Makes outbound gRPC calls to remote services.
 pub trait GrpcEgress: Send + Sync {

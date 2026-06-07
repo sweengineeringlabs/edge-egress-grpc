@@ -9,11 +9,11 @@ use std::time::Instant;
 
 use tracing::{debug, info, warn};
 
+use crate::api::types::admission::Admission;
 use crate::api::types::breaker_node::BreakerNode;
-use crate::api::vo::admission::Admission;
-use crate::api::vo::breaker_state::BreakerState;
-use crate::api::vo::grpc_breaker_config::GrpcBreakerConfig;
-use crate::api::vo::outcome::Outcome;
+use crate::api::types::breaker_state::BreakerState;
+use crate::api::types::grpc_breaker_config::GrpcBreakerConfig;
+use crate::api::types::outcome::Outcome;
 
 /// Pure state-machine helper — all transition logic lives here as associated functions.
 pub(crate) struct BreakerTransition;
@@ -93,11 +93,11 @@ impl BreakerTransition {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::api::types::admission::Admission;
     use crate::api::types::breaker_node::BreakerNode;
-    use crate::api::vo::admission::Admission;
-    use crate::api::vo::breaker_state::BreakerState;
-    use crate::api::vo::grpc_breaker_config::GrpcBreakerConfig;
-    use crate::api::vo::outcome::Outcome;
+    use crate::api::types::breaker_state::BreakerState;
+    use crate::api::types::grpc_breaker_config::GrpcBreakerConfig;
+    use crate::api::types::outcome::Outcome;
     use std::time::Instant;
 
     fn closed_node() -> BreakerNode {

@@ -1,7 +1,7 @@
 //! `Validator` implementation for core configuration types.
 
 use crate::api::traits::Validator;
-use crate::api::vo::ResilienceConfig;
+use crate::api::types::ResilienceConfig;
 
 /// Zero-size marker identifying this as the `Validator` implementation site.
 #[expect(

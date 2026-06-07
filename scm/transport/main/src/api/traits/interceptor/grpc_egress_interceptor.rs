@@ -1,7 +1,7 @@
 //! `GrpcEgressInterceptor` trait — observes/mutates requests before and after dispatch.
 
 use crate::api::error::GrpcEgressError;
-use crate::api::vo::{GrpcRequest, GrpcResponse};
+use crate::api::types::{GrpcRequest, GrpcResponse};
 
 /// An interceptor for outbound gRPC calls.
 pub trait GrpcEgressInterceptor: Send + Sync {

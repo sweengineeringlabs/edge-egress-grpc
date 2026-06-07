@@ -1,14 +1,14 @@
 //! `TonicGrpcClientBuilder` — public API builder for [`super::tonic_grpc_client::TonicGrpcClient`].
 //!
 //! Callers use this to construct a [`super::tonic_grpc_client::TonicGrpcClient`] from individual
-//! settings rather than a full [`crate::api::vo::GrpcChannelConfig`].
+//! settings rather than a full [`crate::api::types::GrpcChannelConfig`].
 //! For config-driven construction prefer
 //! [`crate::create_tonic_client_from_config`].
 
 use std::time::Duration;
 
 use crate::api::types::interceptor::GrpcEgressInterceptorChain;
-use crate::api::vo::{CompressionMode, DEFAULT_MAX_MESSAGE_BYTES};
+use crate::api::types::{CompressionMode, DEFAULT_MAX_MESSAGE_BYTES};
 
 /// Builder for [`super::tonic_grpc_client::TonicGrpcClient`].
 ///

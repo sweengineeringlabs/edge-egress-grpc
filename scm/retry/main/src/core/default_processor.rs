@@ -5,7 +5,7 @@
 
 use crate::api::error::Error;
 use crate::api::traits::{Processor, Validator};
-use crate::api::vo::grpc_retry_config::GrpcRetryConfig;
+use crate::api::types::grpc_retry_config::GrpcRetryConfig;
 
 /// Default [`Processor`] and [`Validator`] implementation for the
 /// gRPC retry crate.

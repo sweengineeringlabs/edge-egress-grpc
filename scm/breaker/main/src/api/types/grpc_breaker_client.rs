@@ -8,7 +8,7 @@ use std::sync::Arc;
 use tokio::sync::Mutex;
 
 use crate::api::types::breaker_node::BreakerNode;
-use crate::api::vo::grpc_breaker_config::GrpcBreakerConfig;
+use crate::api::types::grpc_breaker_config::GrpcBreakerConfig;
 
 /// Decorator that wraps an inner [`GrpcEgress`] with a
 /// three-state circuit breaker.
@@ -48,7 +48,7 @@ impl<T> GrpcBreakerClient<T> {
 
     /// Observe the current breaker state.  Returns a snapshot;
     /// the breaker may transition immediately after this call.
-    pub async fn state(&self) -> crate::api::vo::breaker_state::BreakerState {
+    pub async fn state(&self) -> crate::api::types::breaker_state::BreakerState {
         self.node.lock().await.state
     }
 }

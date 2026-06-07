@@ -1,7 +1,7 @@
 //! Validator implementation for BearerEgressConfig.
 
 use crate::api::traits::validator::Validator;
-use crate::api::vo::bearer_egress_config::BearerEgressConfig;
+use crate::api::types::bearer_egress_config::BearerEgressConfig;
 
 impl Validator for BearerEgressConfig {
     fn validate(&self) -> Result<(), String> {

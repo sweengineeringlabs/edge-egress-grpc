@@ -1,7 +1,7 @@
 //! `Processor` trait — primary processing contract for the retry crate.
 
 use crate::api::error::Error;
-use crate::api::vo::grpc_retry_config::GrpcRetryConfig;
+use crate::api::types::grpc_retry_config::GrpcRetryConfig;
 
 /// Processes a retry decision given a gRPC result.
 ///

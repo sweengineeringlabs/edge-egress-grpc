@@ -5,7 +5,7 @@
 
 use std::sync::Arc;
 
-use crate::api::vo::grpc_retry_config::GrpcRetryConfig;
+use crate::api::types::grpc_retry_config::GrpcRetryConfig;
 
 /// Decorator that wraps an inner [`GrpcEgress`] with the
 /// retry semantics described at the crate root.

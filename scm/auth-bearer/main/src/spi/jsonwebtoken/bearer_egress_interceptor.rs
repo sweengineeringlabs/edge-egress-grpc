@@ -9,8 +9,8 @@ use swe_edge_egress_grpc::{
 };
 
 use crate::api::traits::processor::Processor;
-use crate::api::vo::bearer_secret::BearerSecret;
-use crate::api::vo::jwt_claims::JwtClaims;
+use crate::api::types::bearer_secret::BearerSecret;
+use crate::api::types::jwt_claims::JwtClaims;
 use crate::api::{BearerAuthError, BearerEgressInterceptor, AUTHORIZATION_HEADER};
 
 impl Processor for BearerEgressInterceptor {}

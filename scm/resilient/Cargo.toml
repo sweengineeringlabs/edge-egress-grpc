@@ -30,18 +30,6 @@ tokio   = { workspace = true, features = ["rt-multi-thread", "macros", "time"] }
 futures = { workspace = true }
 rustls  = { version = "0.23", features = ["aws-lc-rs"] }
 
-[[test]]
-name = "resilient_stack_int_test"
-path = "tests/resilient_stack_int_test.rs"
-
-[[test]]
-name = "factory_int_test"
-path = "tests/factory_int_test.rs"
-
-[[test]]
-name = "error_int_test"
-path = "tests/error_int_test.rs"
-
 
 [lints.rust]
 unsafe_code  = "deny"
@@ -50,35 +38,3 @@ missing_docs = "warn"
 [lints.clippy]
 unwrap_used = "deny"
 expect_used = "deny"
-
-[[test]]
-name = "assembly_int_test"
-path = "tests/assembly_int_test.rs"
-
-[[test]]
-name = "processor_int_test"
-path = "tests/processor_int_test.rs"
-
-[[test]]
-name = "validator_int_test"
-path = "tests/validator_int_test.rs"
-
-[[test]]
-name = "resilient_transport_error_int_test"
-path = "tests/resilient_transport_error_int_test.rs"
-
-[[test]]
-name = "assembler_int_test"
-path = "tests/assembler_int_test.rs"
-
-[[test]]
-name = "application_config_builder_int_test"
-path = "tests/application_config_builder_int_test.rs"
-
-[[test]]
-name = "resilient_svc_int_test"
-path = "tests/resilient_svc_int_test.rs"
-
-[[test]]
-name = "grpc_resilient_svc_int_test"
-path = "tests/grpc_resilient_svc_int_test.rs"

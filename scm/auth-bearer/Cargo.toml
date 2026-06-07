@@ -21,42 +21,6 @@ path = "main/src/lib.rs"
 name = "auth_bearer"
 path = "examples/auth_bearer.rs"
 
-[[test]]
-name = "jwt_claims_int_test"
-path = "tests/jwt_claims_int_test.rs"
-
-[[test]]
-name = "bearer_auth_error_int_test"
-path = "tests/bearer_auth_error_int_test.rs"
-
-[[test]]
-name = "bearer_secret_int_test"
-path = "tests/bearer_secret_int_test.rs"
-
-[[test]]
-name = "bearer_egress_interceptor_int_test"
-path = "tests/bearer_egress_interceptor_int_test.rs"
-
-[[test]]
-name = "metadata_keys_int_test"
-path = "tests/metadata_keys_int_test.rs"
-
-[[test]]
-name = "grpc_auth_bearer_svc_int_test"
-path = "tests/grpc_auth_bearer_svc_int_test.rs"
-
-[[test]]
-name = "application_config_builder_int_test"
-path = "tests/application_config_builder_int_test.rs"
-
-[[test]]
-name = "validator_int_test"
-path = "tests/validator_int_test.rs"
-
-[[test]]
-name = "bearer_egress_config_int_test"
-path = "tests/bearer_egress_config_int_test.rs"
-
 [dependencies]
 swe-edge-egress-grpc = { workspace = true }
 thiserror    = { workspace = true }
@@ -81,19 +45,3 @@ missing_docs = "warn"
 [lints.clippy]
 unwrap_used = "deny"
 expect_used = "deny"
-
-[[test]]
-name = "processor_int_test"
-path = "tests/processor_int_test.rs"
-
-[[test]]
-name = "subtle_int_test"
-path = "tests/subtle_int_test.rs"
-
-[[test]]
-name = "bearer_egress_config_builder_int_test"
-path = "tests/bearer_egress_config_builder_int_test.rs"
-
-[[test]]
-name = "jwt_claims_builder_int_test"
-path = "tests/jwt_claims_builder_int_test.rs"
