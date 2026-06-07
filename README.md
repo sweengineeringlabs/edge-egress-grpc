@@ -1,5 +1,7 @@
 # swe-edge-egress-grpc
 
+> **TLDR:** Outbound gRPC client for swe-edge — Tonic-backed with trace propagation, retry, and circuit-breaker decorators behind one `GrpcEgress` trait. See [Overview](scm/docs/README.md) for details.
+
 Outbound gRPC transport for the `swe-edge` stack.
 
 Provides the `GrpcOutbound` port trait, a `tonic`-backed implementation
