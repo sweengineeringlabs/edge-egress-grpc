@@ -9,6 +9,8 @@ pub use crate::api::types::status::conversions::Conversions;
 pub use crate::api::types::ApplicationConfigBuilder;
 pub use crate::api::types::TransportSvc;
 pub use crate::spi::client::tonic::{TonicGrpcClient, TonicGrpcClientBuilder};
+pub use crate::spi::loadbalancer::tonic::TonicLbGrpcClient;
+pub use swe_edge_loadbalancer::{BackendConfig, BackendPoolInstance, LoadbalancerConfig, Strategy};
 
 pub use crate::api::error::{GrpcChannelConfigError, GrpcEgressError};
 pub use crate::api::traits::interceptor::grpc_egress_interceptor::GrpcEgressInterceptor;

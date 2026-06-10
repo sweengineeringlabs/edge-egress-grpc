@@ -24,6 +24,10 @@ default = []
 name = "basic_transport"
 path = "examples/basic_transport.rs"
 
+[[test]]
+name = "egress_lb_int_test"
+path = "tests/egress_lb_int_test.rs"
+
 [dependencies]
 serde.workspace       = true
 thiserror.workspace   = true
@@ -37,7 +41,9 @@ rustls           = { version = "0.23", features = ["aws-lc-rs"] }
 tokio                  = { version = "1", features = ["rt", "net", "time", "macros"] }
 swe-edge-configbuilder = { workspace = true }
 tokio-util       = { version = "0.7", default-features = false }
-tonic            = { version = "0.12", default-features = false }
+tonic            = { version = "0.12", default-features = false, features = ["transport"] }
+tower            = { version = "0.4", features = ["util"] }
+swe-edge-loadbalancer  = { workspace = true }
 tracing          = { workspace = true }
 
 [dev-dependencies]
