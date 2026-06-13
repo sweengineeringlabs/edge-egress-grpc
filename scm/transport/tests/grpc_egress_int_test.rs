@@ -15,7 +15,7 @@ use http_body_util::{BodyExt as _, Full, StreamBody};
 
 use swe_edge_egress_grpc_transport::{
     GrpcChannelConfig, GrpcEgress, GrpcEgressError, GrpcMessageStream, GrpcMetadata, GrpcRequest,
-    GrpcResponse, GrpcStatusCode, TransportSvc,
+    GrpcResponse, GrpcStatusCode, SecurityContext, TransportSvc,
 };
 
 fn make_client(addr: SocketAddr) -> Arc<dyn GrpcEgress> {
@@ -631,6 +631,143 @@ fn transport_struct_status_error_round_trips_all_17_grpc_status_code_variants_in
             other => panic!("expected Status, got {other:?}"),
         }
     }
+}
+
+/// @covers: GrpcEgress::call_unary_with_context — default impl delegates to call_unary;
+/// response body matches the echoed request payload.
+///
+/// Failure mode: if `call_unary_with_context` drops the request or returns a different
+/// body, the `assert_eq!` on `resp.body` will fail.
+#[tokio::test]
+async fn transport_struct_call_unary_with_context_delegates_to_call_unary_and_echoes_body() {
+    ensure_rustls_provider();
+    let listener = bind_listener().await;
+    let addr = spawn_echo_server(listener).await;
+
+    let client = make_client(addr);
+    let req = GrpcRequest::new("echo/Echo", b"ctx-payload".to_vec(), Duration::from_secs(5));
+    let ctx = SecurityContext::unauthenticated();
+
+    let resp = client
+        .call_unary_with_context(req, ctx)
+        .await
+        .expect("call_unary_with_context should succeed against echo server");
+
+    assert_eq!(
+        resp.body, b"ctx-payload",
+        "call_unary_with_context must echo the request body; got {:?}",
+        resp.body
+    );
+}
+
+/// @covers: GrpcEgress::call_unary_with_context — authenticated context is accepted without error.
+///
+/// Failure mode: if the context type is incompatible or the method panics on a
+/// non-unauthenticated context, this test will fail.
+#[tokio::test]
+async fn transport_struct_call_unary_with_context_accepts_authenticated_context() {
+    ensure_rustls_provider();
+    let listener = bind_listener().await;
+    let addr = spawn_echo_server(listener).await;
+
+    let client = make_client(addr);
+    let req = GrpcRequest::new(
+        "echo/Echo",
+        b"auth-payload".to_vec(),
+        Duration::from_secs(5),
+    );
+    let ctx = SecurityContext::unauthenticated()
+        .with_trace_id("trace-abc-123")
+        .with_claim("role", "admin");
+
+    let resp = client
+        .call_unary_with_context(req, ctx)
+        .await
+        .expect("call_unary_with_context must succeed with authenticated-like context");
+
+    assert_eq!(
+        resp.body, b"auth-payload",
+        "response body must match the request payload; got {:?}",
+        resp.body
+    );
+}
+
+/// @covers: GrpcEgress::call_unary_with_context — propagates error from call_unary
+/// when the server returns grpc-status 13 (Internal).
+///
+/// Failure mode: if `call_unary_with_context` swallows the error instead of
+/// forwarding the `call_unary` result, this test will fail.
+#[tokio::test]
+async fn transport_struct_call_unary_with_context_propagates_grpc_error_status() {
+    ensure_rustls_provider();
+    let listener = bind_listener().await;
+    let addr = spawn_error_server(listener).await;
+
+    let client = make_client(addr);
+    let req = GrpcRequest::new("echo/Echo", b"ping".to_vec(), Duration::from_secs(5));
+    let ctx = SecurityContext::unauthenticated();
+
+    let result = client.call_unary_with_context(req, ctx).await;
+    assert!(
+        result.is_err(),
+        "call_unary_with_context must propagate grpc-status 13 as Err; got Ok"
+    );
+    match result.unwrap_err() {
+        GrpcEgressError::Status(GrpcStatusCode::Internal, msg) => {
+            assert!(
+                msg.contains("server-side error"),
+                "error message must include grpc-message header content; got: {msg}"
+            );
+        }
+        other => panic!("expected Status(Internal, _), got {other:?}"),
+    }
+}
+
+/// @covers: GrpcEgress::call_unary_with_context — timeout fires when server does not respond.
+///
+/// Failure mode: if `call_unary_with_context` bypasses the deadline from the request,
+/// this test will hang past the deadline and eventually return Ok instead of Timeout.
+#[tokio::test]
+async fn transport_struct_call_unary_with_context_returns_timeout_when_server_stalls() {
+    ensure_rustls_provider();
+    let listener = bind_listener().await;
+    let addr = spawn_stalling_grpc_server(listener).await;
+
+    let client = make_client(addr);
+    let req = GrpcRequest::new("svc/Method", b"ping".to_vec(), Duration::from_millis(80));
+    let ctx = SecurityContext::unauthenticated();
+
+    let result = client.call_unary_with_context(req, ctx).await;
+    assert!(
+        matches!(result, Err(GrpcEgressError::Timeout(_))),
+        "call_unary_with_context must propagate Timeout from call_unary; got {result:?}"
+    );
+}
+
+/// @covers: GrpcEgress::call_unary_with_context — ConnectionFailed when nothing listens.
+///
+/// Failure mode: if `call_unary_with_context` doesn't forward connection errors,
+/// we'd get Ok or a different error variant instead.
+#[tokio::test]
+async fn transport_struct_call_unary_with_context_returns_connection_failed_when_no_server_is_listening(
+) {
+    let addr = {
+        let l = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let a = l.local_addr().unwrap();
+        drop(l);
+        a
+    };
+
+    ensure_rustls_provider();
+    let client = make_client(addr);
+    let req = GrpcRequest::new("svc/Method", b"ping".to_vec(), Duration::from_secs(5));
+    let ctx = SecurityContext::unauthenticated();
+
+    let result = client.call_unary_with_context(req, ctx).await;
+    assert!(
+        matches!(result, Err(GrpcEgressError::ConnectionFailed(_))),
+        "call_unary_with_context must propagate ConnectionFailed; got {result:?}"
+    );
 }
 
 /// @covers: TonicGrpcClient::call_unary — sanitized message is on the wire when

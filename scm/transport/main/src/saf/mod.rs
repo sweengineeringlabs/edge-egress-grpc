@@ -26,3 +26,4 @@ pub use crate::api::types::{
     DEFAULT_MAX_MESSAGE_BYTES,
 };
 pub use crate::api::types::{GrpcEgressResult, GrpcMessageStream};
+pub use edge_domain::SecurityContext;

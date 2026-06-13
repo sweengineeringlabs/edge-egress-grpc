@@ -229,6 +229,168 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "92773504d58c093f6de2459af4af33faa518c13451eb8f2b5698ed3d36e7c813"
 
 [[package]]
+name = "edge-domain"
+version = "0.8.19"
+source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.20#157af57804cf3537dbf7020391e7e34cd63f36c9"
+dependencies = [
+ "async-trait",
+ "edge-domain-clock",
+ "edge-domain-command",
+ "edge-domain-entity",
+ "edge-domain-event",
+ "edge-domain-handler",
+ "edge-domain-policy",
+ "edge-domain-projection",
+ "edge-domain-query",
+ "edge-domain-repository",
+ "edge-domain-saga",
+ "edge-domain-security",
+ "edge-domain-service",
+ "edge-domain-snapshot",
+ "edge-domain-validator",
+ "edge-domain-valueobject",
+ "futures",
+ "parking_lot",
+ "thiserror 2.0.18",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
+name = "edge-domain-clock"
+version = "0.1.0"
+source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.20#157af57804cf3537dbf7020391e7e34cd63f36c9"
+dependencies = [
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "edge-domain-command"
+version = "0.1.0"
+source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.20#157af57804cf3537dbf7020391e7e34cd63f36c9"
+dependencies = [
+ "async-trait",
+ "futures",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "edge-domain-entity"
+version = "0.1.0"
+source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.20#157af57804cf3537dbf7020391e7e34cd63f36c9"
+
+[[package]]
+name = "edge-domain-event"
+version = "0.1.0"
+source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.20#157af57804cf3537dbf7020391e7e34cd63f36c9"
+dependencies = [
+ "async-trait",
+ "futures",
+ "parking_lot",
+ "thiserror 2.0.18",
+ "tokio",
+]
+
+[[package]]
+name = "edge-domain-handler"
+version = "0.1.1"
+source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.20#157af57804cf3537dbf7020391e7e34cd63f36c9"
+dependencies = [
+ "async-trait",
+ "edge-domain-security",
+ "parking_lot",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "edge-domain-policy"
+version = "0.1.0"
+source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.20#157af57804cf3537dbf7020391e7e34cd63f36c9"
+dependencies = [
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "edge-domain-projection"
+version = "0.1.0"
+source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.20#157af57804cf3537dbf7020391e7e34cd63f36c9"
+dependencies = [
+ "edge-domain-event",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "edge-domain-query"
+version = "0.1.0"
+source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.20#157af57804cf3537dbf7020391e7e34cd63f36c9"
+dependencies = [
+ "async-trait",
+ "futures",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "edge-domain-repository"
+version = "0.1.0"
+source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.20#157af57804cf3537dbf7020391e7e34cd63f36c9"
+dependencies = [
+ "futures",
+ "parking_lot",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "edge-domain-saga"
+version = "0.1.0"
+source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.20#157af57804cf3537dbf7020391e7e34cd63f36c9"
+dependencies = [
+ "edge-domain-command",
+ "edge-domain-event",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "edge-domain-security"
+version = "0.1.0"
+source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.20#157af57804cf3537dbf7020391e7e34cd63f36c9"
+dependencies = [
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "edge-domain-service"
+version = "0.1.0"
+source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.20#157af57804cf3537dbf7020391e7e34cd63f36c9"
+dependencies = [
+ "futures",
+ "parking_lot",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "edge-domain-snapshot"
+version = "0.1.0"
+source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.20#157af57804cf3537dbf7020391e7e34cd63f36c9"
+dependencies = [
+ "futures",
+ "parking_lot",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "edge-domain-validator"
+version = "0.1.0"
+source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.20#157af57804cf3537dbf7020391e7e34cd63f36c9"
+dependencies = [
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "edge-domain-valueobject"
+version = "0.1.0"
+source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.20#157af57804cf3537dbf7020391e7e34cd63f36c9"
+
+[[package]]
 name = "equivalent"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1158,6 +1320,7 @@ name = "swe-edge-egress-grpc-transport"
 version = "0.4.2"
 dependencies = [
  "bytes",
+ "edge-domain",
  "futures",
  "http",
  "http-body",

@@ -19,7 +19,7 @@ unwrap_used = "deny"
 expect_used = "deny"
 
 [workspace.dependencies]
-edge-domain            = { git = "https://github.com/sweengineeringlabs/edge-domain.git", tag = "v0.8.0" }
+edge-domain            = { git = "https://github.com/sweengineeringlabs/edge-domain.git", tag = "v0.8.20", features = ["security"] }
 swe-edge-configbuilder = { git = "https://github.com/sweengineeringlabs/edge-configbuilder.git", tag = "v0.3.0" }
 swe-observ-metrics     = { package = "swe_justobserv_metrics", git = "ssh://git@github.com/sweengineeringlabs/justobserv.git", tag = "v0.2.1" }
 swe_justobserv_context = { git = "ssh://git@github.com/sweengineeringlabs/justobserv.git", tag = "v0.2.1" }

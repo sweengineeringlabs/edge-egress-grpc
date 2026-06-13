@@ -44,6 +44,7 @@ tokio-util       = { version = "0.7", default-features = false }
 tonic            = { version = "0.12", default-features = false, features = ["transport"] }
 tower            = { version = "0.4", features = ["util"] }
 swe-edge-loadbalancer  = { workspace = true }
+edge-domain            = { workspace = true }
 tracing          = { workspace = true }
 
 [dev-dependencies]
