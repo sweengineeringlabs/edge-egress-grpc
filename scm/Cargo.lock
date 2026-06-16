@@ -1309,7 +1309,7 @@ dependencies = [
 
 [[package]]
 name = "swe-edge-egress-grpc-auth-bearer"
-version = "0.4.2"
+version = "0.5.0"
 dependencies = [
  "jsonwebtoken",
  "serde",
@@ -1323,7 +1323,7 @@ dependencies = [
 
 [[package]]
 name = "swe-edge-egress-grpc-breaker"
-version = "0.4.2"
+version = "0.5.0"
 dependencies = [
  "futures",
  "serde",
@@ -1337,7 +1337,7 @@ dependencies = [
 
 [[package]]
 name = "swe-edge-egress-grpc-resilient"
-version = "0.4.2"
+version = "0.5.0"
 dependencies = [
  "futures",
  "rustls",
@@ -1351,7 +1351,7 @@ dependencies = [
 
 [[package]]
 name = "swe-edge-egress-grpc-retry"
-version = "0.4.2"
+version = "0.5.0"
 dependencies = [
  "futures",
  "serde",
@@ -1365,7 +1365,7 @@ dependencies = [
 
 [[package]]
 name = "swe-edge-egress-grpc-transport"
-version = "0.4.2"
+version = "0.5.0"
 dependencies = [
  "bytes",
  "edge-domain",
