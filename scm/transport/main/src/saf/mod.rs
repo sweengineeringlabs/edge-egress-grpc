@@ -2,6 +2,11 @@
 
 mod transport_svc;
 
+#[cfg(feature = "prost")]
+mod grpc_egress_prost_ext;
+#[cfg(feature = "prost")]
+pub use grpc_egress_prost_ext::GrpcEgressProstExt;
+
 pub use crate::api::traits::resilience::resilience_validator::ResilienceValidator;
 pub use crate::api::traits::resilience::resilient_grpc_client_port::ResilientGrpcClientPort;
 pub use crate::api::types::client::grpc_client_builder::GrpcClientBuilder;
