@@ -2,6 +2,11 @@
 
 mod transport_svc;
 
+#[cfg(feature = "prost")]
+mod grpc_egress_prost_ext;
+#[cfg(feature = "prost")]
+pub use grpc_egress_prost_ext::GrpcEgressProstExt;
+
 pub use crate::api::traits::resilience::resilience_validator::ResilienceValidator;
 pub use crate::api::traits::resilience::resilient_grpc_client_port::ResilientGrpcClientPort;
 pub use crate::api::types::client::grpc_client_builder::GrpcClientBuilder;
@@ -9,6 +14,8 @@ pub use crate::api::types::status::conversions::Conversions;
 pub use crate::api::types::ApplicationConfigBuilder;
 pub use crate::api::types::TransportSvc;
 pub use crate::spi::client::tonic::{TonicGrpcClient, TonicGrpcClientBuilder};
+pub use crate::spi::loadbalancer::tonic::TonicLbGrpcClient;
+pub use swe_edge_loadbalancer::{BackendConfig, BackendPoolInstance, LoadbalancerConfig, Strategy};
 
 pub use crate::api::error::{GrpcChannelConfigError, GrpcEgressError};
 pub use crate::api::traits::interceptor::grpc_egress_interceptor::GrpcEgressInterceptor;
@@ -24,3 +31,4 @@ pub use crate::api::types::{
     DEFAULT_MAX_MESSAGE_BYTES,
 };
 pub use crate::api::types::{GrpcEgressResult, GrpcMessageStream};
+pub use edge_domain::SecurityContext;

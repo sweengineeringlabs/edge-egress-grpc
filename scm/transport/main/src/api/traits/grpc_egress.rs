@@ -1,5 +1,6 @@
 //! `GrpcEgress` trait — makes outbound gRPC calls.
 
+use edge_domain::SecurityContext;
 use futures::future::BoxFuture;
 
 use crate::api::error::GrpcEgressError;
@@ -11,6 +12,20 @@ use crate::api::types::{GrpcMetadata, GrpcRequest, GrpcResponse, GrpcStatusCode}
 pub trait GrpcEgress: Send + Sync {
     /// Send a single unary gRPC request and receive a single response.
     fn call_unary(&self, request: GrpcRequest) -> BoxFuture<'_, GrpcEgressResult<GrpcResponse>>;
+
+    /// Send a single unary gRPC request, propagating the caller's security context.
+    ///
+    /// The default implementation delegates to [`call_unary`] and ignores `_ctx`.
+    /// Override to inject context-derived metadata (e.g. `x-trace-id`, JWT forwarding).
+    ///
+    /// [`call_unary`]: GrpcEgress::call_unary
+    fn call_unary_with_context(
+        &self,
+        request: GrpcRequest,
+        _ctx: SecurityContext,
+    ) -> BoxFuture<'_, GrpcEgressResult<GrpcResponse>> {
+        self.call_unary(request)
+    }
 
     /// Send a streaming gRPC request and receive a response stream.
     ///

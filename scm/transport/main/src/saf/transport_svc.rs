@@ -3,12 +3,15 @@
 use std::sync::Arc;
 use std::time::Duration;
 
-use crate::api::error::GrpcChannelConfigError;
+use swe_edge_loadbalancer::LoadbalancerConfig;
+
+use crate::api::error::{GrpcChannelConfigError, GrpcEgressError};
 use crate::api::traits::GrpcEgress;
 use crate::api::traits::Validator;
 use crate::api::types::TransportSvc;
 use crate::api::types::{GrpcChannelConfig, ResilienceConfig, DEFAULT_REQUEST_TIMEOUT_SECS};
 use crate::spi::client::tonic::{TonicGrpcClient, TonicGrpcClientCore};
+use crate::spi::loadbalancer::tonic::TonicLbGrpcClient;
 
 impl TransportSvc {
     /// Create a config builder pre-populated with this crate's name and version.
@@ -51,5 +54,21 @@ impl TransportSvc {
     /// Validate a [`ResilienceConfig`], returning the first constraint violation as `Err`.
     pub fn validate_resilience_config(config: &ResilienceConfig) -> Result<(), String> {
         config.validate()
+    }
+
+    /// Construct a load-balanced [`GrpcEgress`] from a [`LoadbalancerConfig`].
+    ///
+    /// Uses `tonic::transport::Channel::balance_list` for transport-level routing
+    /// and [`swe_edge_loadbalancer`] for health-aware backend selection.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`GrpcEgressError::Unavailable`] when the config has no backends
+    /// or any backend URL is not a valid URI.
+    pub fn create_lb_transport_from_config(
+        config: LoadbalancerConfig,
+    ) -> Result<Arc<dyn GrpcEgress>, GrpcEgressError> {
+        let client = TonicLbGrpcClient::from_config(config)?;
+        Ok(Arc::new(client))
     }
 }

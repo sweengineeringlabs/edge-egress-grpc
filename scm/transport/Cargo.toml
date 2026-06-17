@@ -19,10 +19,17 @@ path = "main/src/lib.rs"
 
 [features]
 default = []
+# Opt-in prost codec ergonomics (ADR-026). Default off — the byte core stays
+# codec-agnostic and the default build gains no `prost` dependency.
+prost = ["dep:prost"]
 
 [[example]]
 name = "basic_transport"
 path = "examples/basic_transport.rs"
+
+[[test]]
+name = "egress_lb_int_test"
+path = "tests/egress_lb_int_test.rs"
 
 [dependencies]
 serde.workspace       = true
@@ -37,11 +44,16 @@ rustls           = { version = "0.23", features = ["aws-lc-rs"] }
 tokio                  = { version = "1", features = ["rt", "net", "time", "macros"] }
 swe-edge-configbuilder = { workspace = true }
 tokio-util       = { version = "0.7", default-features = false }
-tonic            = { version = "0.12", default-features = false }
+tonic            = { version = "0.12", default-features = false, features = ["transport"] }
+prost            = { version = "0.13", optional = true }
+tower            = { version = "0.4", features = ["util"] }
+swe-edge-loadbalancer  = { workspace = true }
+edge-domain            = { workspace = true }
 tracing          = { workspace = true }
 
 [dev-dependencies]
 toml       = "0.8"
+prost      = "0.13"
 tokio      = { version = "1", features = ["rt-multi-thread", "macros", "time", "net"] }
 hyper      = { version = "1", features = ["http2", "server"] }
 hyper-util = { version = "0.1", features = ["tokio"] }
