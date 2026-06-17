@@ -12,6 +12,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "anyhow"
+version = "1.0.102"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7f202df86484c868dbad7eaa557ef785d5c66295e41b460ef922eca0723b842c"
+
+[[package]]
 name = "async-stream"
 version = "0.3.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -231,7 +237,7 @@ checksum = "92773504d58c093f6de2459af4af33faa518c13451eb8f2b5698ed3d36e7c813"
 [[package]]
 name = "edge-domain"
 version = "0.8.19"
-source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.20#157af57804cf3537dbf7020391e7e34cd63f36c9"
+source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.30#25b8652a0630a1ed63c3f20d0b3c4997d1c4fc0d"
 dependencies = [
  "async-trait",
  "edge-domain-clock",
@@ -259,7 +265,7 @@ dependencies = [
 [[package]]
 name = "edge-domain-clock"
 version = "0.1.0"
-source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.20#157af57804cf3537dbf7020391e7e34cd63f36c9"
+source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.30#25b8652a0630a1ed63c3f20d0b3c4997d1c4fc0d"
 dependencies = [
  "thiserror 2.0.18",
 ]
@@ -267,22 +273,23 @@ dependencies = [
 [[package]]
 name = "edge-domain-command"
 version = "0.1.0"
-source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.20#157af57804cf3537dbf7020391e7e34cd63f36c9"
+source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.30#25b8652a0630a1ed63c3f20d0b3c4997d1c4fc0d"
 dependencies = [
  "async-trait",
  "futures",
  "thiserror 2.0.18",
+ "tracing",
 ]
 
 [[package]]
 name = "edge-domain-entity"
 version = "0.1.0"
-source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.20#157af57804cf3537dbf7020391e7e34cd63f36c9"
+source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.30#25b8652a0630a1ed63c3f20d0b3c4997d1c4fc0d"
 
 [[package]]
 name = "edge-domain-event"
 version = "0.1.0"
-source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.20#157af57804cf3537dbf7020391e7e34cd63f36c9"
+source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.30#25b8652a0630a1ed63c3f20d0b3c4997d1c4fc0d"
 dependencies = [
  "async-trait",
  "futures",
@@ -294,9 +301,10 @@ dependencies = [
 [[package]]
 name = "edge-domain-handler"
 version = "0.1.1"
-source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.20#157af57804cf3537dbf7020391e7e34cd63f36c9"
+source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.30#25b8652a0630a1ed63c3f20d0b3c4997d1c4fc0d"
 dependencies = [
  "async-trait",
+ "edge-domain-command",
  "edge-domain-security",
  "parking_lot",
  "thiserror 2.0.18",
@@ -305,7 +313,7 @@ dependencies = [
 [[package]]
 name = "edge-domain-policy"
 version = "0.1.0"
-source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.20#157af57804cf3537dbf7020391e7e34cd63f36c9"
+source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.30#25b8652a0630a1ed63c3f20d0b3c4997d1c4fc0d"
 dependencies = [
  "thiserror 2.0.18",
 ]
@@ -313,7 +321,7 @@ dependencies = [
 [[package]]
 name = "edge-domain-projection"
 version = "0.1.0"
-source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.20#157af57804cf3537dbf7020391e7e34cd63f36c9"
+source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.30#25b8652a0630a1ed63c3f20d0b3c4997d1c4fc0d"
 dependencies = [
  "edge-domain-event",
  "thiserror 2.0.18",
@@ -322,17 +330,18 @@ dependencies = [
 [[package]]
 name = "edge-domain-query"
 version = "0.1.0"
-source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.20#157af57804cf3537dbf7020391e7e34cd63f36c9"
+source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.30#25b8652a0630a1ed63c3f20d0b3c4997d1c4fc0d"
 dependencies = [
  "async-trait",
  "futures",
  "thiserror 2.0.18",
+ "tracing",
 ]
 
 [[package]]
 name = "edge-domain-repository"
 version = "0.1.0"
-source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.20#157af57804cf3537dbf7020391e7e34cd63f36c9"
+source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.30#25b8652a0630a1ed63c3f20d0b3c4997d1c4fc0d"
 dependencies = [
  "futures",
  "parking_lot",
@@ -342,17 +351,18 @@ dependencies = [
 [[package]]
 name = "edge-domain-saga"
 version = "0.1.0"
-source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.20#157af57804cf3537dbf7020391e7e34cd63f36c9"
+source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.30#25b8652a0630a1ed63c3f20d0b3c4997d1c4fc0d"
 dependencies = [
  "edge-domain-command",
  "edge-domain-event",
+ "futures",
  "thiserror 2.0.18",
 ]
 
 [[package]]
 name = "edge-domain-security"
 version = "0.1.0"
-source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.20#157af57804cf3537dbf7020391e7e34cd63f36c9"
+source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.30#25b8652a0630a1ed63c3f20d0b3c4997d1c4fc0d"
 dependencies = [
  "thiserror 2.0.18",
 ]
@@ -360,7 +370,7 @@ dependencies = [
 [[package]]
 name = "edge-domain-service"
 version = "0.1.0"
-source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.20#157af57804cf3537dbf7020391e7e34cd63f36c9"
+source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.30#25b8652a0630a1ed63c3f20d0b3c4997d1c4fc0d"
 dependencies = [
  "futures",
  "parking_lot",
@@ -370,7 +380,7 @@ dependencies = [
 [[package]]
 name = "edge-domain-snapshot"
 version = "0.1.0"
-source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.20#157af57804cf3537dbf7020391e7e34cd63f36c9"
+source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.30#25b8652a0630a1ed63c3f20d0b3c4997d1c4fc0d"
 dependencies = [
  "futures",
  "parking_lot",
@@ -380,7 +390,7 @@ dependencies = [
 [[package]]
 name = "edge-domain-validator"
 version = "0.1.0"
-source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.20#157af57804cf3537dbf7020391e7e34cd63f36c9"
+source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.30#25b8652a0630a1ed63c3f20d0b3c4997d1c4fc0d"
 dependencies = [
  "thiserror 2.0.18",
 ]
@@ -388,7 +398,13 @@ dependencies = [
 [[package]]
 name = "edge-domain-valueobject"
 version = "0.1.0"
-source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.20#157af57804cf3537dbf7020391e7e34cd63f36c9"
+source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.30#25b8652a0630a1ed63c3f20d0b3c4997d1c4fc0d"
+
+[[package]]
+name = "either"
+version = "1.16.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "91622ff5e7162018101f2fea40d6ebf4a78bbe5a49736a2020649edf9693679e"
 
 [[package]]
 name = "equivalent"
@@ -670,7 +686,7 @@ dependencies = [
  "hyper",
  "libc",
  "pin-project-lite",
- "socket2 0.5.10",
+ "socket2 0.6.4",
  "tokio",
  "tower-service",
  "tracing",
@@ -694,6 +710,15 @@ checksum = "d466e9454f08e4a911e14806c24e16fba1b4c121d1ea474396f396069cf949d9"
 dependencies = [
  "equivalent",
  "hashbrown 0.17.1",
+]
+
+[[package]]
+name = "itertools"
+version = "0.14.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2b192c782037fadd9cfa75548310488aabdbf3d2da73885b31bd0abd03351285"
+dependencies = [
+ "either",
 ]
 
 [[package]]
@@ -937,6 +962,29 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8fd00f0bb2e90d81d1044c2b32617f68fcb9fa3bb7640c23e9c748e53fb30934"
 dependencies = [
  "unicode-ident",
+]
+
+[[package]]
+name = "prost"
+version = "0.13.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2796faa41db3ec313a31f7624d9286acf277b52de526150b7e69f3debf891ee5"
+dependencies = [
+ "bytes",
+ "prost-derive",
+]
+
+[[package]]
+name = "prost-derive"
+version = "0.13.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8a56d757972c98b346a9b766e3f02746cde6dd1cd1d1d563472929fdd74bec4d"
+dependencies = [
+ "anyhow",
+ "itertools",
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
@@ -1261,7 +1309,7 @@ dependencies = [
 
 [[package]]
 name = "swe-edge-egress-grpc-auth-bearer"
-version = "0.4.2"
+version = "0.5.0"
 dependencies = [
  "jsonwebtoken",
  "serde",
@@ -1275,7 +1323,7 @@ dependencies = [
 
 [[package]]
 name = "swe-edge-egress-grpc-breaker"
-version = "0.4.2"
+version = "0.5.0"
 dependencies = [
  "futures",
  "serde",
@@ -1289,7 +1337,7 @@ dependencies = [
 
 [[package]]
 name = "swe-edge-egress-grpc-resilient"
-version = "0.4.2"
+version = "0.5.0"
 dependencies = [
  "futures",
  "rustls",
@@ -1303,7 +1351,7 @@ dependencies = [
 
 [[package]]
 name = "swe-edge-egress-grpc-retry"
-version = "0.4.2"
+version = "0.5.0"
 dependencies = [
  "futures",
  "serde",
@@ -1317,7 +1365,7 @@ dependencies = [
 
 [[package]]
 name = "swe-edge-egress-grpc-transport"
-version = "0.4.2"
+version = "0.5.0"
 dependencies = [
  "bytes",
  "edge-domain",
@@ -1328,6 +1376,7 @@ dependencies = [
  "hyper",
  "hyper-rustls",
  "hyper-util",
+ "prost",
  "rustls",
  "serde",
  "swe-edge-configbuilder",
