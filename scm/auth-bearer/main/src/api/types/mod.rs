@@ -11,6 +11,7 @@ pub mod jwt_claims;
 pub mod jwt_claims_builder;
 pub mod metadata_keys;
 
+pub use application_config_builder::ApplicationConfigBuilder;
 pub use bearer_egress_config::BearerEgressConfig;
 pub use bearer_egress_config_builder::BearerEgressConfigBuilder;
 pub use bearer_egress_interceptor::BearerEgressInterceptor;

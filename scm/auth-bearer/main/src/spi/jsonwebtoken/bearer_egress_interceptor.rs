@@ -8,12 +8,16 @@ use swe_edge_egress_grpc::{
     GrpcEgressError, GrpcEgressInterceptor, GrpcRequest, GrpcResponse, GrpcStatusCode,
 };
 
-use crate::api::traits::processor::Processor;
-use crate::api::types::bearer_secret::BearerSecret;
-use crate::api::types::jwt_claims::JwtClaims;
-use crate::api::{BearerAuthError, BearerEgressInterceptor, AUTHORIZATION_HEADER};
+use crate::api::{
+    BearerAuthError, BearerEgressInterceptor, BearerSecret, JwtClaims, Processor,
+    AUTHORIZATION_HEADER,
+};
 
-impl Processor for BearerEgressInterceptor {}
+impl Processor for BearerEgressInterceptor {
+    fn as_interceptor(&self) -> &BearerEgressInterceptor {
+        self
+    }
+}
 
 impl BearerEgressInterceptor {
     fn sign_token(&self) -> Result<String, BearerAuthError> {

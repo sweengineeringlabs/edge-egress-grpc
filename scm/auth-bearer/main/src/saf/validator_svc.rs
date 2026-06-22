@@ -1,0 +1,3 @@
+//! Validator trait SAF re-export.
+
+pub use crate::api::Validator;

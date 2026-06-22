@@ -23,5 +23,4 @@ mod core;
 mod saf;
 mod spi;
 
-pub use api::traits::Processor;
 pub use saf::*;
