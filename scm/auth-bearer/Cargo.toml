@@ -23,6 +23,7 @@ path = "examples/auth_bearer.rs"
 
 [dependencies]
 swe-edge-egress-grpc = { workspace = true }
+swe-edge-security = { workspace = true }
 thiserror    = { workspace = true }
 serde         = { workspace = true }
 tracing       = { workspace = true }
