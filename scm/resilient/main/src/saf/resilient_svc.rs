@@ -6,8 +6,10 @@ use swe_edge_egress_grpc::{GrpcChannelConfig, GrpcEgress, TransportSvc};
 use swe_edge_egress_grpc_breaker::{GrpcBreakerClient, GrpcBreakerConfig};
 use swe_edge_egress_grpc_retry::{GrpcRetryClient, GrpcRetryConfig};
 
-use crate::api::error::resilient_transport_error::ResilientTransportError;
-use crate::api::types::grpc_resilient_svc::GrpcResilientSvc;
+pub use crate::api::error::resilient_transport_error::ResilientTransportError;
+pub use crate::api::types::grpc_resilient_svc::GrpcResilientSvc;
+
+pub use crate::api::ApplicationConfigBuilder;
 
 impl GrpcResilientSvc {
     /// Return a config builder pre-seeded with this crate's name and version.

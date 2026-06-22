@@ -3,6 +3,6 @@
 //! Per SEA rule 160, public type *declarations* live here.  Impl
 //! blocks live in `core/`.
 
-pub mod error;
-pub mod traits;
-pub mod types;
+pub(crate) mod error;
+pub(crate) mod traits;
+pub(crate) mod types;

@@ -42,5 +42,5 @@ mod api;
 mod core;
 mod saf;
 
-mod gateway;
-pub use gateway::*;
+pub use api::traits::Processor;
+pub use saf::*;

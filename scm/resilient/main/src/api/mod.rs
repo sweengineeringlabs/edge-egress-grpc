@@ -1,9 +1,9 @@
 //! API layer — error types, traits, and interface contracts.
 
-pub mod error;
+pub(crate) mod error;
 pub use error::*;
 
-pub mod traits;
+pub(crate) mod traits;
 
-pub mod types;
+pub(crate) mod types;
 pub use types::*;

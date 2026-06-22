@@ -2,7 +2,4 @@
 
 mod breaker_svc;
 
-pub use crate::api::types::{GrpcBreakerClient, GrpcBreakerSvc};
-
-pub use crate::api::error::Error;
-pub use crate::api::types::{BreakerState, GrpcBreakerConfig};
+pub use breaker_svc::*;

@@ -6,5 +6,10 @@ mod core;
 mod saf;
 mod spi;
 
-mod gateway;
-pub use gateway::*;
+pub use saf::*;
+// Re-export key types for dependents
+pub use api::error::GrpcChannelConfigError;
+pub use api::error::GrpcEgressError;
+pub use api::traits::GrpcEgress;
+pub use api::types::GrpcChannelConfig;
+pub use api::types::TransportSvc;

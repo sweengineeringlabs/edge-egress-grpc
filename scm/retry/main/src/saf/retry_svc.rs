@@ -2,9 +2,14 @@
 
 use swe_edge_egress_grpc::GrpcEgress;
 
-use crate::api::types::grpc_retry_client::GrpcRetryClient;
-use crate::api::types::grpc_retry_config::GrpcRetryConfig;
-use crate::api::types::grpc_retry_svc::GrpcRetrySvc;
+pub use crate::api::types::grpc_retry_client::GrpcRetryClient;
+pub use crate::api::types::grpc_retry_config::GrpcRetryConfig;
+pub use crate::api::types::grpc_retry_svc::GrpcRetrySvc;
+
+pub use crate::api::error::Error;
+pub use crate::api::types::{
+    BackoffSchedule, GrpcRetryConfigBuilder, ResourceExhaustedContext, RetryDecision,
+};
 
 impl GrpcRetrySvc {
     /// Return a config builder pre-seeded with this crate's name and version.

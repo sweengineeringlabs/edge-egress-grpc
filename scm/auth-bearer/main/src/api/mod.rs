@@ -1,8 +1,8 @@
 //! API layer — config, error, and contracts for the outbound bearer interceptor.
 
-pub mod error;
-pub mod traits;
-pub mod types;
+pub(crate) mod error;
+pub(crate) mod traits;
+pub(crate) mod types;
 
 pub use error::BearerAuthError;
 pub use traits::Validator;
