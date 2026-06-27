@@ -1437,7 +1437,8 @@ dependencies = [
 
 [[package]]
 name = "swe-edge-security"
-version = "0.2.0"
+version = "0.3.4"
+source = "git+https://github.com/sweengineeringlabs/edge-security.git?tag=v0.3.4#f22ad2959eb69fd1b6c4a2ad37b73380f7d06d0e"
 dependencies = [
  "async-trait",
  "dirs",
