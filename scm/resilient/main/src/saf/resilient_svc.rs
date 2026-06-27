@@ -7,6 +7,7 @@ use swe_edge_egress_grpc_breaker::{GrpcBreakerClient, GrpcBreakerConfig};
 use swe_edge_egress_grpc_retry::{GrpcRetryClient, GrpcRetryConfig};
 
 pub use crate::api::error::resilient_transport_error::ResilientTransportError;
+pub use crate::api::traits::{Processor, Validator};
 pub use crate::api::types::grpc_resilient_svc::GrpcResilientSvc;
 
 pub use crate::api::ApplicationConfigBuilder;

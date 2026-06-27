@@ -39,5 +39,5 @@ mod api;
 mod core;
 mod saf;
 
-pub use api::traits::Processor;
+pub use api::traits::{Processor, Validator};
 pub use saf::*;

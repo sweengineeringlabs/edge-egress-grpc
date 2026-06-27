@@ -1,6 +1,10 @@
-﻿//! gRPC auth-bearer SAF — factory methods on [`GrpcAuthBearerSvc`].
+//! gRPC auth-bearer SAF — factory methods on [`GrpcAuthBearerSvc`] and public API re-exports.
 
-use crate::api::GrpcAuthBearerSvc;
+pub use crate::api::{
+    BearerAuthError, BearerEgressConfig, BearerEgressConfigBuilder, BearerEgressInterceptor,
+    BearerSecret, GrpcAuthBearerSvc, JwtClaims, JwtClaimsBuilder, AUTHORIZATION_HEADER,
+    EXTRACTED_BEARER_SUBJECT,
+};
 
 impl GrpcAuthBearerSvc {
     /// Return a config builder pre-seeded with this crate's name and version.

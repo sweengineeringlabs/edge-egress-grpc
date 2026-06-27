@@ -11,5 +11,3 @@ pub(crate) mod outcome;
 
 pub use breaker_state::BreakerState;
 pub use grpc_breaker_client::GrpcBreakerClient;
-pub use grpc_breaker_config::GrpcBreakerConfig;
-pub use grpc_breaker_svc::GrpcBreakerSvc;
