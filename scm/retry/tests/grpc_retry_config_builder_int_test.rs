@@ -3,10 +3,13 @@
 
 use swe_edge_egress_grpc_retry::GrpcRetryConfigBuilder;
 
-/// @covers: GrpcRetryConfigBuilder — type is accessible and builds valid config
+/// @covers: GrpcRetryConfigBuilder — type is accessible and holds real fields (not zero-sized)
 #[test]
 fn retry_struct_grpc_retry_config_builder_is_accessible_int_test() {
-    let _ = std::mem::size_of::<GrpcRetryConfigBuilder>();
+    assert!(
+        std::mem::size_of::<GrpcRetryConfigBuilder>() > 0,
+        "GrpcRetryConfigBuilder accumulates real config fields and must not be zero-sized"
+    );
 }
 
 /// @covers: GrpcRetryConfigBuilder::new — pre-seeded with SWE defaults

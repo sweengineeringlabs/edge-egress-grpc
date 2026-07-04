@@ -35,8 +35,19 @@ fn retry_struct_resource_exhausted_context_unknown_message_classifies_as_capacit
     );
 }
 
-/// @covers: ResourceExhaustedContext is accessible
+/// @covers: ResourceExhaustedContext is accessible — all three variants are pairwise distinct
 #[test]
 fn retry_struct_resource_exhausted_context_is_accessible_int_test() {
-    let _ = std::mem::size_of::<ResourceExhaustedContext>();
+    assert_ne!(
+        ResourceExhaustedContext::Capacity,
+        ResourceExhaustedContext::RateLimit
+    );
+    assert_ne!(
+        ResourceExhaustedContext::RateLimit,
+        ResourceExhaustedContext::HardQuota
+    );
+    assert_ne!(
+        ResourceExhaustedContext::Capacity,
+        ResourceExhaustedContext::HardQuota
+    );
 }

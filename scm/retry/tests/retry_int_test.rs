@@ -410,7 +410,16 @@ async fn test_retry_honors_caller_deadline_as_total_budget() {
 fn test_create_retry_client_wraps_inner_with_default_config() {
     let inner = SharedClient::new(Arc::new(ScriptedClient::new(vec![Outcome::Ok])));
     let client = GrpcRetrySvc::create_retry_client(inner);
-    drop(client);
+    let default_cfg = GrpcRetryConfig::default();
+    assert_eq!(client.config().max_attempts, default_cfg.max_attempts);
+    assert_eq!(
+        client.config().initial_backoff_ms,
+        default_cfg.initial_backoff_ms
+    );
+    assert_eq!(
+        client.config().backoff_multiplier,
+        default_cfg.backoff_multiplier
+    );
 }
 
 /// @covers: GrpcRetrySvc::wrap_retry
@@ -424,10 +433,28 @@ fn test_wrap_retry_produces_retry_client_with_supplied_config() {
     assert!(max >= 1);
 }
 
+#[derive(serde::Deserialize, Default, PartialEq, Debug)]
+struct AbsentSectionProbe {
+    marker: bool,
+}
+
 /// @covers: GrpcRetrySvc::create_config_builder
 #[test]
 fn test_create_config_builder_builds_loader() {
-    let _loader = GrpcRetrySvc::create_config_builder().build_loader();
+    let loader = GrpcRetrySvc::create_config_builder()
+        .build_loader()
+        .expect("a builder pre-seeded with name and version must build a valid loader");
+    // In a test environment there is no application.toml at any configured
+    // directory, so querying any section must fail with NotFound — proves
+    // the loader is genuinely wired to the filesystem, not a no-op stub.
+    let err = loader
+        .load_section::<AbsentSectionProbe>("retry_test_probe_section_that_does_not_exist")
+        .expect_err("no config directory exists in the test environment");
+    assert!(
+        err.to_string()
+            .contains("retry_test_probe_section_that_does_not_exist"),
+        "error must name the missing section, got: {err}"
+    );
 }
 
 /// @covers: GrpcRetryConfig::section_name
