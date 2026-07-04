@@ -251,7 +251,19 @@ async fn test_intermittent_success_keeps_breaker_closed() {
 fn test_create_breaker_client_wraps_inner_with_default_config() {
     let inner = Shared(Arc::new(ToggleClient::new(0)));
     let client = GrpcBreakerSvc::create_breaker_client(inner);
-    drop(client);
+    let default_cfg = GrpcBreakerConfig::default();
+    assert_eq!(
+        client.config().failure_threshold,
+        default_cfg.failure_threshold
+    );
+    assert_eq!(
+        client.config().cool_down_seconds,
+        default_cfg.cool_down_seconds
+    );
+    assert_eq!(
+        client.config().half_open_probe_count,
+        default_cfg.half_open_probe_count
+    );
 }
 
 /// @covers: GrpcBreakerSvc::wrap_breaker
@@ -269,10 +281,28 @@ fn test_wrap_breaker_produces_client_with_supplied_config() {
     assert_eq!(threshold, 3);
 }
 
+#[derive(serde::Deserialize, Default, PartialEq, Debug)]
+struct AbsentSectionProbe {
+    marker: bool,
+}
+
 /// @covers: GrpcBreakerSvc::create_config_builder
 #[test]
 fn test_create_config_builder_builds_loader() {
-    let _loader = GrpcBreakerSvc::create_config_builder().build_loader();
+    let loader = GrpcBreakerSvc::create_config_builder()
+        .build_loader()
+        .expect("a builder pre-seeded with name and version must build a valid loader");
+    // In a test environment there is no application.toml at any configured
+    // directory, so querying any section must fail with NotFound — proves
+    // the loader is genuinely wired to the filesystem, not a no-op stub.
+    let err = loader
+        .load_section::<AbsentSectionProbe>("breaker_test_probe_section_that_does_not_exist")
+        .expect_err("no config directory exists in the test environment");
+    assert!(
+        err.to_string()
+            .contains("breaker_test_probe_section_that_does_not_exist"),
+        "error must name the missing section, got: {err}"
+    );
 }
 
 /// @covers: GrpcBreakerConfig::section_name
