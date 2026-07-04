@@ -10,8 +10,10 @@ fn transport_struct_grpc_request_builder_build_valid_request_returns_ok_int_test
     let req = GrpcRequestBuilder::new()
         .method("svc/Method")
         .deadline(Duration::from_secs(5))
-        .build();
-    assert!(req.is_ok());
+        .build()
+        .expect("method and deadline set, build must succeed");
+    assert_eq!(req.method, "svc/Method");
+    assert_eq!(req.deadline, Duration::from_secs(5));
 }
 
 /// @covers: GrpcRequestBuilder::build — missing method returns Err

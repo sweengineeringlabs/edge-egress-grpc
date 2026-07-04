@@ -7,7 +7,7 @@ use crate::api::error::{GrpcChannelConfigError, GrpcEgressError};
 use crate::api::traits::GrpcEgress;
 use crate::api::types::TransportSvc;
 use crate::api::types::{GrpcChannelConfig, DEFAULT_REQUEST_TIMEOUT_SECS};
-use crate::spi::client::tonic::TonicGrpcClientCore;
+use crate::spi::client::tonic::TonicGrpcClientProtocol;
 
 // Re-export public API types for consumers
 pub use crate::api::traits::interceptor::grpc_egress_interceptor::GrpcEgressInterceptor;
@@ -54,7 +54,7 @@ impl TransportSvc {
     pub fn create_tonic_client_from_config(
         config: &GrpcChannelConfig,
     ) -> Result<TonicGrpcClient, GrpcChannelConfigError> {
-        if config.tls_required && TonicGrpcClientCore::is_plaintext_endpoint(&config.endpoint) {
+        if config.tls_required && TonicGrpcClientProtocol::is_plaintext_endpoint(&config.endpoint) {
             return Err(GrpcChannelConfigError::PlaintextRejected(
                 config.endpoint.clone(),
             ));

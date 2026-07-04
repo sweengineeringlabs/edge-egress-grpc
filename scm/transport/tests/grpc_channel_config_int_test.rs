@@ -46,19 +46,37 @@ fn transport_struct_channel_config_from_config_rejects_plaintext_int_test() {
 }
 
 /// @covers: TransportSvc::create_transport_from_config — plaintext accepted with allow_plaintext().
-#[test]
-fn transport_struct_channel_config_from_config_accepts_plaintext_with_opt_in_int_test() {
+#[tokio::test]
+async fn transport_struct_channel_config_from_config_accepts_plaintext_with_opt_in_int_test() {
     ensure_rustls_provider();
-    let cfg = GrpcChannelConfig::new("http://localhost:50051").allow_plaintext();
-    assert!(TransportSvc::create_transport_from_config(&cfg).is_ok());
+    let cfg = GrpcChannelConfig::new("http://127.0.0.1:50051").allow_plaintext();
+    let transport = TransportSvc::create_transport_from_config(&cfg)
+        .expect("plaintext accepted with allow_plaintext()");
+    // Nothing listens on 127.0.0.1:50051 in the test environment, so a real
+    // call must genuinely fail — proves this is a connectable client, not a stub.
+    let health = transport.health_check().await;
+    assert!(
+        matches!(health, Err(GrpcEgressError::Unavailable(_))),
+        "health_check against an unbound port must report Unavailable, got: {health:?}"
+    );
 }
 
-/// @covers: TransportSvc::create_transport_from_config — https endpoint accepted.
+/// @covers: TransportSvc::create_transport_from_config — https endpoint accepted, unlike
+/// plaintext without opt-in — proves tls_required is genuinely scheme-derived, not ignored.
 #[test]
 fn transport_struct_channel_config_from_config_accepts_https_int_test() {
     ensure_rustls_provider();
-    let cfg = GrpcChannelConfig::new("https://example.com:443");
-    assert!(TransportSvc::create_transport_from_config(&cfg).is_ok());
+    let https_cfg = GrpcChannelConfig::new("https://example.com:443");
+    assert!(TransportSvc::create_transport_from_config(&https_cfg).is_ok());
+
+    let plaintext_cfg = GrpcChannelConfig::new("http://example.com:80");
+    assert!(
+        matches!(
+            TransportSvc::create_transport_from_config(&plaintext_cfg),
+            Err(GrpcChannelConfigError::PlaintextRejected(_))
+        ),
+        "same construction path must still reject plaintext without allow_plaintext()"
+    );
 }
 
 /// @covers: GrpcEgressInterceptorChain — accepts a TraceContextInterceptor.

@@ -11,8 +11,9 @@ use swe_edge_egress_grpc_transport::{
 fn transport_struct_grpc_channel_config_builder_build_with_endpoint_returns_ok_int_test() {
     let cfg = GrpcChannelConfigBuilder::new()
         .endpoint("https://example.com:443")
-        .build();
-    assert!(cfg.is_ok());
+        .build()
+        .expect("endpoint is set, build must succeed");
+    assert_eq!(cfg.endpoint, "https://example.com:443");
 }
 
 /// @covers: GrpcChannelConfigBuilder::build — missing endpoint returns Err

@@ -1,7 +1,8 @@
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! SAF-level integration tests for `TransportSvc::create_transport_from_config`.
 
 use swe_edge_egress_grpc_transport::{
-    GrpcChannelConfig, GrpcChannelConfigError, ResilienceConfig, TransportSvc,
+    GrpcChannelConfig, GrpcChannelConfigError, GrpcEgressError, ResilienceConfig, TransportSvc,
 };
 
 fn ensure_rustls_provider() {
@@ -29,21 +30,35 @@ fn resilience() -> ResilienceConfig {
 }
 
 /// @covers: TransportSvc::create_transport_from_config — bare transport without resilience.
-#[test]
-fn transport_struct_transport_create_without_resilience_returns_ok_int_test() {
+#[tokio::test]
+async fn transport_struct_transport_create_without_resilience_returns_ok_int_test() {
     ensure_rustls_provider();
     let cfg = GrpcChannelConfig::new("http://127.0.0.1:50051").allow_plaintext();
-    assert!(TransportSvc::create_transport_from_config(&cfg).is_ok());
+    let transport = TransportSvc::create_transport_from_config(&cfg)
+        .expect("assembly must succeed for a valid plaintext config");
+    // Nothing listens on 127.0.0.1:50051 in the test environment, so a real
+    // call must genuinely fail — proves this is a connectable client, not a stub.
+    let health = transport.health_check().await;
+    assert!(
+        matches!(health, Err(GrpcEgressError::Unavailable(_))),
+        "health_check against an unbound port must report Unavailable, got: {health:?}"
+    );
 }
 
 /// @covers: TransportSvc::create_transport_from_config — resilient transport with resilience config.
-#[test]
-fn transport_struct_transport_create_with_resilience_returns_ok_int_test() {
+#[tokio::test]
+async fn transport_struct_transport_create_with_resilience_returns_ok_int_test() {
     ensure_rustls_provider();
     let cfg = GrpcChannelConfig::new("http://127.0.0.1:50051")
         .allow_plaintext()
         .with_resilience(resilience());
-    assert!(TransportSvc::create_transport_from_config(&cfg).is_ok());
+    let transport = TransportSvc::create_transport_from_config(&cfg)
+        .expect("assembly must succeed for a valid resilience config");
+    let health = transport.health_check().await;
+    assert!(
+        matches!(health, Err(GrpcEgressError::Unavailable(_))),
+        "health_check against an unbound port must report Unavailable, got: {health:?}"
+    );
 }
 
 /// @covers: TransportSvc::create_transport_from_config — rejects plaintext when tls_required.

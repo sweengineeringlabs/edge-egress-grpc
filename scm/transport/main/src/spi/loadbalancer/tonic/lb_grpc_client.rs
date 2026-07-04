@@ -241,6 +241,7 @@ mod tests {
 
     // ── from_config: error paths (no runtime needed) ─────────────────────────
 
+    /// @covers: from_config
     #[test]
     fn test_from_config_empty_backends_returns_unavailable() {
         let config = LoadbalancerConfig {
@@ -254,6 +255,7 @@ mod tests {
         );
     }
 
+    /// @covers: from_config
     #[test]
     fn test_from_config_invalid_url_returns_unavailable() {
         let config = one_backend("!! not a valid url !!");
@@ -266,25 +268,37 @@ mod tests {
 
     // ── from_config: happy path (Channel::balance_list needs a Tokio runtime) ─
 
-    #[tokio::test]
-    async fn test_from_config_valid_url_builds_client() {
-        let client = TonicLbGrpcClient::from_config(one_backend("http://localhost:50051"));
+    /// @covers: from_config
+    #[test]
+    fn test_from_config_valid_url_builds_client() {
+        let rt = tokio::runtime::Runtime::new().expect("runtime");
+        let client = rt.block_on(async {
+            TonicLbGrpcClient::from_config(one_backend("http://localhost:50051"))
+        });
         assert!(client.is_ok(), "expected Ok, got: {:?}", client.err());
     }
 
     // ── with_timeout / timeout ────────────────────────────────────────────────
 
-    #[tokio::test]
-    async fn test_with_timeout_overrides_default() {
-        let client = TonicLbGrpcClient::from_config(one_backend("http://localhost:50051"))
-            .unwrap()
-            .with_timeout(Duration::from_secs(5));
+    /// @covers: with_timeout
+    #[test]
+    fn test_with_timeout_overrides_default() {
+        let rt = tokio::runtime::Runtime::new().expect("runtime");
+        let client = rt.block_on(async {
+            TonicLbGrpcClient::from_config(one_backend("http://localhost:50051"))
+                .unwrap()
+                .with_timeout(Duration::from_secs(5))
+        });
         assert_eq!(client.timeout(), Duration::from_secs(5));
     }
 
-    #[tokio::test]
-    async fn test_timeout_returns_default_when_not_overridden() {
-        let client = TonicLbGrpcClient::from_config(one_backend("http://localhost:50051")).unwrap();
+    /// @covers: timeout
+    #[test]
+    fn test_timeout_returns_default_when_not_overridden() {
+        let rt = tokio::runtime::Runtime::new().expect("runtime");
+        let client = rt.block_on(async {
+            TonicLbGrpcClient::from_config(one_backend("http://localhost:50051")).unwrap()
+        });
         assert_eq!(client.timeout(), DEFAULT_TIMEOUT);
     }
 }

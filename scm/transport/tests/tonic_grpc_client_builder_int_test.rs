@@ -1,10 +1,13 @@
 //! Integration tests for `TonicGrpcClientBuilder`.
 //!
 //! Tests that access internal `pub(crate)` fields cannot be ported and are
-//! omitted. Only tests using the public API surface are included here.
+//! omitted (field-level verification lives in the crate's inline tests).
+//! These exercise the public API surface only: each fluent path must
+//! produce a genuinely connectable `GrpcEgress`, not merely compile.
 
 use swe_edge_egress_grpc_transport::{
-    CompressionMode, GrpcEgressInterceptorChain, TonicGrpcClientBuilder,
+    CompressionMode, GrpcEgress, GrpcEgressError, GrpcEgressInterceptorChain,
+    TonicGrpcClientBuilder,
 };
 
 fn ensure_rustls_provider() {
@@ -15,51 +18,62 @@ fn ensure_rustls_provider() {
     });
 }
 
+/// Nothing listens on 127.0.0.1:50051 in the test environment, so a real
+/// health_check() call must genuinely fail — proves the built client is a
+/// real, connectable GrpcEgress wired to the given base_uri, not a stub.
+async fn assert_genuinely_connectable(client: impl GrpcEgress) {
+    let health = client.health_check().await;
+    assert!(
+        matches!(health, Err(GrpcEgressError::Unavailable(_))),
+        "health_check against an unbound port must report Unavailable, got: {health:?}"
+    );
+}
+
 /// @covers: TonicGrpcClientBuilder::new, build — builder produces a client without panic
-#[test]
-fn transport_struct_tonic_grpc_client_builder_build_produces_client_int_test() {
+#[tokio::test]
+async fn transport_struct_tonic_grpc_client_builder_build_produces_client_int_test() {
     ensure_rustls_provider();
-    let client = TonicGrpcClientBuilder::new("http://localhost:50051").build();
-    let _ = std::mem::size_of_val(&client);
+    let client = TonicGrpcClientBuilder::new("http://127.0.0.1:50051").build();
+    assert_genuinely_connectable(client).await;
 }
 
 /// @covers: TonicGrpcClientBuilder::timeout — fluent setter returns Self
-#[test]
-fn transport_struct_tonic_grpc_client_builder_timeout_setter_is_fluent_int_test() {
+#[tokio::test]
+async fn transport_struct_tonic_grpc_client_builder_timeout_setter_is_fluent_int_test() {
     ensure_rustls_provider();
-    let client = TonicGrpcClientBuilder::new("http://localhost:50051")
+    let client = TonicGrpcClientBuilder::new("http://127.0.0.1:50051")
         .timeout(std::time::Duration::from_secs(5))
         .build();
-    let _ = std::mem::size_of_val(&client);
+    assert_genuinely_connectable(client).await;
 }
 
 /// @covers: TonicGrpcClientBuilder::max_message_bytes — fluent setter returns Self
-#[test]
-fn transport_struct_tonic_grpc_client_builder_max_message_bytes_setter_is_fluent_int_test() {
+#[tokio::test]
+async fn transport_struct_tonic_grpc_client_builder_max_message_bytes_setter_is_fluent_int_test() {
     ensure_rustls_provider();
-    let client = TonicGrpcClientBuilder::new("http://localhost:50051")
+    let client = TonicGrpcClientBuilder::new("http://127.0.0.1:50051")
         .max_message_bytes(8 * 1024 * 1024)
         .build();
-    let _ = std::mem::size_of_val(&client);
+    assert_genuinely_connectable(client).await;
 }
 
 /// @covers: TonicGrpcClientBuilder::compression — fluent setter returns Self
-#[test]
-fn transport_struct_tonic_grpc_client_builder_compression_setter_is_fluent_int_test() {
+#[tokio::test]
+async fn transport_struct_tonic_grpc_client_builder_compression_setter_is_fluent_int_test() {
     ensure_rustls_provider();
-    let client = TonicGrpcClientBuilder::new("http://localhost:50051")
+    let client = TonicGrpcClientBuilder::new("http://127.0.0.1:50051")
         .compression(CompressionMode::Gzip)
         .build();
-    let _ = std::mem::size_of_val(&client);
+    assert_genuinely_connectable(client).await;
 }
 
 /// @covers: TonicGrpcClientBuilder::interceptors — fluent setter returns Self
-#[test]
-fn transport_struct_tonic_grpc_client_builder_interceptors_setter_is_fluent_int_test() {
+#[tokio::test]
+async fn transport_struct_tonic_grpc_client_builder_interceptors_setter_is_fluent_int_test() {
     ensure_rustls_provider();
     let chain = GrpcEgressInterceptorChain::new();
-    let client = TonicGrpcClientBuilder::new("http://localhost:50051")
+    let client = TonicGrpcClientBuilder::new("http://127.0.0.1:50051")
         .interceptors(chain)
         .build();
-    let _ = std::mem::size_of_val(&client);
+    assert_genuinely_connectable(client).await;
 }

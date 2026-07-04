@@ -13,10 +13,21 @@ fn req() -> GrpcRequest {
     GrpcRequest::new("svc/M", vec![], Duration::from_secs(1))
 }
 
-/// @covers: TraceContextInterceptor::pass_through — constructs without panic
+/// @covers: TraceContextInterceptor::pass_through — preserves an existing upstream traceparent unchanged
 #[test]
 fn transport_struct_trace_context_interceptor_pass_through_constructs_without_panic_int_test() {
-    let _ = TraceContextInterceptor::pass_through();
+    let upstream = "00-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1-bbbbbbbbbbbbbbbb-01";
+    let ic = TraceContextInterceptor::pass_through();
+    let mut r = req();
+    r.metadata
+        .headers
+        .insert("traceparent".into(), upstream.into());
+    ic.before_call(&mut r).expect("before_call must not fail");
+    assert_eq!(
+        r.metadata.headers.get("traceparent").map(String::as_str),
+        Some(upstream),
+        "pass_through must leave an existing upstream traceparent untouched"
+    );
 }
 
 /// @covers: TraceContextInterceptor::pass_through — does not inject traceparent when absent

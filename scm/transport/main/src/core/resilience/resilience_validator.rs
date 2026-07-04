@@ -60,6 +60,12 @@ mod tests {
     #[test]
     fn test_validate_valid_config_returns_ok() {
         assert!(valid().validate().is_ok());
+        // Sibling negative case in the same test: a single field flipped to
+        // invalid on an otherwise-valid config must fail, proving is_ok()
+        // above isn't just a stub that always succeeds regardless of input.
+        let mut invalid = valid();
+        invalid.max_attempts = 0;
+        assert!(invalid.validate().is_err());
     }
 
     #[test]

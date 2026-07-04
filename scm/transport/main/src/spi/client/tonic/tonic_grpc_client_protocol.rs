@@ -5,7 +5,7 @@
 /// The struct fields live in `spi/client/tonic/tonic_grpc_client.rs` (the public
 /// type); this marker holds the protocol-encoding helper methods and the
 /// `GrpcEgress`/`Processor` impls for that type.
-pub(crate) struct TonicGrpcClientCore;
+pub(crate) struct TonicGrpcClientProtocol;
 
 use std::time::Duration;
 
@@ -30,7 +30,7 @@ const SANITIZED_INTERNAL_MSG: &str = "internal client error";
 
 // ── internal helpers ─────────────────────────────────────────────────────────
 
-impl TonicGrpcClientCore {
+impl TonicGrpcClientProtocol {
     /// Encode `payload` as a single gRPC data frame:
     /// `[0x00][len_u32_be][payload]` — not compressed.
     fn encode_grpc_frame(payload: &[u8]) -> Bytes {
@@ -127,7 +127,10 @@ impl TonicGrpcClientCore {
             .header("te", "trailers");
 
         if let Some(d) = deadline {
-            builder = builder.header("grpc-timeout", TonicGrpcClientCore::encode_grpc_timeout(d));
+            builder = builder.header(
+                "grpc-timeout",
+                TonicGrpcClientProtocol::encode_grpc_timeout(d),
+            );
         }
 
         for (k, v) in &metadata.headers {
@@ -203,7 +206,7 @@ impl TonicGrpcClientCore {
 
         Err(GrpcEgressError::Status(code, message))
     }
-} // impl TonicGrpcClientCore (helpers)
+} // impl TonicGrpcClientProtocol (helpers)
 
 // ── constructor helpers ───────────────────────────────────────────────────────
 
@@ -245,7 +248,7 @@ impl TonicGrpcClient {
     )]
     fn from_config(config: &GrpcChannelConfig) -> Result<Self, GrpcChannelConfigError> {
         use crate::api::types::DEFAULT_REQUEST_TIMEOUT_SECS;
-        if config.tls_required && TonicGrpcClientCore::is_plaintext_endpoint(&config.endpoint) {
+        if config.tls_required && TonicGrpcClientProtocol::is_plaintext_endpoint(&config.endpoint) {
             return Err(GrpcChannelConfigError::PlaintextRejected(
                 config.endpoint.clone(),
             ));
@@ -280,7 +283,7 @@ impl TonicGrpcClient {
     }
 }
 
-impl TonicGrpcClientCore {
+impl TonicGrpcClientProtocol {
     /// Returns `true` when `endpoint` starts with `http://` (case-insensitive).
     pub(crate) fn is_plaintext_endpoint(endpoint: &str) -> bool {
         endpoint.len() >= 7 && endpoint[..7].eq_ignore_ascii_case("http://")
@@ -317,7 +320,7 @@ impl TonicGrpcClientCore {
                 .map_err(|_| GrpcEgressError::Timeout("request deadline exceeded".into())),
         }
     }
-} // impl TonicGrpcClientCore (endpoint + race)
+} // impl TonicGrpcClientProtocol (endpoint + race)
 
 // ── Processor impl ───────────────────────────────────────────────────────────
 
@@ -367,12 +370,12 @@ impl GrpcEgress for TonicGrpcClient {
         // reject the double-slash form.
         let method = request.method.trim_start_matches('/');
         let uri_str = format!("{}/{}", self.base_uri.trim_end_matches('/'), method);
-        let body_bytes = TonicGrpcClientCore::encode_grpc_frame(&request.body);
+        let body_bytes = TonicGrpcClientProtocol::encode_grpc_frame(&request.body);
         let deadline = request.deadline;
         let cancel = request.cancellation.clone();
         let max_bytes = self.max_message_bytes;
         let interceptors = self.interceptors.clone();
-        let http_req = match TonicGrpcClientCore::build_http_request(
+        let http_req = match TonicGrpcClientProtocol::build_http_request(
             &uri_str,
             body_bytes,
             &request.metadata,
@@ -383,7 +386,7 @@ impl GrpcEgress for TonicGrpcClient {
         };
 
         Box::pin(async move {
-            let resp = TonicGrpcClientCore::race_deadline_and_cancel(
+            let resp = TonicGrpcClientProtocol::race_deadline_and_cancel(
                 self.client.request(http_req),
                 deadline,
                 cancel.as_ref(),
@@ -395,14 +398,14 @@ impl GrpcEgress for TonicGrpcClient {
             })?;
 
             let response_headers = resp.headers().clone();
-            TonicGrpcClientCore::check_grpc_status(
+            TonicGrpcClientProtocol::check_grpc_status(
                 Some(&response_headers),
                 Some(&response_headers),
             )?;
 
             // Bound the response body; oversize returns ResourceExhausted.
             let limited = http_body_util::Limited::new(resp.into_body(), max_bytes + 5);
-            let collected = TonicGrpcClientCore::race_deadline_and_cancel(
+            let collected = TonicGrpcClientProtocol::race_deadline_and_cancel(
                 limited.collect(),
                 deadline,
                 cancel.as_ref(),
@@ -416,9 +419,12 @@ impl GrpcEgress for TonicGrpcClient {
                 )
             })?;
 
-            TonicGrpcClientCore::check_grpc_status(collected.trailers(), Some(&response_headers))?;
+            TonicGrpcClientProtocol::check_grpc_status(
+                collected.trailers(),
+                Some(&response_headers),
+            )?;
 
-            let trailer_headers = TonicGrpcClientCore::header_map_to_hash(collected.trailers());
+            let trailer_headers = TonicGrpcClientProtocol::header_map_to_hash(collected.trailers());
             let data = collected.to_bytes();
 
             let body = if data.len() >= 5 {
@@ -468,11 +474,11 @@ impl GrpcEgress for TonicGrpcClient {
             let mut stream = messages;
             while let Some(item) = stream.next().await {
                 let payload = item?;
-                let frame = TonicGrpcClientCore::encode_grpc_frame(&payload);
+                let frame = TonicGrpcClientProtocol::encode_grpc_frame(&payload);
                 body_buf.put(frame);
             }
 
-            let http_req = TonicGrpcClientCore::build_http_request(
+            let http_req = TonicGrpcClientProtocol::build_http_request(
                 &uri_str,
                 body_buf.freeze(),
                 &metadata,
@@ -488,7 +494,7 @@ impl GrpcEgress for TonicGrpcClient {
                 })?;
 
             // Check grpc-status in the initial response headers first.
-            TonicGrpcClientCore::check_grpc_status(Some(resp.headers()), Some(resp.headers()))?;
+            TonicGrpcClientProtocol::check_grpc_status(Some(resp.headers()), Some(resp.headers()))?;
 
             let collected = resp.into_body().collect().await.map_err(|e| {
                 tracing::warn!(error = %e, "failed to read gRPC stream response body");
@@ -496,10 +502,10 @@ impl GrpcEgress for TonicGrpcClient {
             })?;
 
             // Also check trailers.
-            TonicGrpcClientCore::check_grpc_status(collected.trailers(), None)?;
+            TonicGrpcClientProtocol::check_grpc_status(collected.trailers(), None)?;
 
             let data = collected.to_bytes();
-            let frames = TonicGrpcClientCore::decode_grpc_frames(data)?;
+            let frames = TonicGrpcClientProtocol::decode_grpc_frames(data)?;
             let items: Vec<GrpcEgressResult<Vec<u8>>> = frames.into_iter().map(Ok).collect();
             Ok(Box::pin(futures::stream::iter(items)) as GrpcMessageStream)
         })
@@ -515,11 +521,11 @@ impl GrpcEgress for TonicGrpcClient {
         }
         let method = request.method.trim_start_matches('/');
         let uri_str = format!("{}/{}", self.base_uri.trim_end_matches('/'), method);
-        let body_bytes = TonicGrpcClientCore::encode_grpc_frame(&request.body);
+        let body_bytes = TonicGrpcClientProtocol::encode_grpc_frame(&request.body);
         let deadline = request.deadline;
         let cancel = request.cancellation.clone();
         let max_bytes = self.max_message_bytes;
-        let http_req = match TonicGrpcClientCore::build_http_request(
+        let http_req = match TonicGrpcClientProtocol::build_http_request(
             &uri_str,
             body_bytes,
             &request.metadata,
@@ -530,7 +536,7 @@ impl GrpcEgress for TonicGrpcClient {
         };
 
         Box::pin(async move {
-            let resp = TonicGrpcClientCore::race_deadline_and_cancel(
+            let resp = TonicGrpcClientProtocol::race_deadline_and_cancel(
                 self.client.request(http_req),
                 deadline,
                 cancel.as_ref(),
@@ -542,13 +548,13 @@ impl GrpcEgress for TonicGrpcClient {
             })?;
 
             let response_headers = resp.headers().clone();
-            TonicGrpcClientCore::check_grpc_status(
+            TonicGrpcClientProtocol::check_grpc_status(
                 Some(&response_headers),
                 Some(&response_headers),
             )?;
 
             let limited = http_body_util::Limited::new(resp.into_body(), max_bytes + 5);
-            let collected = TonicGrpcClientCore::race_deadline_and_cancel(
+            let collected = TonicGrpcClientProtocol::race_deadline_and_cancel(
                 limited.collect(),
                 deadline,
                 cancel.as_ref(),
@@ -561,10 +567,13 @@ impl GrpcEgress for TonicGrpcClient {
                 )
             })?;
 
-            TonicGrpcClientCore::check_grpc_status(collected.trailers(), Some(&response_headers))?;
+            TonicGrpcClientProtocol::check_grpc_status(
+                collected.trailers(),
+                Some(&response_headers),
+            )?;
 
             let data = collected.to_bytes();
-            let frames = TonicGrpcClientCore::decode_grpc_frames(data)?;
+            let frames = TonicGrpcClientProtocol::decode_grpc_frames(data)?;
             let items: Vec<GrpcEgressResult<Vec<u8>>> = frames.into_iter().map(Ok).collect();
             Ok(Box::pin(futures::stream::iter(items)) as GrpcMessageStream)
         })
@@ -589,10 +598,10 @@ impl GrpcEgress for TonicGrpcClient {
             let mut stream = messages;
             while let Some(item) = stream.next().await {
                 let payload = item?;
-                body_buf.put(TonicGrpcClientCore::encode_grpc_frame(&payload));
+                body_buf.put(TonicGrpcClientProtocol::encode_grpc_frame(&payload));
             }
 
-            let http_req = TonicGrpcClientCore::build_http_request(
+            let http_req = TonicGrpcClientProtocol::build_http_request(
                 &uri_str,
                 body_buf.freeze(),
                 &metadata,
@@ -610,7 +619,7 @@ impl GrpcEgress for TonicGrpcClient {
                 })?;
 
             let response_headers = resp.headers().clone();
-            TonicGrpcClientCore::check_grpc_status(
+            TonicGrpcClientProtocol::check_grpc_status(
                 Some(&response_headers),
                 Some(&response_headers),
             )?;
@@ -628,9 +637,12 @@ impl GrpcEgress for TonicGrpcClient {
                     )
                 })?;
 
-            TonicGrpcClientCore::check_grpc_status(collected.trailers(), Some(&response_headers))?;
+            TonicGrpcClientProtocol::check_grpc_status(
+                collected.trailers(),
+                Some(&response_headers),
+            )?;
 
-            let trailer_headers = TonicGrpcClientCore::header_map_to_hash(collected.trailers());
+            let trailer_headers = TonicGrpcClientProtocol::header_map_to_hash(collected.trailers());
             let data = collected.to_bytes();
             let body = if data.len() >= 5 {
                 data[5..].to_vec()
@@ -683,7 +695,7 @@ impl GrpcEgress for TonicGrpcClient {
     }
 }
 
-impl TonicGrpcClientCore {
+impl TonicGrpcClientProtocol {
     /// Compile-time guard: `GrpcRequest::new` MUST require a `Duration`.
     #[doc(hidden)]
     pub(crate) fn _grpc_request_new_requires_deadline_compile_check() -> GrpcRequest {
@@ -694,7 +706,7 @@ impl TonicGrpcClientCore {
     fn _suppress_status_code_unused_import_warning(c: GrpcStatusCode) -> GrpcStatusCode {
         c
     }
-} // impl TonicGrpcClientCore (compile checks)
+} // impl TonicGrpcClientProtocol (compile checks)
 
 // ── unit tests ────────────────────────────────────────────────────────────────
 
@@ -706,29 +718,29 @@ mod tests {
 
     #[test]
     fn test_is_plaintext_endpoint_returns_true_for_http_scheme() {
-        assert!(TonicGrpcClientCore::is_plaintext_endpoint(
+        assert!(TonicGrpcClientProtocol::is_plaintext_endpoint(
             "http://localhost:50051"
         ));
-        assert!(TonicGrpcClientCore::is_plaintext_endpoint(
+        assert!(TonicGrpcClientProtocol::is_plaintext_endpoint(
             "HTTP://example.com:443"
         ));
     }
 
     #[test]
     fn test_is_plaintext_endpoint_returns_false_for_https_scheme() {
-        assert!(!TonicGrpcClientCore::is_plaintext_endpoint(
+        assert!(!TonicGrpcClientProtocol::is_plaintext_endpoint(
             "https://secure.example.com:443"
         ));
     }
 
     #[test]
     fn test_is_plaintext_endpoint_returns_false_for_empty_string() {
-        assert!(!TonicGrpcClientCore::is_plaintext_endpoint(""));
+        assert!(!TonicGrpcClientProtocol::is_plaintext_endpoint(""));
     }
 
     #[test]
     fn test_is_plaintext_endpoint_returns_false_for_short_string() {
-        assert!(!TonicGrpcClientCore::is_plaintext_endpoint("http:/"));
+        assert!(!TonicGrpcClientProtocol::is_plaintext_endpoint("http:/"));
     }
 
     // ── other core tests ─────────────────────────────────────────────────────
@@ -759,7 +771,7 @@ mod tests {
 
     #[test]
     fn test_encode_grpc_frame_produces_5_byte_header() {
-        let frame = TonicGrpcClientCore::encode_grpc_frame(b"hello");
+        let frame = TonicGrpcClientProtocol::encode_grpc_frame(b"hello");
         assert_eq!(frame.len(), 10); // 5 header + 5 payload
         assert_eq!(frame[0], 0x00); // not compressed
         assert_eq!(
@@ -771,8 +783,8 @@ mod tests {
 
     #[test]
     fn test_decode_grpc_frames_round_trips_single_frame() {
-        let encoded = TonicGrpcClientCore::encode_grpc_frame(b"world");
-        let decoded = TonicGrpcClientCore::decode_grpc_frames(encoded).expect("decode failed");
+        let encoded = TonicGrpcClientProtocol::encode_grpc_frame(b"world");
+        let decoded = TonicGrpcClientProtocol::decode_grpc_frames(encoded).expect("decode failed");
         assert_eq!(decoded.len(), 1);
         assert_eq!(decoded[0], b"world");
     }
@@ -780,10 +792,11 @@ mod tests {
     #[test]
     fn test_decode_grpc_frames_round_trips_multiple_frames() {
         let mut buf = BytesMut::new();
-        buf.put(TonicGrpcClientCore::encode_grpc_frame(b"one"));
-        buf.put(TonicGrpcClientCore::encode_grpc_frame(b"two"));
-        buf.put(TonicGrpcClientCore::encode_grpc_frame(b"three"));
-        let decoded = TonicGrpcClientCore::decode_grpc_frames(buf.freeze()).expect("decode failed");
+        buf.put(TonicGrpcClientProtocol::encode_grpc_frame(b"one"));
+        buf.put(TonicGrpcClientProtocol::encode_grpc_frame(b"two"));
+        buf.put(TonicGrpcClientProtocol::encode_grpc_frame(b"three"));
+        let decoded =
+            TonicGrpcClientProtocol::decode_grpc_frames(buf.freeze()).expect("decode failed");
         assert_eq!(decoded.len(), 3);
         assert_eq!(decoded[0], b"one");
         assert_eq!(decoded[1], b"two");
@@ -797,7 +810,7 @@ mod tests {
         buf.put_u8(0x00);
         buf.put_u32(100_u32);
         buf.put_slice(b"abc");
-        let result = TonicGrpcClientCore::decode_grpc_frames(buf.freeze());
+        let result = TonicGrpcClientProtocol::decode_grpc_frames(buf.freeze());
         match result {
             Err(GrpcEgressError::Internal(msg)) => {
                 // Must be the sanitized constant — never raw byte counts on the wire.
@@ -810,11 +823,11 @@ mod tests {
     #[test]
     fn test_encode_grpc_timeout_uses_nanos_for_small_values() {
         assert_eq!(
-            TonicGrpcClientCore::encode_grpc_timeout(Duration::from_nanos(1)),
+            TonicGrpcClientProtocol::encode_grpc_timeout(Duration::from_nanos(1)),
             "1n"
         );
         assert_eq!(
-            TonicGrpcClientCore::encode_grpc_timeout(Duration::from_micros(1)),
+            TonicGrpcClientProtocol::encode_grpc_timeout(Duration::from_micros(1)),
             "1000n"
         );
     }
@@ -823,7 +836,7 @@ mod tests {
     fn test_encode_grpc_timeout_uses_millis_or_higher_for_seconds() {
         // 30s = 30_000_000_000 ns — too big for nanos, fits microseconds (3e10).
         // Actually 3e10 > 99_999_999, so it falls through to millis (30_000) or higher.
-        let s = TonicGrpcClientCore::encode_grpc_timeout(Duration::from_secs(30));
+        let s = TonicGrpcClientProtocol::encode_grpc_timeout(Duration::from_secs(30));
         // Accept any unit suffix as long as the value parses and is positive.
         let last = s.chars().last().expect("non-empty timeout encoding");
         assert!("nuMSmH".contains(last), "unexpected unit suffix in {s}");
@@ -832,14 +845,16 @@ mod tests {
     #[test]
     fn test_encode_grpc_timeout_handles_zero_duration() {
         assert_eq!(
-            TonicGrpcClientCore::encode_grpc_timeout(Duration::ZERO),
+            TonicGrpcClientProtocol::encode_grpc_timeout(Duration::ZERO),
             "0n"
         );
     }
 
     #[test]
     fn test_grpc_request_new_requires_deadline_compile_check() {
-        let _r = TonicGrpcClientCore::_grpc_request_new_requires_deadline_compile_check();
+        let r = TonicGrpcClientProtocol::_grpc_request_new_requires_deadline_compile_check();
+        assert_eq!(r.method, "svc/Method");
+        assert_eq!(r.deadline, Duration::from_secs(1));
     }
 
     #[test]
@@ -849,7 +864,8 @@ mod tests {
             .ok();
         let cfg =
             crate::api::types::GrpcChannelConfig::new("http://localhost:50051").allow_plaintext();
-        assert!(TonicGrpcClient::from_config(&cfg).is_ok());
+        let client = TonicGrpcClient::from_config(&cfg).expect("valid plaintext config");
+        assert_eq!(client.base_uri, "http://localhost:50051");
     }
 
     #[test]

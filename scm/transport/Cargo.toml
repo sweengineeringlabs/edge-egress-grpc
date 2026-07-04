@@ -31,10 +31,6 @@ prost = ["dep:prost"]
 name = "basic_transport"
 path = "examples/basic_transport.rs"
 
-[[test]]
-name = "egress_lb_int_test"
-path = "tests/egress_lb_int_test.rs"
-
 [dependencies]
 serde.workspace       = true
 thiserror.workspace   = true

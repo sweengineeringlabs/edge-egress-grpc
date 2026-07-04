@@ -12,7 +12,11 @@ fn full_builder() -> ResilienceConfigBuilder {
 /// @covers: ResilienceConfigBuilder::build — valid config returns Ok
 #[test]
 fn transport_struct_resilience_config_builder_build_valid_config_returns_ok_int_test() {
-    assert!(full_builder().build().is_ok());
+    let cfg = full_builder()
+        .build()
+        .expect("max_attempts and rate_limit_max_attempts set, build must succeed");
+    assert_eq!(cfg.max_attempts, 3);
+    assert_eq!(cfg.rate_limit_max_attempts, 2);
 }
 
 /// @covers: ResilienceConfigBuilder::max_attempts — sets field
