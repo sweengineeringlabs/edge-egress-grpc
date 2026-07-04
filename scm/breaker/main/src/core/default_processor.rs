@@ -1,11 +1,25 @@
-﻿//! `impl Processor for GrpcBreakerSvc` — satisfies `service_type = "processor"`.
+//! `impl Processor for GrpcBreakerSvc` — satisfies `service_type = "processor"`.
 
-use crate::api::traits::Processor;
-use crate::api::types::grpc_breaker_svc::GrpcBreakerSvc;
+use crate::api::{
+    BreakerDomainError, DescribeRequest, DescribeResponse, GrpcBreakerSvc, Processor,
+};
 
 impl Processor for GrpcBreakerSvc {
-    fn describe(&self) -> &'static str {
+    fn describe(&self, _req: DescribeRequest) -> Result<DescribeResponse, BreakerDomainError> {
         const LABEL: &str = "grpc-breaker";
-        LABEL
+        Ok(DescribeResponse { label: LABEL })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_describe_returns_the_grpc_breaker_label() {
+        let resp = GrpcBreakerSvc
+            .describe(DescribeRequest)
+            .expect("infallible");
+        assert_eq!(resp.label, "grpc-breaker");
     }
 }

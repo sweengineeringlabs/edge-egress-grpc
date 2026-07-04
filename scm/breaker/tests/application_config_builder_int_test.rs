@@ -12,6 +12,7 @@ struct AbsentSectionProbe {
 #[test]
 fn breaker_type_application_config_builder_is_accessible_int_test() {
     let loader = GrpcBreakerSvc::create_config_builder()
+        .expect("create_config_builder is infallible")
         .build_loader()
         .expect("a builder pre-seeded with name and version must build a valid loader");
     // In a test environment there is no application.toml at any configured

@@ -2,46 +2,33 @@
 
 use swe_edge_egress_grpc::GrpcEgress;
 
-pub use crate::api::types::grpc_breaker_config::GrpcBreakerConfig;
-pub use crate::api::types::grpc_breaker_svc::GrpcBreakerSvc;
-pub use crate::api::types::GrpcBreakerClient;
+use crate::api::{BreakerDomainError, ConfigBuilderRequest, WrapBreakerRequest};
+use crate::saf::{BreakerDecoratorFactory, ConfigBuilderProviderFactory};
 
-pub use crate::api::error::Error;
-pub use crate::api::types::BreakerState;
+pub(crate) use crate::api::{
+    ApplicationConfigBuilder, GrpcBreakerClient, GrpcBreakerConfig, GrpcBreakerSvc,
+};
 
 impl GrpcBreakerSvc {
     /// Return a config builder pre-seeded with this crate's name and version.
-    pub fn create_config_builder() -> swe_edge_configbuilder::ConfigBuilderImpl {
-        let mut b = swe_edge_configbuilder::ConfigBuilderImpl::new();
-        b = b.with_name(env!("CARGO_PKG_NAME"));
-        b = b.with_version(env!("CARGO_PKG_VERSION"));
-        b
+    pub fn create_config_builder() -> Result<ApplicationConfigBuilder, BreakerDomainError> {
+        ConfigBuilderProviderFactory::create().create_config_builder(ConfigBuilderRequest {
+            svc: GrpcBreakerSvc,
+        })
     }
 
     /// Wrap `inner` with the supplied breaker policy.
     pub fn wrap_breaker<T: GrpcEgress + Send + Sync + 'static>(
         inner: T,
         config: GrpcBreakerConfig,
-    ) -> GrpcBreakerClient<T> {
-        GrpcBreakerClient {
-            inner,
-            config: std::sync::Arc::new(config),
-            node: std::sync::Arc::new(tokio::sync::Mutex::new(
-                crate::api::types::breaker_node::BreakerNode::new(),
-            )),
-        }
+    ) -> Result<GrpcBreakerClient<T>, BreakerDomainError> {
+        BreakerDecoratorFactory::create::<T>().wrap(WrapBreakerRequest { inner, config })
     }
 
     /// Wrap `inner` with the default breaker policy.
     pub fn create_breaker_client<T: GrpcEgress + Send + Sync + 'static>(
         inner: T,
-    ) -> GrpcBreakerClient<T> {
-        GrpcBreakerClient {
-            inner,
-            config: std::sync::Arc::new(GrpcBreakerConfig::default()),
-            node: std::sync::Arc::new(tokio::sync::Mutex::new(
-                crate::api::types::breaker_node::BreakerNode::new(),
-            )),
-        }
+    ) -> Result<GrpcBreakerClient<T>, BreakerDomainError> {
+        Self::wrap_breaker(inner, GrpcBreakerConfig::default())
     }
 }

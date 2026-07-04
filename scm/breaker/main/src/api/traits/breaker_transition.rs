@@ -1,30 +1,22 @@
 //! Interface contract for the breaker state-transition logic.
 //!
-//! The implementation lives in `core::breaker_client`.  This file
-//! holds the trait that `core::breaker_transition` programs against —
-//! satisfies the layer-boundary check that every core/ submodule
-//! has an api/ counterpart.
+//! The implementation lives in `core::breaker_transition`.
 
-use crate::api::types::admission::Admission;
-use crate::api::types::breaker_node::BreakerNode;
-use crate::api::types::grpc_breaker_config::GrpcBreakerConfig;
-use crate::api::types::outcome::Outcome;
+use crate::api::error::breaker_domain_error::BreakerDomainError;
+use crate::api::types::admit_request::AdmitRequest;
+use crate::api::types::admit_response::AdmitResponse;
+use crate::api::types::record_outcome_request::RecordOutcomeRequest;
+use crate::api::types::record_outcome_response::RecordOutcomeResponse;
 
 /// Interface for the breaker's state-transition primitives.
-/// Implemented as associated functions in `core::breaker_transition`; this
-/// trait exists for the SEA layer-boundary check and as
-/// documentation of the contract.  Free-function impls don't
-/// instantiate the trait (Rust has no way to "implement" a
-/// trait of associated functions for a module), so the trait
-/// itself is unused at the type-system level.
-#[expect(
-    dead_code,
-    reason = "SEA api/ counterpart — structural anchor, not implemented by any type"
-)]
-pub trait BreakerTransition {
-    /// Decide whether to admit a new request.
-    fn admit(node: &mut BreakerNode, config: &GrpcBreakerConfig) -> Admission;
+pub trait BreakerTransition: Send + Sync {
+    /// Decide whether to admit a new request, promoting Open to HalfOpen
+    /// if the cool-down has elapsed.
+    fn admit(&self, req: AdmitRequest) -> Result<AdmitResponse, BreakerDomainError>;
 
-    /// Record the outcome of a dispatched request.
-    fn record(node: &mut BreakerNode, config: &GrpcBreakerConfig, outcome: Outcome);
+    /// Record the outcome of a dispatched request and return the updated node.
+    fn record(
+        &self,
+        req: RecordOutcomeRequest,
+    ) -> Result<RecordOutcomeResponse, BreakerDomainError>;
 }

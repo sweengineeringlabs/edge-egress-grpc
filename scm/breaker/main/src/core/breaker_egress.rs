@@ -1,42 +1,58 @@
 //! [`GrpcEgress`] impl for [`GrpcBreakerClient`].
 
-/// Impl unit — satisfies SEA rule 89 (core/ file must define a primary type).
-#[expect(
-    dead_code,
-    reason = "SEA structural marker — impl site anchor, not instantiated"
-)]
-pub(crate) struct BreakerEgress;
-
 use futures::future::BoxFuture;
 use swe_edge_egress_grpc::{
     GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcMessageStream, GrpcMetadata, GrpcRequest,
     GrpcResponse,
 };
 
-use crate::api::types::admission::Admission;
-use crate::api::types::grpc_breaker_client::GrpcBreakerClient;
-use crate::core::breaker_transition::BreakerTransition;
+use crate::api::{
+    Admission, AdmitRequest, BreakerTransition, GrpcBreakerClient, RecordOutcomeRequest,
+};
+use crate::core::breaker_transition::DefaultBreakerTransition;
 use crate::core::failure_classifier::FailureClassifier;
 
 impl<T: GrpcEgress + Send + Sync + 'static> GrpcEgress for GrpcBreakerClient<T> {
     fn call_unary(&self, request: GrpcRequest) -> BoxFuture<'_, GrpcEgressResult<GrpcResponse>> {
         Box::pin(async move {
-            let decision = {
-                let mut node = self.node.lock().await;
-                BreakerTransition::admit(&mut node, &self.config)
+            let node_snapshot = *self.node.lock().await;
+            let admit_resp = match DefaultBreakerTransition.admit(AdmitRequest {
+                node: node_snapshot,
+                config: (*self.config).clone(),
+            }) {
+                Ok(resp) => resp,
+                // BreakerDomainError is never actually constructed by admit();
+                // this branch exists only because the trait's signature is
+                // honest about the general Result contract.
+                Err(e) => {
+                    return Err(GrpcEgressError::Internal(format!(
+                        "grpc-breaker: admit failed unexpectedly: {e}"
+                    )))
+                }
             };
+            *self.node.lock().await = admit_resp.node;
 
-            match decision {
+            match admit_resp.admission {
                 Admission::RejectOpen => Err(GrpcEgressError::Unavailable(
                     "grpc-breaker: circuit open, request short-circuited".into(),
                 )),
                 Admission::Proceed => {
                     let result = self.inner.call_unary(request).await;
                     let outcome = FailureClassifier::classify(&result);
-                    {
-                        let mut node = self.node.lock().await;
-                        BreakerTransition::record(&mut node, &self.config, outcome);
-                    }
+                    let node_snapshot = *self.node.lock().await;
+                    let record_resp = match DefaultBreakerTransition.record(RecordOutcomeRequest {
+                        node: node_snapshot,
+                        config: (*self.config).clone(),
+                        outcome,
+                    }) {
+                        Ok(resp) => resp,
+                        Err(e) => {
+                            return Err(GrpcEgressError::Internal(format!(
+                                "grpc-breaker: record failed unexpectedly: {e}"
+                            )))
+                        }
+                    };
+                    *self.node.lock().await = record_resp.node;
                     result
                 }
             }

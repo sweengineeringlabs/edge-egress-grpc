@@ -250,7 +250,8 @@ async fn test_intermittent_success_keeps_breaker_closed() {
 #[test]
 fn test_create_breaker_client_wraps_inner_with_default_config() {
     let inner = Shared(Arc::new(ToggleClient::new(0)));
-    let client = GrpcBreakerSvc::create_breaker_client(inner);
+    let client =
+        GrpcBreakerSvc::create_breaker_client(inner).expect("create_breaker_client is infallible");
     let default_cfg = GrpcBreakerConfig::default();
     assert_eq!(
         client.config().failure_threshold,
@@ -276,7 +277,7 @@ fn test_wrap_breaker_produces_client_with_supplied_config() {
     };
     let threshold = cfg.failure_threshold;
     let inner = Shared(Arc::new(ToggleClient::new(0)));
-    let client = GrpcBreakerSvc::wrap_breaker(inner, cfg);
+    let client = GrpcBreakerSvc::wrap_breaker(inner, cfg).expect("wrap_breaker is infallible");
     drop(client);
     assert_eq!(threshold, 3);
 }
@@ -290,6 +291,7 @@ struct AbsentSectionProbe {
 #[test]
 fn test_create_config_builder_builds_loader() {
     let loader = GrpcBreakerSvc::create_config_builder()
+        .expect("create_config_builder is infallible")
         .build_loader()
         .expect("a builder pre-seeded with name and version must build a valid loader");
     // In a test environment there is no application.toml at any configured
