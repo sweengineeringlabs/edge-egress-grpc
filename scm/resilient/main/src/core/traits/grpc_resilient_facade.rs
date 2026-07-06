@@ -1,4 +1,6 @@
-﻿//! gRPC resilient SAF — factory methods on [`GrpcResilientSvc`].
+//! `impl GrpcResilientFacade` — composes this crate's default trait
+//! implementations directly (no saf/ dependency, keeping core/ → saf/
+//! import-free per the SEA dependency direction).
 
 use std::sync::Arc;
 
@@ -6,19 +8,18 @@ use swe_edge_egress_grpc::{GrpcChannelConfig, GrpcEgress, TransportSvc};
 use swe_edge_egress_grpc_breaker::{GrpcBreakerClient, GrpcBreakerConfig};
 use swe_edge_egress_grpc_retry::{GrpcRetryClient, GrpcRetryConfig};
 
-pub use crate::api::error::resilient_transport_error::ResilientTransportError;
-pub use crate::api::traits::{Processor, Validator};
-pub use crate::api::types::grpc_resilient_svc::GrpcResilientSvc;
+use crate::api::{
+    ApplicationConfigBuilder, ConfigBuilderProvider, ConfigBuilderRequest, ConfigValidationRequest,
+    GrpcResilientFacade, GrpcResilientSvc, ResilienceConfig, ResilientTransportError, Validator,
+};
+use crate::core::traits::default_validator::DefaultValidator;
 
-pub use crate::api::ApplicationConfigBuilder;
-
-impl GrpcResilientSvc {
+impl GrpcResilientFacade {
     /// Return a config builder pre-seeded with this crate's name and version.
-    pub fn create_config_builder() -> swe_edge_configbuilder::ConfigBuilderImpl {
-        let mut b = swe_edge_configbuilder::ConfigBuilderImpl::new();
-        b = b.with_name(env!("CARGO_PKG_NAME"));
-        b = b.with_version(env!("CARGO_PKG_VERSION"));
-        b
+    pub fn create_config_builder() -> Result<ApplicationConfigBuilder, ResilientTransportError> {
+        Ok(GrpcResilientSvc
+            .create_config_builder(ConfigBuilderRequest)?
+            .builder)
     }
 
     /// Build a resilient outbound gRPC transport from a [`GrpcChannelConfig`].
@@ -33,8 +34,9 @@ impl GrpcResilientSvc {
         match &config.resilience {
             None => Ok(Arc::new(base)),
             Some(r) => {
-                TransportSvc::validate_resilience_config(r)
-                    .map_err(ResilientTransportError::InvalidResilience)?;
+                DefaultValidator.validate(ConfigValidationRequest {
+                    config: ResilienceConfig(r.clone()),
+                })?;
 
                 let retry_cfg = GrpcRetryConfig {
                     max_attempts: r.max_attempts,

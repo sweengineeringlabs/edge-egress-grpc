@@ -1,3 +1,3 @@
-//! Core layer — trait impls for `GrpcResilientSvc`.
+//! Core layer — trait impls for `GrpcResilientSvc` + the assembly facade.
 
-pub(crate) mod default_processor;
+pub(crate) mod traits;
