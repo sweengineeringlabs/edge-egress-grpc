@@ -2,8 +2,8 @@
 
 use futures::future::BoxFuture;
 use swe_edge_egress_grpc::{
-    GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcMessageStream, GrpcMetadata, GrpcRequest,
-    GrpcResponse,
+    CallStreamRequest, GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcMessageStream,
+    GrpcRequest, GrpcResponse, HealthCheckRequest,
 };
 
 use crate::api::{
@@ -87,14 +87,12 @@ impl<T: GrpcEgress + Send + Sync + 'static> GrpcEgress for GrpcBreakerClient<T> 
 
     fn call_stream(
         &self,
-        method: String,
-        metadata: GrpcMetadata,
-        messages: GrpcMessageStream,
+        req: CallStreamRequest,
     ) -> BoxFuture<'_, GrpcEgressResult<GrpcMessageStream>> {
-        self.inner.call_stream(method, metadata, messages)
+        self.inner.call_stream(req)
     }
 
-    fn health_check(&self) -> BoxFuture<'_, GrpcEgressResult<()>> {
-        self.inner.health_check()
+    fn health_check(&self, req: HealthCheckRequest) -> BoxFuture<'_, GrpcEgressResult<()>> {
+        self.inner.health_check(req)
     }
 }

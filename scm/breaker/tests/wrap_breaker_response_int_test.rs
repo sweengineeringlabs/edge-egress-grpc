@@ -6,7 +6,8 @@ use std::sync::Arc;
 
 use futures::future::BoxFuture;
 use swe_edge_egress_grpc::{
-    GrpcEgress, GrpcEgressResult, GrpcMessageStream, GrpcMetadata, GrpcRequest, GrpcResponse,
+    CallStreamRequest, GrpcEgress, GrpcEgressResult, GrpcMessageStream, GrpcMetadata, GrpcRequest,
+    GrpcResponse, HealthCheckRequest,
 };
 use swe_edge_egress_grpc_breaker::WrapBreakerResponse;
 
@@ -22,13 +23,11 @@ impl GrpcEgress for EchoGrpcEgress {
     }
     fn call_stream(
         &self,
-        _method: String,
-        _metadata: GrpcMetadata,
-        _messages: GrpcMessageStream,
+        _req: CallStreamRequest,
     ) -> BoxFuture<'_, GrpcEgressResult<GrpcMessageStream>> {
         unimplemented!("not exercised by this test")
     }
-    fn health_check(&self) -> BoxFuture<'_, GrpcEgressResult<()>> {
+    fn health_check(&self, _req: HealthCheckRequest) -> BoxFuture<'_, GrpcEgressResult<()>> {
         Box::pin(async { Ok(()) })
     }
 }
@@ -57,7 +56,7 @@ fn test_wrap_breaker_response_health_check_error() {
         _inner: PhantomData,
     };
     let rt = tokio::runtime::Runtime::new().expect("runtime");
-    let result = rt.block_on(resp.client.health_check());
+    let result = rt.block_on(resp.client.health_check(HealthCheckRequest));
     result.expect("health check must succeed for a healthy stub");
 }
 

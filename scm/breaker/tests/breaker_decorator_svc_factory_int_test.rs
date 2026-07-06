@@ -3,7 +3,8 @@
 
 use futures::future::BoxFuture;
 use swe_edge_egress_grpc::{
-    GrpcEgress, GrpcEgressResult, GrpcMessageStream, GrpcMetadata, GrpcRequest, GrpcResponse,
+    CallStreamRequest, GrpcEgress, GrpcEgressResult, GrpcMessageStream, GrpcMetadata, GrpcRequest,
+    GrpcResponse, HealthCheckRequest,
 };
 use swe_edge_egress_grpc_breaker::{
     BreakerDecoratorFactory, GrpcBreakerConfig, WrapBreakerRequest,
@@ -21,13 +22,11 @@ impl GrpcEgress for EchoGrpcEgress {
     }
     fn call_stream(
         &self,
-        _method: String,
-        _metadata: GrpcMetadata,
-        messages: GrpcMessageStream,
+        req: CallStreamRequest,
     ) -> BoxFuture<'_, GrpcEgressResult<GrpcMessageStream>> {
-        Box::pin(async move { Ok(messages) })
+        Box::pin(async move { Ok(req.messages) })
     }
-    fn health_check(&self) -> BoxFuture<'_, GrpcEgressResult<()>> {
+    fn health_check(&self, _req: HealthCheckRequest) -> BoxFuture<'_, GrpcEgressResult<()>> {
         Box::pin(async { Ok(()) })
     }
 }

@@ -1,30 +1,33 @@
 //! `GrpcEgress` trait — makes outbound gRPC calls.
 
-use edge_domain::SecurityContext;
 use futures::future::BoxFuture;
 
 use crate::api::error::GrpcEgressError;
-use crate::api::types::GrpcEgressResult;
 use crate::api::types::GrpcMessageStream;
-use crate::api::types::{GrpcMetadata, GrpcRequest, GrpcResponse, GrpcStatusCode};
+use crate::api::types::{
+    CallStreamRequest, CallUnaryWithContextRequest, GrpcRequest, GrpcResponse, GrpcStatusCode,
+    HealthCheckRequest,
+};
 
 /// Makes outbound gRPC calls to remote services.
 pub trait GrpcEgress: Send + Sync {
     /// Send a single unary gRPC request and receive a single response.
-    fn call_unary(&self, request: GrpcRequest) -> BoxFuture<'_, GrpcEgressResult<GrpcResponse>>;
+    fn call_unary(
+        &self,
+        request: GrpcRequest,
+    ) -> BoxFuture<'_, Result<GrpcResponse, GrpcEgressError>>;
 
     /// Send a single unary gRPC request, propagating the caller's security context.
     ///
-    /// The default implementation delegates to [`call_unary`] and ignores `_ctx`.
+    /// The default implementation delegates to [`call_unary`] and ignores the context.
     /// Override to inject context-derived metadata (e.g. `x-trace-id`, JWT forwarding).
     ///
     /// [`call_unary`]: GrpcEgress::call_unary
     fn call_unary_with_context(
         &self,
-        request: GrpcRequest,
-        _ctx: SecurityContext,
-    ) -> BoxFuture<'_, GrpcEgressResult<GrpcResponse>> {
-        self.call_unary(request)
+        req: CallUnaryWithContextRequest,
+    ) -> BoxFuture<'_, Result<GrpcResponse, GrpcEgressError>> {
+        self.call_unary(req.request)
     }
 
     /// Send a streaming gRPC request and receive a response stream.
@@ -32,11 +35,9 @@ pub trait GrpcEgress: Send + Sync {
     /// The default implementation returns `Unimplemented` — override to enable streaming.
     fn call_stream(
         &self,
-        method: String,
-        metadata: GrpcMetadata,
-        messages: GrpcMessageStream,
-    ) -> BoxFuture<'_, GrpcEgressResult<GrpcMessageStream>> {
-        let _ = (method, metadata, messages);
+        req: CallStreamRequest,
+    ) -> BoxFuture<'_, Result<GrpcMessageStream, GrpcEgressError>> {
+        let _ = req;
         Box::pin(futures::future::ready(Err(GrpcEgressError::Status(
             GrpcStatusCode::Unimplemented,
             "streaming not supported".into(),
@@ -50,7 +51,7 @@ pub trait GrpcEgress: Send + Sync {
     fn call_server_stream(
         &self,
         request: GrpcRequest,
-    ) -> BoxFuture<'_, GrpcEgressResult<GrpcMessageStream>> {
+    ) -> BoxFuture<'_, Result<GrpcMessageStream, GrpcEgressError>> {
         let _ = request;
         Box::pin(futures::future::ready(Err(GrpcEgressError::Status(
             GrpcStatusCode::Unimplemented,
@@ -64,11 +65,9 @@ pub trait GrpcEgress: Send + Sync {
     /// client-streaming.
     fn call_client_stream(
         &self,
-        method: String,
-        metadata: GrpcMetadata,
-        messages: GrpcMessageStream,
-    ) -> BoxFuture<'_, GrpcEgressResult<GrpcResponse>> {
-        let _ = (method, metadata, messages);
+        req: CallStreamRequest,
+    ) -> BoxFuture<'_, Result<GrpcResponse, GrpcEgressError>> {
+        let _ = req;
         Box::pin(futures::future::ready(Err(GrpcEgressError::Status(
             GrpcStatusCode::Unimplemented,
             "client streaming not supported".into(),
@@ -82,13 +81,11 @@ pub trait GrpcEgress: Send + Sync {
     /// [`call_stream`]: GrpcEgress::call_stream
     fn call_bidi_stream(
         &self,
-        method: String,
-        metadata: GrpcMetadata,
-        messages: GrpcMessageStream,
-    ) -> BoxFuture<'_, GrpcEgressResult<GrpcMessageStream>> {
-        self.call_stream(method, metadata, messages)
+        req: CallStreamRequest,
+    ) -> BoxFuture<'_, Result<GrpcMessageStream, GrpcEgressError>> {
+        self.call_stream(req)
     }
 
     /// Check that the remote endpoint is reachable.
-    fn health_check(&self) -> BoxFuture<'_, GrpcEgressResult<()>>;
+    fn health_check(&self, req: HealthCheckRequest) -> BoxFuture<'_, Result<(), GrpcEgressError>>;
 }

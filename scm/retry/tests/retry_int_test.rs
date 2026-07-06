@@ -12,7 +12,7 @@ use std::time::{Duration, Instant};
 use futures::future::BoxFuture;
 use swe_edge_egress_grpc::{
     GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcMetadata, GrpcRequest, GrpcResponse,
-    GrpcStatusCode,
+    GrpcStatusCode, HealthCheckRequest,
 };
 use swe_edge_egress_grpc_retry::{GrpcRetryClient, GrpcRetryConfig, GrpcRetryFacade};
 
@@ -83,7 +83,7 @@ impl GrpcEgress for SharedClient<ScriptedClient> {
         Box::pin(async move { inner.dispatch().await })
     }
 
-    fn health_check(&self) -> BoxFuture<'_, GrpcEgressResult<()>> {
+    fn health_check(&self, _req: HealthCheckRequest) -> BoxFuture<'_, GrpcEgressResult<()>> {
         Box::pin(async { Ok(()) })
     }
 }
@@ -356,7 +356,7 @@ async fn test_retry_honors_caller_deadline_as_total_budget() {
                 ))
             })
         }
-        fn health_check(&self) -> BoxFuture<'_, GrpcEgressResult<()>> {
+        fn health_check(&self, _req: HealthCheckRequest) -> BoxFuture<'_, GrpcEgressResult<()>> {
             Box::pin(async { Ok(()) })
         }
     }

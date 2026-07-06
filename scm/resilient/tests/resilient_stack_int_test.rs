@@ -15,7 +15,7 @@ use std::time::Duration;
 use futures::future::BoxFuture;
 use swe_edge_egress_grpc::{
     GrpcChannelConfig, GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcMetadata, GrpcRequest,
-    GrpcResponse, GrpcStatusCode, ResilienceConfig,
+    GrpcResponse, GrpcStatusCode, HealthCheckRequest, ResilienceConfig,
 };
 use swe_edge_egress_grpc_breaker::{BreakerState, GrpcBreakerClient, GrpcBreakerConfig};
 use swe_edge_egress_grpc_resilient::{GrpcResilientFacade, ResilientTransportError};
@@ -115,7 +115,7 @@ impl GrpcEgress for CountingMock {
         Box::pin(futures::future::ready(result))
     }
 
-    fn health_check(&self) -> BoxFuture<'_, GrpcEgressResult<()>> {
+    fn health_check(&self, _req: HealthCheckRequest) -> BoxFuture<'_, GrpcEgressResult<()>> {
         Box::pin(futures::future::ready(Ok(())))
     }
 }
@@ -145,7 +145,7 @@ async fn test_create_resilient_transport_from_config_without_resilience_returns_
         .expect("assembly must succeed for a valid plaintext config");
     // Nothing listens on 127.0.0.1:50051 in the test environment, so a real
     // call must genuinely fail — proves this is a connectable client, not a stub.
-    let health = transport.health_check().await;
+    let health = transport.health_check(HealthCheckRequest).await;
     assert!(
         matches!(health, Err(GrpcEgressError::Unavailable(_))),
         "health_check against an unbound port must report Unavailable, got: {health:?}"
@@ -161,7 +161,7 @@ async fn test_create_resilient_transport_from_config_with_valid_resilience_retur
         .with_resilience(valid_resilience());
     let transport = GrpcResilientFacade::create_resilient_transport_from_config(&config)
         .expect("assembly must succeed for a valid resilience config");
-    let health = transport.health_check().await;
+    let health = transport.health_check(HealthCheckRequest).await;
     assert!(
         matches!(health, Err(GrpcEgressError::Unavailable(_))),
         "health_check against an unbound port must report Unavailable, got: {health:?}"

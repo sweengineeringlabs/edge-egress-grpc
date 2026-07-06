@@ -6,7 +6,7 @@
 //! produce a genuinely connectable `GrpcEgress`, not merely compile.
 
 use swe_edge_egress_grpc_transport::{
-    CompressionMode, GrpcEgress, GrpcEgressError, GrpcEgressInterceptorChain,
+    CompressionMode, GrpcEgress, GrpcEgressError, GrpcEgressInterceptorChain, HealthCheckRequest,
     TonicGrpcClientBuilder,
 };
 
@@ -22,7 +22,7 @@ fn ensure_rustls_provider() {
 /// health_check() call must genuinely fail — proves the built client is a
 /// real, connectable GrpcEgress wired to the given base_uri, not a stub.
 async fn assert_genuinely_connectable(client: impl GrpcEgress) {
-    let health = client.health_check().await;
+    let health = client.health_check(HealthCheckRequest).await;
     assert!(
         matches!(health, Err(GrpcEgressError::Unavailable(_))),
         "health_check against an unbound port must report Unavailable, got: {health:?}"

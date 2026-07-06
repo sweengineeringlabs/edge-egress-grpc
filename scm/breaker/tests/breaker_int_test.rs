@@ -8,7 +8,7 @@ use std::time::Duration;
 use futures::future::BoxFuture;
 use swe_edge_egress_grpc::{
     GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcMetadata, GrpcRequest, GrpcResponse,
-    GrpcStatusCode,
+    GrpcStatusCode, HealthCheckRequest,
 };
 use swe_edge_egress_grpc_breaker::{
     BreakerState, GrpcBreakerClient, GrpcBreakerConfig, GrpcBreakerFacade,
@@ -67,7 +67,7 @@ impl GrpcEgress for Shared {
             }
         })
     }
-    fn health_check(&self) -> BoxFuture<'_, GrpcEgressResult<()>> {
+    fn health_check(&self, _req: HealthCheckRequest) -> BoxFuture<'_, GrpcEgressResult<()>> {
         Box::pin(async { Ok(()) })
     }
 }

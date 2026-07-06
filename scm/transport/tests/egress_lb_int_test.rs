@@ -3,7 +3,7 @@
 
 use std::time::Duration;
 
-use swe_edge_egress_grpc_transport::{TonicLbGrpcClient, TransportSvc};
+use swe_edge_egress_grpc_transport::{HealthCheckRequest, TonicLbGrpcClient, TransportSvc};
 use swe_edge_loadbalancer::{BackendConfig, LoadbalancerConfig, Strategy};
 
 fn one_backend_config(url: &str) -> LoadbalancerConfig {
@@ -93,5 +93,5 @@ async fn test_health_check_with_healthy_pool_returns_ok() {
     let client = TonicLbGrpcClient::from_config(config).unwrap();
     // Pool has one healthy backend — health_check only probes pool membership,
     // no network call is made.
-    assert!(client.health_check().await.is_ok());
+    assert!(client.health_check(HealthCheckRequest).await.is_ok());
 }

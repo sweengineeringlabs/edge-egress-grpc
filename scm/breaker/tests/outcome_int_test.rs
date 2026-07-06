@@ -8,7 +8,9 @@
 use std::time::Duration;
 
 use futures::future::BoxFuture;
-use swe_edge_egress_grpc::{GrpcEgress, GrpcEgressResult, GrpcMetadata, GrpcRequest, GrpcResponse};
+use swe_edge_egress_grpc::{
+    GrpcEgress, GrpcEgressResult, GrpcMetadata, GrpcRequest, GrpcResponse, HealthCheckRequest,
+};
 use swe_edge_egress_grpc_breaker::{BreakerState, GrpcBreakerClient, GrpcBreakerConfig};
 
 /// Always-succeeding inner client so a real `Outcome::Success` is recorded.
@@ -22,7 +24,7 @@ impl GrpcEgress for AlwaysOk {
             })
         })
     }
-    fn health_check(&self) -> BoxFuture<'_, GrpcEgressResult<()>> {
+    fn health_check(&self, _req: HealthCheckRequest) -> BoxFuture<'_, GrpcEgressResult<()>> {
         Box::pin(async { Ok(()) })
     }
 }

@@ -15,8 +15,9 @@ use http_body_util::{BodyExt as _, Full, StreamBody};
 
 use edge_domain::SecurityContext;
 use swe_edge_egress_grpc_transport::{
-    GrpcChannelConfig, GrpcEgress, GrpcEgressError, GrpcMessageStream, GrpcMetadata, GrpcRequest,
-    GrpcResponse, GrpcStatusCode, TransportSvc,
+    CallStreamRequest, CallUnaryWithContextRequest, GrpcChannelConfig, GrpcEgress, GrpcEgressError,
+    GrpcMessageStream, GrpcMetadata, GrpcRequest, GrpcResponse, GrpcStatusCode, HealthCheckRequest,
+    TransportSvc,
 };
 
 fn make_client(addr: SocketAddr) -> Arc<dyn GrpcEgress> {
@@ -314,7 +315,11 @@ async fn transport_struct_call_stream_sends_multiple_frames_and_receives_stream(
     ]));
 
     let mut resp_stream = client
-        .call_stream("echo/Echo".into(), GrpcMetadata::default(), messages)
+        .call_stream(CallStreamRequest {
+            method: "echo/Echo".into(),
+            metadata: GrpcMetadata::default(),
+            messages,
+        })
         .await
         .expect("call_stream should succeed");
 
@@ -341,7 +346,7 @@ async fn transport_struct_health_check_succeeds_when_server_is_listening() {
     ensure_rustls_provider();
     let client = make_client(addr);
     client
-        .health_check()
+        .health_check(HealthCheckRequest)
         .await
         .expect("health_check should succeed when port is open");
 }
@@ -358,7 +363,7 @@ async fn transport_struct_health_check_fails_when_no_server_is_listening() {
 
     ensure_rustls_provider();
     let client = make_client(addr);
-    let result = client.health_check().await;
+    let result = client.health_check(HealthCheckRequest).await;
     assert!(
         result.is_err(),
         "expected Err when nothing is listening, got Ok"
@@ -650,7 +655,7 @@ async fn transport_struct_call_unary_with_context_delegates_to_call_unary_and_ec
     let ctx = SecurityContext::unauthenticated();
 
     let resp = client
-        .call_unary_with_context(req, ctx)
+        .call_unary_with_context(CallUnaryWithContextRequest { request: req, ctx })
         .await
         .expect("call_unary_with_context should succeed against echo server");
 
@@ -682,7 +687,7 @@ async fn transport_struct_call_unary_with_context_accepts_authenticated_context(
         .with_claim("role", "admin");
 
     let resp = client
-        .call_unary_with_context(req, ctx)
+        .call_unary_with_context(CallUnaryWithContextRequest { request: req, ctx })
         .await
         .expect("call_unary_with_context must succeed with authenticated-like context");
 
@@ -708,7 +713,9 @@ async fn transport_struct_call_unary_with_context_propagates_grpc_error_status()
     let req = GrpcRequest::new("echo/Echo", b"ping".to_vec(), Duration::from_secs(5));
     let ctx = SecurityContext::unauthenticated();
 
-    let result = client.call_unary_with_context(req, ctx).await;
+    let result = client
+        .call_unary_with_context(CallUnaryWithContextRequest { request: req, ctx })
+        .await;
     assert!(
         result.is_err(),
         "call_unary_with_context must propagate grpc-status 13 as Err; got Ok"
@@ -738,7 +745,9 @@ async fn transport_struct_call_unary_with_context_returns_timeout_when_server_st
     let req = GrpcRequest::new("svc/Method", b"ping".to_vec(), Duration::from_millis(80));
     let ctx = SecurityContext::unauthenticated();
 
-    let result = client.call_unary_with_context(req, ctx).await;
+    let result = client
+        .call_unary_with_context(CallUnaryWithContextRequest { request: req, ctx })
+        .await;
     assert!(
         matches!(result, Err(GrpcEgressError::Timeout(_))),
         "call_unary_with_context must propagate Timeout from call_unary; got {result:?}"
@@ -764,7 +773,9 @@ async fn transport_struct_call_unary_with_context_returns_connection_failed_when
     let req = GrpcRequest::new("svc/Method", b"ping".to_vec(), Duration::from_secs(5));
     let ctx = SecurityContext::unauthenticated();
 
-    let result = client.call_unary_with_context(req, ctx).await;
+    let result = client
+        .call_unary_with_context(CallUnaryWithContextRequest { request: req, ctx })
+        .await;
     assert!(
         matches!(result, Err(GrpcEgressError::ConnectionFailed(_))),
         "call_unary_with_context must propagate ConnectionFailed; got {result:?}"
@@ -810,7 +821,11 @@ async fn transport_struct_call_unary_sanitizes_internal_error_message_on_truncat
     // call_stream is the path that decodes frames and surfaces the truncation.
     let messages: GrpcMessageStream = Box::pin(stream::iter(vec![Ok(b"x".to_vec())]));
     let result = client
-        .call_stream("svc/Method".into(), GrpcMetadata::default(), messages)
+        .call_stream(CallStreamRequest {
+            method: "svc/Method".into(),
+            metadata: GrpcMetadata::default(),
+            messages,
+        })
         .await;
     let err = match result {
         Ok(_) => panic!("expected an error from a truncated server response, got Ok"),
@@ -880,7 +895,11 @@ async fn transport_struct_call_client_stream_sends_multiple_frames_and_receives_
         Ok(b"frame-2".to_vec()),
     ]));
     let response = client
-        .call_client_stream("svc/ClientStream".into(), GrpcMetadata::default(), messages)
+        .call_client_stream(CallStreamRequest {
+            method: "svc/ClientStream".into(),
+            metadata: GrpcMetadata::default(),
+            messages,
+        })
         .await
         .expect("call_client_stream must succeed against echo server");
 
@@ -905,7 +924,11 @@ async fn transport_struct_call_bidi_stream_sends_multiple_frames_and_receives_st
         Ok(b"beta".to_vec()),
     ]));
     let mut stream = client
-        .call_bidi_stream("svc/Bidi".into(), GrpcMetadata::default(), messages)
+        .call_bidi_stream(CallStreamRequest {
+            method: "svc/Bidi".into(),
+            metadata: GrpcMetadata::default(),
+            messages,
+        })
         .await
         .expect("call_bidi_stream must succeed against echo server");
 

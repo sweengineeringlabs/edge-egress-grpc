@@ -211,7 +211,10 @@ impl GrpcEgress for TonicLbGrpcClient {
         })
     }
 
-    fn health_check(&self) -> BoxFuture<'_, GrpcEgressResult<()>> {
+    fn health_check(
+        &self,
+        _req: crate::api::types::HealthCheckRequest,
+    ) -> BoxFuture<'_, GrpcEgressResult<()>> {
         let pool = Arc::clone(&self.pool);
         Box::pin(async move {
             select_backend(&pool)

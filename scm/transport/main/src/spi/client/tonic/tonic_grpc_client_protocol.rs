@@ -327,7 +327,7 @@ impl TonicGrpcClientProtocol {
 impl crate::api::traits::processor::Processor for TonicGrpcClient {
     fn process(&self) -> futures::future::BoxFuture<'_, Result<(), GrpcEgressError>> {
         // Default: verify the endpoint is reachable — a no-op health probe.
-        Box::pin(self.health_check())
+        Box::pin(self.health_check(crate::api::types::HealthCheckRequest))
     }
 
     fn describe(&self) -> &'static str {
@@ -461,10 +461,13 @@ impl GrpcEgress for TonicGrpcClient {
     /// `timeout`.  Phase 2 will plumb a `GrpcRequest`-shaped streaming envelope.
     fn call_stream(
         &self,
-        method: String,
-        metadata: GrpcMetadata,
-        messages: GrpcMessageStream,
+        req: crate::api::types::CallStreamRequest,
     ) -> BoxFuture<'_, GrpcEgressResult<GrpcMessageStream>> {
+        let crate::api::types::CallStreamRequest {
+            method,
+            metadata,
+            messages,
+        } = req;
         let method = method.trim_start_matches('/');
         let uri_str = format!("{}/{}", self.base_uri.trim_end_matches('/'), method);
 
@@ -582,10 +585,13 @@ impl GrpcEgress for TonicGrpcClient {
     /// Send a client-streaming request — multiple request frames, single response.
     fn call_client_stream(
         &self,
-        method: String,
-        metadata: GrpcMetadata,
-        messages: GrpcMessageStream,
+        req: crate::api::types::CallStreamRequest,
     ) -> BoxFuture<'_, GrpcEgressResult<GrpcResponse>> {
+        let crate::api::types::CallStreamRequest {
+            method,
+            metadata,
+            messages,
+        } = req;
         let method_path = method.trim_start_matches('/').to_owned();
         let uri_str = format!("{}/{}", self.base_uri.trim_end_matches('/'), method_path);
         let deadline = self.timeout;
@@ -667,14 +673,15 @@ impl GrpcEgress for TonicGrpcClient {
     /// [`call_stream`]: GrpcEgress::call_stream
     fn call_bidi_stream(
         &self,
-        method: String,
-        metadata: GrpcMetadata,
-        messages: GrpcMessageStream,
+        req: crate::api::types::CallStreamRequest,
     ) -> BoxFuture<'_, GrpcEgressResult<GrpcMessageStream>> {
-        self.call_stream(method, metadata, messages)
+        self.call_stream(req)
     }
 
-    fn health_check(&self) -> BoxFuture<'_, GrpcEgressResult<()>> {
+    fn health_check(
+        &self,
+        _req: crate::api::types::HealthCheckRequest,
+    ) -> BoxFuture<'_, GrpcEgressResult<()>> {
         let base_uri = self.base_uri.clone();
 
         Box::pin(async move {

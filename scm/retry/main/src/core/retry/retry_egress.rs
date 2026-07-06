@@ -4,8 +4,8 @@ use std::time::Instant;
 
 use futures::future::BoxFuture;
 use swe_edge_egress_grpc::{
-    GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcMessageStream, GrpcMetadata, GrpcRequest,
-    GrpcResponse,
+    CallStreamRequest, GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcMessageStream,
+    GrpcRequest, GrpcResponse, HealthCheckRequest,
 };
 use tracing::{debug, trace, warn};
 
@@ -20,15 +20,13 @@ impl<T: GrpcEgress + Send + Sync + 'static> GrpcEgress for GrpcRetryClient<T> {
 
     fn call_stream(
         &self,
-        method: String,
-        metadata: GrpcMetadata,
-        messages: GrpcMessageStream,
+        req: CallStreamRequest,
     ) -> BoxFuture<'_, GrpcEgressResult<GrpcMessageStream>> {
-        self.inner.call_stream(method, metadata, messages)
+        self.inner.call_stream(req)
     }
 
-    fn health_check(&self) -> BoxFuture<'_, GrpcEgressResult<()>> {
-        self.inner.health_check()
+    fn health_check(&self, req: HealthCheckRequest) -> BoxFuture<'_, GrpcEgressResult<()>> {
+        self.inner.health_check(req)
     }
 }
 
@@ -187,13 +185,11 @@ mod tests {
         }
         fn call_stream(
             &self,
-            _method: String,
-            _metadata: GrpcMetadata,
-            messages: GrpcMessageStream,
+            req: CallStreamRequest,
         ) -> BoxFuture<'_, GrpcEgressResult<GrpcMessageStream>> {
-            Box::pin(async move { Ok(messages) })
+            Box::pin(async move { Ok(req.messages) })
         }
-        fn health_check(&self) -> BoxFuture<'_, GrpcEgressResult<()>> {
+        fn health_check(&self, _req: HealthCheckRequest) -> BoxFuture<'_, GrpcEgressResult<()>> {
             Box::pin(async { Ok(()) })
         }
     }

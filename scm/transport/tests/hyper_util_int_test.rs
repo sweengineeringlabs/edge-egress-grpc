@@ -15,7 +15,9 @@ use std::time::Duration;
 use http_body_util::Full;
 use hyper_util::rt::{TokioExecutor, TokioIo};
 
-use swe_edge_egress_grpc_transport::{GrpcChannelConfig, GrpcRequest, TransportSvc};
+use swe_edge_egress_grpc_transport::{
+    GrpcChannelConfig, GrpcRequest, HealthCheckRequest, TransportSvc,
+};
 
 fn ensure_rustls_provider() {
     use std::sync::Once;
@@ -122,7 +124,7 @@ async fn transport_struct_hyper_util_tokio_io_adapts_tcp_stream_for_http2_handsh
 
     // health_check opens a TCP connection — proves TokioIo wrapping works.
     client
-        .health_check()
+        .health_check(HealthCheckRequest)
         .await
         .expect("health_check should succeed — TokioIo TCP adapter is functional");
 }

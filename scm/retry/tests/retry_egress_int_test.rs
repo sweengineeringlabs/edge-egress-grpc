@@ -4,7 +4,8 @@
 
 use futures::future::BoxFuture;
 use swe_edge_egress_grpc::{
-    GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcMetadata, GrpcRequest, GrpcResponse,
+    CallStreamRequest, GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcMetadata, GrpcRequest,
+    GrpcResponse, HealthCheckRequest,
 };
 use swe_edge_egress_grpc_retry::{GrpcRetryClient, GrpcRetryConfig};
 
@@ -15,13 +16,11 @@ impl GrpcEgress for AlwaysFail {
     }
     fn call_stream(
         &self,
-        _method: String,
-        _metadata: GrpcMetadata,
-        messages: swe_edge_egress_grpc::GrpcMessageStream,
+        req: CallStreamRequest,
     ) -> BoxFuture<'_, GrpcEgressResult<swe_edge_egress_grpc::GrpcMessageStream>> {
-        Box::pin(async move { Ok(messages) })
+        Box::pin(async move { Ok(req.messages) })
     }
-    fn health_check(&self) -> BoxFuture<'_, GrpcEgressResult<()>> {
+    fn health_check(&self, _req: HealthCheckRequest) -> BoxFuture<'_, GrpcEgressResult<()>> {
         Box::pin(async { Ok(()) })
     }
 }
@@ -33,13 +32,11 @@ impl GrpcEgress for UnhealthyInner {
     }
     fn call_stream(
         &self,
-        _method: String,
-        _metadata: GrpcMetadata,
-        messages: swe_edge_egress_grpc::GrpcMessageStream,
+        req: CallStreamRequest,
     ) -> BoxFuture<'_, GrpcEgressResult<swe_edge_egress_grpc::GrpcMessageStream>> {
-        Box::pin(async move { Ok(messages) })
+        Box::pin(async move { Ok(req.messages) })
     }
-    fn health_check(&self) -> BoxFuture<'_, GrpcEgressResult<()>> {
+    fn health_check(&self, _req: HealthCheckRequest) -> BoxFuture<'_, GrpcEgressResult<()>> {
         Box::pin(async { Err(GrpcEgressError::Unavailable("unhealthy".into())) })
     }
 }
@@ -73,12 +70,15 @@ async fn test_call_unary_exhausts_single_attempt_and_reports_unavailable_happy()
 #[tokio::test]
 async fn test_health_check_delegates_to_inner_error() {
     let healthy = GrpcRetryClient::new(AlwaysFail, no_retry_config());
-    assert!(matches!(healthy.health_check().await, Ok(())));
+    assert!(matches!(
+        healthy.health_check(HealthCheckRequest).await,
+        Ok(())
+    ));
     // Negative counterpart: an unhealthy inner must surface as unhealthy —
     // proves this genuinely delegates rather than always returning Ok.
     let unhealthy = GrpcRetryClient::new(UnhealthyInner, no_retry_config());
     assert!(matches!(
-        unhealthy.health_check().await,
+        unhealthy.health_check(HealthCheckRequest).await,
         Err(GrpcEgressError::Unavailable(_))
     ));
 }
@@ -90,7 +90,11 @@ async fn test_call_stream_delegates_to_inner_edge() {
     let messages: swe_edge_egress_grpc::GrpcMessageStream =
         Box::pin(futures::stream::empty::<GrpcEgressResult<Vec<u8>>>());
     let result = client
-        .call_stream("svc/M".into(), GrpcMetadata::default(), messages)
+        .call_stream(CallStreamRequest {
+            method: "svc/M".into(),
+            metadata: GrpcMetadata::default(),
+            messages,
+        })
         .await;
     assert!(result.is_ok(), "AlwaysFail's call_stream always succeeds");
 }

@@ -54,7 +54,9 @@ async fn transport_struct_channel_config_from_config_accepts_plaintext_with_opt_
         .expect("plaintext accepted with allow_plaintext()");
     // Nothing listens on 127.0.0.1:50051 in the test environment, so a real
     // call must genuinely fail — proves this is a connectable client, not a stub.
-    let health = transport.health_check().await;
+    let health = transport
+        .health_check(swe_edge_egress_grpc_transport::HealthCheckRequest)
+        .await;
     assert!(
         matches!(health, Err(GrpcEgressError::Unavailable(_))),
         "health_check against an unbound port must report Unavailable, got: {health:?}"
@@ -130,9 +132,10 @@ async fn transport_struct_channel_config_interceptor_short_circuits_int_test() {
         }
         fn health_check(
             &self,
+            req: swe_edge_egress_grpc_transport::HealthCheckRequest,
         ) -> futures::future::BoxFuture<'_, swe_edge_egress_grpc_transport::GrpcEgressResult<()>>
         {
-            self.inner.health_check()
+            self.inner.health_check(req)
         }
     }
 

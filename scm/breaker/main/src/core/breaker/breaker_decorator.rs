@@ -40,7 +40,8 @@ mod tests {
     use crate::api::GrpcBreakerConfig;
     use futures::future::BoxFuture;
     use swe_edge_egress_grpc::{
-        GrpcEgressResult, GrpcMessageStream, GrpcMetadata, GrpcRequest, GrpcResponse,
+        CallStreamRequest, GrpcEgressResult, GrpcMessageStream, GrpcMetadata, GrpcRequest,
+        GrpcResponse, HealthCheckRequest,
     };
 
     struct DefaultBreakerDecoratorNoopEgress;
@@ -55,13 +56,11 @@ mod tests {
         }
         fn call_stream(
             &self,
-            _method: String,
-            _metadata: GrpcMetadata,
-            _messages: GrpcMessageStream,
+            _req: CallStreamRequest,
         ) -> BoxFuture<'_, GrpcEgressResult<GrpcMessageStream>> {
             unimplemented!("not exercised by this test")
         }
-        fn health_check(&self) -> BoxFuture<'_, GrpcEgressResult<()>> {
+        fn health_check(&self, _req: HealthCheckRequest) -> BoxFuture<'_, GrpcEgressResult<()>> {
             Box::pin(async { Ok(()) })
         }
     }

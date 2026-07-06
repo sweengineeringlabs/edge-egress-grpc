@@ -2,7 +2,8 @@
 //! SAF-level integration tests for `TransportSvc::create_transport_from_config`.
 
 use swe_edge_egress_grpc_transport::{
-    GrpcChannelConfig, GrpcChannelConfigError, GrpcEgressError, ResilienceConfig, TransportSvc,
+    GrpcChannelConfig, GrpcChannelConfigError, GrpcEgressError, HealthCheckRequest,
+    ResilienceConfig, TransportSvc,
 };
 
 fn ensure_rustls_provider() {
@@ -38,7 +39,7 @@ async fn transport_struct_transport_create_without_resilience_returns_ok_int_tes
         .expect("assembly must succeed for a valid plaintext config");
     // Nothing listens on 127.0.0.1:50051 in the test environment, so a real
     // call must genuinely fail — proves this is a connectable client, not a stub.
-    let health = transport.health_check().await;
+    let health = transport.health_check(HealthCheckRequest).await;
     assert!(
         matches!(health, Err(GrpcEgressError::Unavailable(_))),
         "health_check against an unbound port must report Unavailable, got: {health:?}"
@@ -54,7 +55,7 @@ async fn transport_struct_transport_create_with_resilience_returns_ok_int_test()
         .with_resilience(resilience());
     let transport = TransportSvc::create_transport_from_config(&cfg)
         .expect("assembly must succeed for a valid resilience config");
-    let health = transport.health_check().await;
+    let health = transport.health_check(HealthCheckRequest).await;
     assert!(
         matches!(health, Err(GrpcEgressError::Unavailable(_))),
         "health_check against an unbound port must report Unavailable, got: {health:?}"

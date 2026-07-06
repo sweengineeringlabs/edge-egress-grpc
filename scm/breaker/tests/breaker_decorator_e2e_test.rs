@@ -7,7 +7,8 @@ use std::sync::Arc;
 
 use futures::future::BoxFuture;
 use swe_edge_egress_grpc::{
-    GrpcEgress, GrpcEgressResult, GrpcMessageStream, GrpcMetadata, GrpcRequest, GrpcResponse,
+    CallStreamRequest, GrpcEgress, GrpcEgressResult, GrpcMessageStream, GrpcMetadata, GrpcRequest,
+    GrpcResponse, HealthCheckRequest,
 };
 use swe_edge_egress_grpc_breaker::{
     BreakerDecorator, Error, GrpcBreakerConfig, GrpcBreakerFacade, WrapBreakerRequest,
@@ -26,13 +27,11 @@ impl GrpcEgress for StubEgress {
     }
     fn call_stream(
         &self,
-        _method: String,
-        _metadata: GrpcMetadata,
-        _messages: GrpcMessageStream,
+        _req: CallStreamRequest,
     ) -> BoxFuture<'_, GrpcEgressResult<GrpcMessageStream>> {
         unimplemented!("not exercised by this test")
     }
-    fn health_check(&self) -> BoxFuture<'_, GrpcEgressResult<()>> {
+    fn health_check(&self, _req: HealthCheckRequest) -> BoxFuture<'_, GrpcEgressResult<()>> {
         Box::pin(async { Ok(()) })
     }
 }

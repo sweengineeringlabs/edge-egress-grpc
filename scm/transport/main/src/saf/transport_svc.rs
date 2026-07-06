@@ -23,8 +23,9 @@ pub use crate::api::types::interceptor::{
 pub use crate::api::types::status::conversions::Conversions;
 pub use crate::api::types::ApplicationConfigBuilder;
 pub use crate::api::types::{
-    CompressionMode, GrpcMetadata, GrpcRequest, GrpcResponse, GrpcStatusCode, KeepAliveConfig,
-    MtlsConfig, ResilienceConfig, ResilienceConfigBuilder, DEFAULT_MAX_MESSAGE_BYTES,
+    CallStreamRequest, CallUnaryWithContextRequest, CompressionMode, GrpcMetadata, GrpcRequest,
+    GrpcResponse, GrpcStatusCode, HealthCheckRequest, KeepAliveConfig, MtlsConfig,
+    ResilienceConfig, ResilienceConfigBuilder, DEFAULT_MAX_MESSAGE_BYTES,
 };
 pub use crate::api::types::{GrpcEgressResult, GrpcMessageStream};
 pub use crate::spi::client::tonic::{TonicGrpcClient, TonicGrpcClientBuilder};
