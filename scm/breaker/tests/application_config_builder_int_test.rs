@@ -1,7 +1,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Coverage stub for `src/api/types/application_config_builder.rs`.
 
-use swe_edge_egress_grpc_breaker::GrpcBreakerSvc;
+use swe_edge_egress_grpc_breaker::GrpcBreakerFacade;
 
 #[derive(serde::Deserialize, Default, PartialEq, Debug)]
 struct AbsentSectionProbe {
@@ -11,7 +11,7 @@ struct AbsentSectionProbe {
 /// @covers: ApplicationConfigBuilder — create_config_builder returns a working loader
 #[test]
 fn breaker_type_application_config_builder_is_accessible_int_test() {
-    let loader = GrpcBreakerSvc::create_config_builder()
+    let loader = GrpcBreakerFacade::create_config_builder()
         .expect("create_config_builder is infallible")
         .build_loader()
         .expect("a builder pre-seeded with name and version must build a valid loader");

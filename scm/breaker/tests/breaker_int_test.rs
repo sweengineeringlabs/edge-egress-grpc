@@ -11,7 +11,7 @@ use swe_edge_egress_grpc::{
     GrpcStatusCode,
 };
 use swe_edge_egress_grpc_breaker::{
-    BreakerState, GrpcBreakerClient, GrpcBreakerConfig, GrpcBreakerSvc,
+    BreakerState, GrpcBreakerClient, GrpcBreakerConfig, GrpcBreakerFacade,
 };
 
 /// Stub `GrpcEgress` whose outcome the test toggles at runtime.
@@ -246,40 +246,70 @@ async fn test_intermittent_success_keeps_breaker_closed() {
     assert_eq!(client.state().await, BreakerState::Closed);
 }
 
-/// @covers: GrpcBreakerSvc::create_breaker_client
-#[test]
-fn test_create_breaker_client_wraps_inner_with_default_config() {
-    let inner = Shared(Arc::new(ToggleClient::new(0)));
-    let client =
-        GrpcBreakerSvc::create_breaker_client(inner).expect("create_breaker_client is infallible");
+/// @covers: GrpcBreakerFacade::create_breaker_client
+#[tokio::test(flavor = "multi_thread")]
+async fn test_create_breaker_client_wraps_inner_with_default_config() {
+    let inner = Arc::new(ToggleClient::new(1)); // Unavailable
+    let client = GrpcBreakerFacade::create_breaker_client(Shared(inner.clone()))
+        .expect("create_breaker_client is infallible");
     let default_cfg = GrpcBreakerConfig::default();
+
+    // Drive exactly (default_cfg.failure_threshold - 1) failures: breaker
+    // must still be closed (accepting calls), proving the DEFAULT
+    // threshold — not some other value — was genuinely applied.
+    for _ in 0..default_cfg.failure_threshold - 1 {
+        let _ = client.call_unary(make_request()).await;
+    }
     assert_eq!(
-        client.config().failure_threshold,
-        default_cfg.failure_threshold
+        inner.call_count(),
+        default_cfg.failure_threshold - 1,
+        "breaker must still be passing calls through below the default threshold"
     );
+
+    // One more failure reaches the default threshold: breaker opens and the
+    // NEXT call must short-circuit without reaching inner.
+    let _ = client.call_unary(make_request()).await;
+    let calls_at_threshold = inner.call_count();
+    assert_eq!(calls_at_threshold, default_cfg.failure_threshold);
+    let err = client
+        .call_unary(make_request())
+        .await
+        .expect_err("breaker must reject once open");
+    assert!(matches!(err, GrpcEgressError::Unavailable(_)));
     assert_eq!(
-        client.config().cool_down_seconds,
-        default_cfg.cool_down_seconds
-    );
-    assert_eq!(
-        client.config().half_open_probe_count,
-        default_cfg.half_open_probe_count
+        inner.call_count(),
+        calls_at_threshold,
+        "Open state must not call inner"
     );
 }
 
-/// @covers: GrpcBreakerSvc::wrap_breaker
-#[test]
-fn test_wrap_breaker_produces_client_with_supplied_config() {
+/// @covers: GrpcBreakerFacade::wrap_breaker
+#[tokio::test(flavor = "multi_thread")]
+async fn test_wrap_breaker_produces_client_with_supplied_config() {
     let cfg = GrpcBreakerConfig {
         failure_threshold: 3,
         cool_down_seconds: 5,
         half_open_probe_count: 1,
     };
-    let threshold = cfg.failure_threshold;
-    let inner = Shared(Arc::new(ToggleClient::new(0)));
-    let client = GrpcBreakerSvc::wrap_breaker(inner, cfg).expect("wrap_breaker is infallible");
-    drop(client);
-    assert_eq!(threshold, 3);
+    let inner = Arc::new(ToggleClient::new(1)); // Unavailable
+    let client = GrpcBreakerFacade::wrap_breaker(Shared(inner.clone()), cfg)
+        .expect("wrap_breaker is infallible");
+
+    // The supplied threshold is 3 — two failures must not yet trip it.
+    for _ in 0..2 {
+        let _ = client.call_unary(make_request()).await;
+    }
+    assert_eq!(inner.call_count(), 2);
+
+    // The third failure reaches the supplied threshold and opens the breaker.
+    let _ = client.call_unary(make_request()).await;
+    assert_eq!(inner.call_count(), 3);
+    let err = client
+        .call_unary(make_request())
+        .await
+        .expect_err("breaker must reject once open at the supplied threshold");
+    assert!(matches!(err, GrpcEgressError::Unavailable(_)));
+    assert_eq!(inner.call_count(), 3, "Open state must not call inner");
 }
 
 #[derive(serde::Deserialize, Default, PartialEq, Debug)]
@@ -287,10 +317,10 @@ struct AbsentSectionProbe {
     marker: bool,
 }
 
-/// @covers: GrpcBreakerSvc::create_config_builder
+/// @covers: GrpcBreakerFacade::create_config_builder
 #[test]
 fn test_create_config_builder_builds_loader() {
-    let loader = GrpcBreakerSvc::create_config_builder()
+    let loader = GrpcBreakerFacade::create_config_builder()
         .expect("create_config_builder is infallible")
         .build_loader()
         .expect("a builder pre-seeded with name and version must build a valid loader");

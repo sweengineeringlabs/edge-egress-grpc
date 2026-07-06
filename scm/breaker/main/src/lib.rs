@@ -42,9 +42,12 @@ mod saf;
 
 // Public contracts and value objects — all flow directly from api/.
 pub use crate::api::{
-    ApplicationConfigBuilder, BreakerDecorator, BreakerObservable, BreakerState,
-    ConfigBuilderProvider, ConfigBuilderRequest, ConfigValidationRequest, DescribeRequest,
-    DescribeResponse, Error, GrpcBreakerClient, GrpcBreakerConfig, GrpcBreakerSvc,
-    ObserveStateRequest, ObserveStateResponse, Processor, Validator, WrapBreakerRequest,
+    Admission, AdmitRequest, AdmitResponse, ApplicationConfigBuilder, BreakerDecorator,
+    BreakerObservable, BreakerState, BreakerTransition, ClassifyRequest, ClassifyResponse,
+    ConfigBuilderProvider, ConfigBuilderRequest, ConfigBuilderResponse, ConfigValidationRequest,
+    DescribeRequest, DescribeResponse, Error, FailureClassifier, GrpcBreakerClient,
+    GrpcBreakerConfig, GrpcBreakerFacade, GrpcBreakerSvc, ObserveStateRequest,
+    ObserveStateResponse, Outcome, Processor, RecordOutcomeRequest, RecordOutcomeResponse,
+    Validator, WrapBreakerRequest, WrapBreakerResponse,
 };
 pub use saf::*;

@@ -1,0 +1,100 @@
+//! [`GrpcEgress`] impl for [`GrpcBreakerClient`].
+
+use futures::future::BoxFuture;
+use swe_edge_egress_grpc::{
+    GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcMessageStream, GrpcMetadata, GrpcRequest,
+    GrpcResponse,
+};
+
+use crate::api::{
+    Admission, AdmitRequest, BreakerTransition, GrpcBreakerClient, RecordOutcomeRequest,
+    BREAKER_EGRESS_LOG_PREFIX,
+};
+use crate::core::breaker::breaker_transition::DefaultBreakerTransition;
+use crate::core::breaker::failure_classifier::DefaultFailureClassifier;
+
+impl<T: GrpcEgress + Send + Sync + 'static> GrpcEgress for GrpcBreakerClient<T> {
+    fn call_unary(&self, request: GrpcRequest) -> BoxFuture<'_, GrpcEgressResult<GrpcResponse>> {
+        Box::pin(async move {
+            let node_snapshot = *self.node.lock().await;
+            let admit_resp = match DefaultBreakerTransition.admit(AdmitRequest {
+                state: node_snapshot.state,
+                consecutive_failures: node_snapshot.consecutive_failures,
+                consecutive_successes: node_snapshot.consecutive_successes,
+                config: (*self.config).clone(),
+            }) {
+                Ok(resp) => resp,
+                // BreakerDomainError is never actually constructed by admit();
+                // this branch exists only because the trait's signature is
+                // honest about the general Result contract.
+                Err(e) => {
+                    return Err(GrpcEgressError::Internal(format!(
+                        "{BREAKER_EGRESS_LOG_PREFIX}: admit failed unexpectedly: {e}"
+                    )))
+                }
+            };
+            {
+                let mut node = self.node.lock().await;
+                node.state = admit_resp.state;
+                node.consecutive_failures = admit_resp.consecutive_failures;
+                node.consecutive_successes = admit_resp.consecutive_successes;
+            }
+
+            match admit_resp.admission {
+                Admission::RejectOpen => Err(GrpcEgressError::Unavailable(format!(
+                    "{BREAKER_EGRESS_LOG_PREFIX}: circuit open, request short-circuited"
+                ))),
+                Admission::Proceed => {
+                    let result = self.inner.call_unary(request).await;
+                    let outcome = match DefaultFailureClassifier::classify_result(&result) {
+                        Ok(outcome) => outcome,
+                        // BreakerDomainError is never actually constructed by
+                        // classify(); this branch exists only because the
+                        // trait's signature is honest about the general
+                        // Result contract.
+                        Err(e) => {
+                            return Err(GrpcEgressError::Internal(format!(
+                                "{BREAKER_EGRESS_LOG_PREFIX}: classify failed unexpectedly: {e}"
+                            )))
+                        }
+                    };
+                    let node_snapshot = *self.node.lock().await;
+                    let record_resp = match DefaultBreakerTransition.record(RecordOutcomeRequest {
+                        state: node_snapshot.state,
+                        consecutive_failures: node_snapshot.consecutive_failures,
+                        consecutive_successes: node_snapshot.consecutive_successes,
+                        config: (*self.config).clone(),
+                        outcome,
+                    }) {
+                        Ok(resp) => resp,
+                        Err(e) => {
+                            return Err(GrpcEgressError::Internal(format!(
+                                "{BREAKER_EGRESS_LOG_PREFIX}: record failed unexpectedly: {e}"
+                            )))
+                        }
+                    };
+                    {
+                        let mut node = self.node.lock().await;
+                        node.state = record_resp.state;
+                        node.consecutive_failures = record_resp.consecutive_failures;
+                        node.consecutive_successes = record_resp.consecutive_successes;
+                    }
+                    result
+                }
+            }
+        })
+    }
+
+    fn call_stream(
+        &self,
+        method: String,
+        metadata: GrpcMetadata,
+        messages: GrpcMessageStream,
+    ) -> BoxFuture<'_, GrpcEgressResult<GrpcMessageStream>> {
+        self.inner.call_stream(method, metadata, messages)
+    }
+
+    fn health_check(&self) -> BoxFuture<'_, GrpcEgressResult<()>> {
+        self.inner.health_check()
+    }
+}
