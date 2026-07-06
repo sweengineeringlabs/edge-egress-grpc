@@ -2,16 +2,19 @@
 //!
 //! Per SEA rule 160, public type *declarations* live here.  Impl
 //! blocks live in `core/`.
+//!
+//! This crate has a single cohesive domain (gRPC retry), so all
+//! contracts live in one theme: `api::retry`.
 
-mod error;
-mod traits;
-mod types;
+mod retry;
 
-pub use error::Error;
-pub use traits::{ConfigBuilderProvider, JitterRng, Processor, Validator};
-pub use types::{
-    ApplicationConfigBuilder, BackoffSchedule, ConfigBuilderRequest, ConfigBuilderResponse,
-    GrpcRetryClient, GrpcRetryConfig, GrpcRetryConfigBuilder, GrpcRetryFacade, GrpcRetrySvc,
-    NextUnitRequest, NextUnitResponse, ProcessorRequest, ResourceExhaustedContext, RetryDecision,
-    ValidationRequest,
+pub use retry::{
+    ApplicationConfigBuilder, BackoffSchedule, BackoffScheduleRequest, BackoffScheduler,
+    BackoffTrack, ConfigBuilderProvider, ConfigBuilderRequest, ConfigBuilderResponse,
+    DescribePolicyRequest, DescribePolicyResponse, Error, GrpcRetryClient, GrpcRetryConfig,
+    GrpcRetryConfigBuilder, GrpcRetryFacade, GrpcRetrySvc, JitterRng, NextUnitRequest,
+    NextUnitResponse, Processor, ProcessorRequest, ResourceExhaustedContext, RetryDecision,
+    RetryDecorator, RetryInspectRequest, RetryInspectResponse, RetryInspector, ScheduleResponse,
+    ValidationRequest, Validator, BACKOFF_SCHEDULER_LOG_TARGET, GRPC_RETRY_CLIENT_LOG_TARGET,
+    RETRY_EGRESS_LOG_TARGET,
 };

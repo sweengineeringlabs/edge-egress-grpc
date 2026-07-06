@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-07-06T09:17:20.876935600+00:00",
+  "timestamp": "2026-07-06T15:20:32.419697900+00:00",
   "results": [
     {
       "id": "cargo_toml_exists",
@@ -8,7 +8,7 @@
       "result": {
         "status": "pass"
       },
-      "duration_ms": 0.2816
+      "duration_ms": 0.2809
     },
     {
       "id": "docs_dir_exists",
@@ -17,7 +17,7 @@
       "result": {
         "status": "pass"
       },
-      "duration_ms": 0.1709
+      "duration_ms": 0.2153
     },
     {
       "id": "build_bootstrap_exclusivity",
@@ -82,7 +82,7 @@
       "result": {
         "status": "pass"
       },
-      "duration_ms": 0.0158
+      "duration_ms": 0.0129
     },
     {
       "id": "cargo_pkg_version_exists",
@@ -91,7 +91,7 @@
       "result": {
         "status": "pass"
       },
-      "duration_ms": 0.0012
+      "duration_ms": 0.0099
     },
     {
       "id": "cargo_pkg_edition_exists",
@@ -100,7 +100,7 @@
       "result": {
         "status": "pass"
       },
-      "duration_ms": 0.5468
+      "duration_ms": 0.0052
     },
     {
       "id": "cargo_pkg_description_exists",
@@ -109,7 +109,7 @@
       "result": {
         "status": "pass"
       },
-      "duration_ms": 0.0218
+      "duration_ms": 0.0017000000000000001
     },
     {
       "id": "cargo_pkg_repository_exists",
@@ -118,7 +118,7 @@
       "result": {
         "status": "pass"
       },
-      "duration_ms": 0.0013
+      "duration_ms": 0.0011
     },
     {
       "id": "cargo_pkg_authors_exists",
@@ -127,7 +127,7 @@
       "result": {
         "status": "pass"
       },
-      "duration_ms": 0.0244
+      "duration_ms": 0.025
     },
     {
       "id": "cargo_pkg_rust_version_exists",
@@ -136,7 +136,7 @@
       "result": {
         "status": "pass"
       },
-      "duration_ms": 0.0017000000000000001
+      "duration_ms": 0.0014
     },
     {
       "id": "cargo_pkg_keywords_exists",
@@ -145,7 +145,7 @@
       "result": {
         "status": "pass"
       },
-      "duration_ms": 0.0009
+      "duration_ms": 0.0124
     },
     {
       "id": "cargo_pkg_categories_exists",
@@ -154,7 +154,7 @@
       "result": {
         "status": "pass"
       },
-      "duration_ms": 0.0021
+      "duration_ms": 0.0053
     },
     {
       "id": "readme_exists",
@@ -163,7 +163,7 @@
       "result": {
         "status": "pass"
       },
-      "duration_ms": 0.255
+      "duration_ms": 0.2768
     },
     {
       "id": "changelog_exists",
@@ -172,7 +172,7 @@
       "result": {
         "status": "pass"
       },
-      "duration_ms": 0.2821
+      "duration_ms": 0.2124
     },
     {
       "id": "gitignore_has_target",
@@ -181,7 +181,7 @@
       "result": {
         "status": "pass"
       },
-      "duration_ms": 0.5244
+      "duration_ms": 0.40890000000000004
     },
     {
       "id": "cargo_pkg_name_kebab_case",
@@ -190,7 +190,7 @@
       "result": {
         "status": "pass"
       },
-      "duration_ms": 0.7756
+      "duration_ms": 0.7533000000000001
     },
     {
       "id": "rs_files_snake_case",
@@ -199,7 +199,7 @@
       "result": {
         "status": "pass"
       },
-      "duration_ms": 1.4561000000000002
+      "duration_ms": 1.6708999999999998
     },
     {
       "id": "rs_files_no_uppercase",
@@ -208,7 +208,7 @@
       "result": {
         "status": "pass"
       },
-      "duration_ms": 1.0248
+      "duration_ms": 0.9843000000000001
     },
     {
       "id": "src_dir_exists",
@@ -217,7 +217,7 @@
       "result": {
         "status": "pass"
       },
-      "duration_ms": 0.2456
+      "duration_ms": 0.2141
     },
     {
       "id": "no_nested_src_dir",
@@ -226,7 +226,7 @@
       "result": {
         "status": "pass"
       },
-      "duration_ms": 0.0722
+      "duration_ms": 0.041100000000000005
     },
     {
       "id": "no_gateway_in_lib",
@@ -235,7 +235,7 @@
       "result": {
         "status": "pass"
       },
-      "duration_ms": 0.06609999999999999
+      "duration_ms": 0.045200000000000004
     },
     {
       "id": "no_weak_fs_patterns",
@@ -244,7 +244,7 @@
       "result": {
         "status": "pass"
       },
-      "duration_ms": 9.0533
+      "duration_ms": 14.6383
     },
     {
       "id": "tests_dir_exists",
@@ -253,7 +253,7 @@
       "result": {
         "status": "pass"
       },
-      "duration_ms": 0.1405
+      "duration_ms": 0.6013000000000001
     },
     {
       "id": "api_facade_hides_core",
@@ -912,7 +912,7 @@
       "result": {
         "status": "pass"
       },
-      "duration_ms": 1.6149
+      "duration_ms": 1.5945
     },
     {
       "id": "api_no_core_import",
@@ -921,7 +921,7 @@
       "result": {
         "status": "pass"
       },
-      "duration_ms": 5.162800000000001
+      "duration_ms": 10.0746
     },
     {
       "id": "boundary_cargo_cross_level",
@@ -930,7 +930,7 @@
       "result": {
         "status": "pass"
       },
-      "duration_ms": 1.0484
+      "duration_ms": 0.5347999999999999
     },
     {
       "id": "sea_api_no_core_dep",
@@ -939,7 +939,7 @@
       "result": {
         "status": "pass"
       },
-      "duration_ms": 4.8007
+      "duration_ms": 7.964600000000001
     },
     {
       "id": "api_no_spi_dep",
@@ -948,7 +948,7 @@
       "result": {
         "status": "pass"
       },
-      "duration_ms": 5.6537999999999995
+      "duration_ms": 9.9672
     },
     {
       "id": "api_no_gateway_dep",
@@ -957,7 +957,7 @@
       "result": {
         "status": "pass"
       },
-      "duration_ms": 5.3183
+      "duration_ms": 10.0778
     },
     {
       "id": "type_theme_cohesion",
@@ -972,89 +972,7 @@
       "category": "encapsulation",
       "description": "Every type and error declared in api/ must appear in at least one native trait method signature — orphan types with no trait usage are dead weight. Scans every api/ declaration, not just types/vo/errors/ subdirectories, and exempts concrete trait implementors (impl Trait for Self in core/spi) regardless of where they're declared.",
       "result": {
-        "status": "fail",
-        "violations": [
-          {
-            "check_id": "no_orphan_types",
-            "path": "main\\src\\api\\types\\backoff_schedule.rs",
-            "message": "'BackoffSchedule' is declared in api/ but not referenced by any trait file — remove it or add a trait that uses it",
-            "severity": "warning",
-            "rule_type": "builtin:no_orphan_types",
-            "expected": "referenced in at least one api/traits/ file",
-            "actual": "no reference found",
-            "fix_hint": "Add the type as a method parameter or return type in a pub trait in api/traits/ (or api/<theme>/traits/), remove the unused type declaration, or confirm it's a genuine trait implementor (impl Trait for Self in core/spi) — implementors are exempt. A bare 'pub use' re-export in traits/mod.rs is not sufficient.",
-            "llm_prompt": "WHAT: Every type and error declared in api/ must appear in at least one native trait method signature — orphan types with no trait usage are dead weight.\nWHY: An orphaned type has no role in the contract; it confuses readers who wonder which trait uses it, and is likely left over from a refactoring that removed the only trait reference.\nBEFORE (violation):\n  // api/types/analysis_result.rs\n  pub struct AnalysisResult { ... } // declared but never appears in any api/traits/ method signature\nAFTER (compliant):\n  // api/traits/analyzer.rs\n  pub trait Analyzer { fn analyze(&self, input: &str) -> AnalysisResult; } // type now has a home\nDECISION:\n  - Search api/traits/**/*.rs (not mod.rs) for the type name in method signatures, return types, or associated type bounds\n  - pub use re-exports in traits/mod.rs do NOT satisfy this rule; only actual method signatures count\n  - If no trait needs it: delete the file and remove from mod.rs; run cargo check\nEDGE CASES:\n  - Error types in Result<T, MyError> return positions: the method return type counts — MyError is not orphaned\n  - Types used only in core/ or saf/: they still need a trait signature in api/ to satisfy this rule\n  - A pub struct/enum that never appears in a trait signature but has `impl SomeOwnTrait for Self` in core/ or spi/ is a concrete trait implementor, not an orphan — exempt regardless of directory\n",
-            "cmd": "arch explain no_orphan_types",
-            "principles": [
-              "single_responsibility",
-              "encapsulation"
-            ]
-          },
-          {
-            "check_id": "no_orphan_types",
-            "path": "main\\src\\api\\types\\grpc_retry_client.rs",
-            "message": "'GrpcRetryClient' is declared in api/ but not referenced by any trait file — remove it or add a trait that uses it",
-            "severity": "warning",
-            "rule_type": "builtin:no_orphan_types",
-            "expected": "referenced in at least one api/traits/ file",
-            "actual": "no reference found",
-            "fix_hint": "Add the type as a method parameter or return type in a pub trait in api/traits/ (or api/<theme>/traits/), remove the unused type declaration, or confirm it's a genuine trait implementor (impl Trait for Self in core/spi) — implementors are exempt. A bare 'pub use' re-export in traits/mod.rs is not sufficient.",
-            "llm_prompt": "WHAT: Every type and error declared in api/ must appear in at least one native trait method signature — orphan types with no trait usage are dead weight.\nWHY: An orphaned type has no role in the contract; it confuses readers who wonder which trait uses it, and is likely left over from a refactoring that removed the only trait reference.\nBEFORE (violation):\n  // api/types/analysis_result.rs\n  pub struct AnalysisResult { ... } // declared but never appears in any api/traits/ method signature\nAFTER (compliant):\n  // api/traits/analyzer.rs\n  pub trait Analyzer { fn analyze(&self, input: &str) -> AnalysisResult; } // type now has a home\nDECISION:\n  - Search api/traits/**/*.rs (not mod.rs) for the type name in method signatures, return types, or associated type bounds\n  - pub use re-exports in traits/mod.rs do NOT satisfy this rule; only actual method signatures count\n  - If no trait needs it: delete the file and remove from mod.rs; run cargo check\nEDGE CASES:\n  - Error types in Result<T, MyError> return positions: the method return type counts — MyError is not orphaned\n  - Types used only in core/ or saf/: they still need a trait signature in api/ to satisfy this rule\n  - A pub struct/enum that never appears in a trait signature but has `impl SomeOwnTrait for Self` in core/ or spi/ is a concrete trait implementor, not an orphan — exempt regardless of directory\n",
-            "cmd": "arch explain no_orphan_types",
-            "principles": [
-              "single_responsibility",
-              "encapsulation"
-            ]
-          },
-          {
-            "check_id": "no_orphan_types",
-            "path": "main\\src\\api\\types\\grpc_retry_config_builder.rs",
-            "message": "'GrpcRetryConfigBuilder' is declared in api/ but not referenced by any trait file — remove it or add a trait that uses it",
-            "severity": "warning",
-            "rule_type": "builtin:no_orphan_types",
-            "expected": "referenced in at least one api/traits/ file",
-            "actual": "no reference found",
-            "fix_hint": "Add the type as a method parameter or return type in a pub trait in api/traits/ (or api/<theme>/traits/), remove the unused type declaration, or confirm it's a genuine trait implementor (impl Trait for Self in core/spi) — implementors are exempt. A bare 'pub use' re-export in traits/mod.rs is not sufficient.",
-            "llm_prompt": "WHAT: Every type and error declared in api/ must appear in at least one native trait method signature — orphan types with no trait usage are dead weight.\nWHY: An orphaned type has no role in the contract; it confuses readers who wonder which trait uses it, and is likely left over from a refactoring that removed the only trait reference.\nBEFORE (violation):\n  // api/types/analysis_result.rs\n  pub struct AnalysisResult { ... } // declared but never appears in any api/traits/ method signature\nAFTER (compliant):\n  // api/traits/analyzer.rs\n  pub trait Analyzer { fn analyze(&self, input: &str) -> AnalysisResult; } // type now has a home\nDECISION:\n  - Search api/traits/**/*.rs (not mod.rs) for the type name in method signatures, return types, or associated type bounds\n  - pub use re-exports in traits/mod.rs do NOT satisfy this rule; only actual method signatures count\n  - If no trait needs it: delete the file and remove from mod.rs; run cargo check\nEDGE CASES:\n  - Error types in Result<T, MyError> return positions: the method return type counts — MyError is not orphaned\n  - Types used only in core/ or saf/: they still need a trait signature in api/ to satisfy this rule\n  - A pub struct/enum that never appears in a trait signature but has `impl SomeOwnTrait for Self` in core/ or spi/ is a concrete trait implementor, not an orphan — exempt regardless of directory\n",
-            "cmd": "arch explain no_orphan_types",
-            "principles": [
-              "single_responsibility",
-              "encapsulation"
-            ]
-          },
-          {
-            "check_id": "no_orphan_types",
-            "path": "main\\src\\api\\types\\resource_exhausted_context.rs",
-            "message": "'ResourceExhaustedContext' is declared in api/ but not referenced by any trait file — remove it or add a trait that uses it",
-            "severity": "warning",
-            "rule_type": "builtin:no_orphan_types",
-            "expected": "referenced in at least one api/traits/ file",
-            "actual": "no reference found",
-            "fix_hint": "Add the type as a method parameter or return type in a pub trait in api/traits/ (or api/<theme>/traits/), remove the unused type declaration, or confirm it's a genuine trait implementor (impl Trait for Self in core/spi) — implementors are exempt. A bare 'pub use' re-export in traits/mod.rs is not sufficient.",
-            "llm_prompt": "WHAT: Every type and error declared in api/ must appear in at least one native trait method signature — orphan types with no trait usage are dead weight.\nWHY: An orphaned type has no role in the contract; it confuses readers who wonder which trait uses it, and is likely left over from a refactoring that removed the only trait reference.\nBEFORE (violation):\n  // api/types/analysis_result.rs\n  pub struct AnalysisResult { ... } // declared but never appears in any api/traits/ method signature\nAFTER (compliant):\n  // api/traits/analyzer.rs\n  pub trait Analyzer { fn analyze(&self, input: &str) -> AnalysisResult; } // type now has a home\nDECISION:\n  - Search api/traits/**/*.rs (not mod.rs) for the type name in method signatures, return types, or associated type bounds\n  - pub use re-exports in traits/mod.rs do NOT satisfy this rule; only actual method signatures count\n  - If no trait needs it: delete the file and remove from mod.rs; run cargo check\nEDGE CASES:\n  - Error types in Result<T, MyError> return positions: the method return type counts — MyError is not orphaned\n  - Types used only in core/ or saf/: they still need a trait signature in api/ to satisfy this rule\n  - A pub struct/enum that never appears in a trait signature but has `impl SomeOwnTrait for Self` in core/ or spi/ is a concrete trait implementor, not an orphan — exempt regardless of directory\n",
-            "cmd": "arch explain no_orphan_types",
-            "principles": [
-              "single_responsibility",
-              "encapsulation"
-            ]
-          },
-          {
-            "check_id": "no_orphan_types",
-            "path": "main\\src\\api\\types\\retry_decision.rs",
-            "message": "'RetryDecision' is declared in api/ but not referenced by any trait file — remove it or add a trait that uses it",
-            "severity": "warning",
-            "rule_type": "builtin:no_orphan_types",
-            "expected": "referenced in at least one api/traits/ file",
-            "actual": "no reference found",
-            "fix_hint": "Add the type as a method parameter or return type in a pub trait in api/traits/ (or api/<theme>/traits/), remove the unused type declaration, or confirm it's a genuine trait implementor (impl Trait for Self in core/spi) — implementors are exempt. A bare 'pub use' re-export in traits/mod.rs is not sufficient.",
-            "llm_prompt": "WHAT: Every type and error declared in api/ must appear in at least one native trait method signature — orphan types with no trait usage are dead weight.\nWHY: An orphaned type has no role in the contract; it confuses readers who wonder which trait uses it, and is likely left over from a refactoring that removed the only trait reference.\nBEFORE (violation):\n  // api/types/analysis_result.rs\n  pub struct AnalysisResult { ... } // declared but never appears in any api/traits/ method signature\nAFTER (compliant):\n  // api/traits/analyzer.rs\n  pub trait Analyzer { fn analyze(&self, input: &str) -> AnalysisResult; } // type now has a home\nDECISION:\n  - Search api/traits/**/*.rs (not mod.rs) for the type name in method signatures, return types, or associated type bounds\n  - pub use re-exports in traits/mod.rs do NOT satisfy this rule; only actual method signatures count\n  - If no trait needs it: delete the file and remove from mod.rs; run cargo check\nEDGE CASES:\n  - Error types in Result<T, MyError> return positions: the method return type counts — MyError is not orphaned\n  - Types used only in core/ or saf/: they still need a trait signature in api/ to satisfy this rule\n  - A pub struct/enum that never appears in a trait signature but has `impl SomeOwnTrait for Self` in core/ or spi/ is a concrete trait implementor, not an orphan — exempt regardless of directory\n",
-            "cmd": "arch explain no_orphan_types",
-            "principles": [
-              "single_responsibility",
-              "encapsulation"
-            ]
-          }
-        ]
+        "status": "pass"
       }
     },
     {
@@ -1142,57 +1060,7 @@
       "category": "interface",
       "description": "For every subdirectory under core/, there must be a corresponding module in api/ containing real trait or type declarations (not just re-exports).",
       "result": {
-        "status": "fail",
-        "violations": [
-          {
-            "check_id": "core_api_module_correspondence",
-            "path": "main\\src\\core\\backoff_scheduler.rs",
-            "message": "main\\src\\core\\backoff_scheduler.rs has no corresponding api interface counterpart",
-            "severity": "warning",
-            "rule_type": "builtin:core_api_module_correspondence",
-            "expected": "backoff_scheduler.rs or backoff_scheduler/mod.rs",
-            "actual": "not found",
-            "fix_hint": "Create 'main\\src\\api\\backoff_scheduler.rs' with type/trait definitions that main\\src\\core\\backoff_scheduler.rs implements against",
-            "llm_prompt": "WHAT: For every subdirectory under core/, there must be a corresponding module in api/ containing real trait or type declarations (not just re-exports).\n\nWHY: Without an api/ counterpart, the core/ module has no declared contract to program against. Implementation precedes abstraction, inverting the SEA dependency direction.\n\nBEFORE (violating):\n  core/parser/   ← exists\n  api/           ← no parser/ module  ❌\n\nAFTER (compliant):\n  api/parser/\n    mod.rs       ← declares pub trait Parser, pub struct ParseOptions  ✅\n  core/parser/\n    mod.rs       ← impl Parser for DefaultParser\n\nEDGE CASES:\n- A stub api/ module that only does `pub use other_module::Foo` does NOT satisfy this rule; the api/ module must own at least one real declaration.\n- Utility/helper submodules in core/ that have no public-facing types may be exempt — check if the violations reference a genuine domain module.\n",
-            "remediation_strategy": "manual",
-            "principles": [
-              "dependency_inversion",
-              "stratified_encapsulation"
-            ]
-          },
-          {
-            "check_id": "core_api_module_correspondence",
-            "path": "main\\src\\core\\grpc_retry_client.rs",
-            "message": "main\\src\\core\\grpc_retry_client.rs has no corresponding api interface counterpart",
-            "severity": "warning",
-            "rule_type": "builtin:core_api_module_correspondence",
-            "expected": "grpc_retry_client.rs or grpc_retry_client/mod.rs",
-            "actual": "not found",
-            "fix_hint": "Create 'main\\src\\api\\grpc_retry_client.rs' with type/trait definitions that main\\src\\core\\grpc_retry_client.rs implements against",
-            "llm_prompt": "WHAT: For every subdirectory under core/, there must be a corresponding module in api/ containing real trait or type declarations (not just re-exports).\n\nWHY: Without an api/ counterpart, the core/ module has no declared contract to program against. Implementation precedes abstraction, inverting the SEA dependency direction.\n\nBEFORE (violating):\n  core/parser/   ← exists\n  api/           ← no parser/ module  ❌\n\nAFTER (compliant):\n  api/parser/\n    mod.rs       ← declares pub trait Parser, pub struct ParseOptions  ✅\n  core/parser/\n    mod.rs       ← impl Parser for DefaultParser\n\nEDGE CASES:\n- A stub api/ module that only does `pub use other_module::Foo` does NOT satisfy this rule; the api/ module must own at least one real declaration.\n- Utility/helper submodules in core/ that have no public-facing types may be exempt — check if the violations reference a genuine domain module.\n",
-            "remediation_strategy": "manual",
-            "principles": [
-              "dependency_inversion",
-              "stratified_encapsulation"
-            ]
-          },
-          {
-            "check_id": "core_api_module_correspondence",
-            "path": "main\\src\\core\\retry_egress.rs",
-            "message": "main\\src\\core\\retry_egress.rs has no corresponding api interface counterpart",
-            "severity": "warning",
-            "rule_type": "builtin:core_api_module_correspondence",
-            "expected": "retry_egress.rs or retry_egress/mod.rs",
-            "actual": "not found",
-            "fix_hint": "Create 'main\\src\\api\\retry_egress.rs' with type/trait definitions that main\\src\\core\\retry_egress.rs implements against",
-            "llm_prompt": "WHAT: For every subdirectory under core/, there must be a corresponding module in api/ containing real trait or type declarations (not just re-exports).\n\nWHY: Without an api/ counterpart, the core/ module has no declared contract to program against. Implementation precedes abstraction, inverting the SEA dependency direction.\n\nBEFORE (violating):\n  core/parser/   ← exists\n  api/           ← no parser/ module  ❌\n\nAFTER (compliant):\n  api/parser/\n    mod.rs       ← declares pub trait Parser, pub struct ParseOptions  ✅\n  core/parser/\n    mod.rs       ← impl Parser for DefaultParser\n\nEDGE CASES:\n- A stub api/ module that only does `pub use other_module::Foo` does NOT satisfy this rule; the api/ module must own at least one real declaration.\n- Utility/helper submodules in core/ that have no public-facing types may be exempt — check if the violations reference a genuine domain module.\n",
-            "remediation_strategy": "manual",
-            "principles": [
-              "dependency_inversion",
-              "stratified_encapsulation"
-            ]
-          }
-        ]
+        "status": "pass"
       }
     },
     {
@@ -1464,57 +1332,7 @@
       "category": "package",
       "description": "Sibling .rs files sharing a common prefix must be grouped into a.",
       "result": {
-        "status": "fail",
-        "violations": [
-          {
-            "check_id": "shared_prefix_grouping",
-            "path": "main\\src\\core\\backoff_schedule.rs",
-            "message": "2 files in main/src/core/ share prefix 'backoff': backoff_schedule, backoff_scheduler — group into main/src/core/backoff/",
-            "severity": "warning",
-            "rule_type": "builtin:shared_prefix_grouping",
-            "expected": "Subdirectory module: main/src/core/backoff/",
-            "actual": "backoff_schedule, backoff_scheduler",
-            "fix_hint": "Create a subdirectory named after the shared prefix and move files into it (e.g., `check_runner.rs` → `check/runner.rs`)",
-            "llm_prompt": "WHAT: Sibling .rs files sharing a common prefix must be grouped into a\nsubdirectory named after that prefix.\n\nWHY: A shared prefix is a signal that the files form a cohesive concern.\nLeaving them as siblings obscures the grouping — the directory does not\ncommunicate what belongs together. Promoting them to a subdirectory makes\nthe module boundary explicit and discoverable.\n\nBEFORE (violating):\n  core/\n    check_runner.rs   // ❌ — shared prefix\n    check_result.rs   // ❌\n    check_config.rs   // ❌\n\nAFTER (compliant):\n  core/\n    check/\n      mod.rs          // pub(crate) mod runner; mod result; mod config;  ✅\n      runner.rs\n      result.rs\n      config.rs\n\nEDGE CASES:\n- Strip the prefix from the filename when moving: check_runner.rs → check/runner.rs.\n- If only two files share a prefix and one is a mod.rs, the grouping is already\n  correct; do not over-nest.\n- Update all `use crate::core::check_runner::` paths to `use crate::core::check::runner::`.\n",
-            "remediation_strategy": "manual",
-            "principles": [
-              "locality_of_reference",
-              "separation_of_concerns"
-            ]
-          },
-          {
-            "check_id": "shared_prefix_grouping",
-            "path": "main\\src\\core\\grpc_retry_client.rs",
-            "message": "3 files in main/src/core/ share prefix 'grpc': grpc_retry_client, grpc_retry_config, grpc_retry_config_builder — group into main/src/core/grpc/",
-            "severity": "warning",
-            "rule_type": "builtin:shared_prefix_grouping",
-            "expected": "Subdirectory module: main/src/core/grpc/",
-            "actual": "grpc_retry_client, grpc_retry_config, grpc_retry_config_builder",
-            "fix_hint": "Create a subdirectory named after the shared prefix and move files into it (e.g., `check_runner.rs` → `check/runner.rs`)",
-            "llm_prompt": "WHAT: Sibling .rs files sharing a common prefix must be grouped into a\nsubdirectory named after that prefix.\n\nWHY: A shared prefix is a signal that the files form a cohesive concern.\nLeaving them as siblings obscures the grouping — the directory does not\ncommunicate what belongs together. Promoting them to a subdirectory makes\nthe module boundary explicit and discoverable.\n\nBEFORE (violating):\n  core/\n    check_runner.rs   // ❌ — shared prefix\n    check_result.rs   // ❌\n    check_config.rs   // ❌\n\nAFTER (compliant):\n  core/\n    check/\n      mod.rs          // pub(crate) mod runner; mod result; mod config;  ✅\n      runner.rs\n      result.rs\n      config.rs\n\nEDGE CASES:\n- Strip the prefix from the filename when moving: check_runner.rs → check/runner.rs.\n- If only two files share a prefix and one is a mod.rs, the grouping is already\n  correct; do not over-nest.\n- Update all `use crate::core::check_runner::` paths to `use crate::core::check::runner::`.\n",
-            "remediation_strategy": "manual",
-            "principles": [
-              "locality_of_reference",
-              "separation_of_concerns"
-            ]
-          },
-          {
-            "check_id": "shared_prefix_grouping",
-            "path": "main\\src\\core\\retry_decision.rs",
-            "message": "2 files in main/src/core/ share prefix 'retry': retry_decision, retry_egress — group into main/src/core/retry/",
-            "severity": "warning",
-            "rule_type": "builtin:shared_prefix_grouping",
-            "expected": "Subdirectory module: main/src/core/retry/",
-            "actual": "retry_decision, retry_egress",
-            "fix_hint": "Create a subdirectory named after the shared prefix and move files into it (e.g., `check_runner.rs` → `check/runner.rs`)",
-            "llm_prompt": "WHAT: Sibling .rs files sharing a common prefix must be grouped into a\nsubdirectory named after that prefix.\n\nWHY: A shared prefix is a signal that the files form a cohesive concern.\nLeaving them as siblings obscures the grouping — the directory does not\ncommunicate what belongs together. Promoting them to a subdirectory makes\nthe module boundary explicit and discoverable.\n\nBEFORE (violating):\n  core/\n    check_runner.rs   // ❌ — shared prefix\n    check_result.rs   // ❌\n    check_config.rs   // ❌\n\nAFTER (compliant):\n  core/\n    check/\n      mod.rs          // pub(crate) mod runner; mod result; mod config;  ✅\n      runner.rs\n      result.rs\n      config.rs\n\nEDGE CASES:\n- Strip the prefix from the filename when moving: check_runner.rs → check/runner.rs.\n- If only two files share a prefix and one is a mod.rs, the grouping is already\n  correct; do not over-nest.\n- Update all `use crate::core::check_runner::` paths to `use crate::core::check::runner::`.\n",
-            "remediation_strategy": "manual",
-            "principles": [
-              "locality_of_reference",
-              "separation_of_concerns"
-            ]
-          }
-        ]
+        "status": "pass"
       }
     },
     {
@@ -1588,19 +1406,380 @@
       "result": {
         "status": "pass"
       }
+    },
+    {
+      "id": "no_pub_mod_core",
+      "category": "encapsulation",
+      "description": "lib.rs must not declare core as a public module — pub mod core exposes the entire implementation layer as crate_name::core::*.",
+      "result": {
+        "status": "pass"
+      },
+      "duration_ms": 0.8491
+    },
+    {
+      "id": "saf_no_core_reexport",
+      "category": "encapsulation",
+      "description": "saf/ must not re-export types from core/ via pub use crate::core:: — the facade exposes only api/ abstractions.",
+      "result": {
+        "status": "pass"
+      },
+      "duration_ms": 0.764
+    },
+    {
+      "id": "no_impl_suffix",
+      "category": "naming",
+      "description": "Structs in core/ must not end with `Impl` — use a variant prefix (Default*, Local*, Remote*, InMemory*, Noop*, <Tech>*) instead.",
+      "result": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "core_default_impl_in_core",
+      "category": "module_governance",
+      "description": "Struct names prefixed with `Default` must be declared only in core/. If a `DefaultFoo` appears in api/, saf/, or spi/, it violates the SEA layer model where all implementations must reside in core/.",
+      "result": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "core_impl_default_prefix",
+      "category": "naming",
+      "description": "Structs in core/ that implement a trait from api/ must start with a recognised variant prefix (Default*, Local*, Remote*, InMemory*, Noop*, or a technology name). Configurable via [config.naming.layer.core] required_prefixes. Dirs in exempt_dirs (default: shared, common) are skipped.",
+      "result": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "no_bare_pub_fn",
+      "category": "encapsulation",
+      "description": "Functions in core/ must use pub(crate) instead of bare pub — core/ is the internal implementation layer; behavior reaches consumers only through api/ or saf/.",
+      "result": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "no_call_saf_inherent_method",
+      "category": "encapsulation",
+      "description": "core/ trait impl methods must not call inherent methods that are only defined in saf/ — this creates a hidden backwards dependency (core/ → saf/) that the compiler does not catch.",
+      "result": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "saf_free_fn_takes_local_type",
+      "category": "encapsulation",
+      "description": "Free functions in saf/ or core/ that take an api/-defined type as their primary parameter must be converted to methods on that type.",
+      "result": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "core_impl_private_tests_inline",
+      "category": "test_organization",
+      "description": "Every private function in core/ and spi/ must be tested via an inline #[cfg(test)] block in the same source file.",
+      "result": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "impl_tests_colocated",
+      "category": "test_organization",
+      "description": "Every public function in core/ must be tested from an external test file in tests/, not only via inline #[cfg(test)] blocks.",
+      "result": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "boundary_peer_isolation",
+      "category": "encapsulation",
+      "description": "L2 peers (core/ and spi/) must not import each other — core/ must not depend on spi/ and spi/ must not depend on core/.",
+      "result": {
+        "status": "pass"
+      },
+      "duration_ms": 5.186299999999999
+    },
+    {
+      "id": "boundary_l2_no_l3_import",
+      "category": "encapsulation",
+      "description": "L2 layers (core/ and spi/) must not import from L3/saf/ — dependencies flow inward only, never upward to the composition layer.",
+      "result": {
+        "status": "pass"
+      },
+      "duration_ms": 5.3948
+    },
+    {
+      "id": "no_traits_in_impl_layer",
+      "category": "encapsulation",
+      "description": "L2 layers (core/ and spi/) must not define traits — all pub or pub(crate) trait definitions belong in L1/api/.",
+      "result": {
+        "status": "pass"
+      },
+      "duration_ms": 6.2288
+    },
+    {
+      "id": "boundary_l2_no_l4_import",
+      "category": "encapsulation",
+      "description": "L2 layers (core/ and spi/) must not import from L4/gateway/ — the dependency arrow must point inward from L4 toward L1, never outward from L2 to L4.",
+      "result": {
+        "status": "pass"
+      },
+      "duration_ms": 6.211
+    },
+    {
+      "id": "core_no_blanket_impl_cross_boundary",
+      "category": "encapsulation",
+      "description": "Blanket impls on traits in core/ that cross module or concern boundaries must be eliminated — implement traits explicitly per type.",
+      "result": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "core_structs_not_pub",
+      "category": "encapsulation",
+      "description": "Items in core/ (struct, enum, type, trait, fn, const, static) must be pub(crate), not bare pub — core/ is an internal implementation layer.",
+      "result": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "core_impl_name_has_trait_suffix",
+      "category": "naming",
+      "description": "A struct in core/ or spi/ that implements a trait from api/ must carry the trait name as its suffix.",
+      "result": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "core_filename_matches_type",
+      "category": "naming",
+      "description": "Each file in core/ or spi/ must be named after its primary struct/enum in snake_case.",
+      "result": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "core_types_name_cohesive",
+      "category": "naming",
+      "description": "All types in a core/ or spi/ file must share a common naming stem (SRP by name cohesion).",
+      "result": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "dto_types_must_serialize",
+      "category": "conventions",
+      "description": "All structs and enums in `core/dto/` and `spi/dto/` must derive `Serialize, Deserialize` (or provide a custom serde impl).",
+      "result": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "dir_not_empty",
+      "category": "package",
+      "description": "The spi/ layer must be a populated directory (main/src/spi/mod.rs with.",
+      "result": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "private_mod_in_lib",
+      "category": "encapsulation",
+      "description": "When spi/ exists, lib.rs must declare mod spi (private) — pub mod spi or a missing declaration both violate this rule.",
+      "result": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "core_utility_module_policy",
+      "category": "module_governance",
+      "description": "Utility modules in `core/` must be named `util`; in `spi/` they must be named `shared`. Banned names (`utilities`, `utils`, `helpers`, `common`) are always rejected. Non-default names require an explicit whitelist entry in architecture.policy.toml and, for `shared` in `core/`, must be consumed by at least two modules.",
+      "result": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "spi_no_default_prefix",
+      "category": "naming",
+      "description": "Files and types in spi/ must not start with Default* — that prefix is reserved for core/ variants. Forbidden prefix list is configurable via [config.naming.layer.spi] forbidden_prefixes.",
+      "result": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "no_loose_core_files",
+      "category": "package",
+      "description": "Implementation layer directories (core/, spi/) must not contain loose.",
+      "result": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "saf_no_gateway_dep",
+      "category": "encapsulation",
+      "description": "saf/ must not import from gateway/ — the call direction is gateway/ → saf/, never saf/ → gateway/.",
+      "result": {
+        "status": "pass"
+      },
+      "duration_ms": 2.6359999999999997
+    },
+    {
+      "id": "no_trait_reexport",
+      "category": "encapsulation",
+      "description": "saf/ must not re-export traits via pub use — consumers must never couple to trait names; expose standalone functions instead.",
+      "result": {
+        "status": "pass"
+      },
+      "duration_ms": 4.1837
+    },
+    {
+      "id": "no_api_reexport",
+      "category": "encapsulation",
+      "description": "saf/*_svc_factory.rs files must not re-export from api/ via pub use — construction files are not re-export shims.",
+      "result": {
+        "status": "pass"
+      },
+      "duration_ms": 2.4829000000000003
+    },
+    {
+      "id": "lib_delegates_to_saf",
+      "category": "interface",
+      "description": "lib.rs must contain `pub use saf::*;` (or `pub use gateway::*;` for gateway crates) as its only re-export, never `pub use crate::core::` or `pub use crate::api::`.",
+      "result": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "signature_no_core_types",
+      "category": "encapsulation",
+      "description": "saf/ public function signatures must not name types from core/ in parameter or return positions — signatures must use api/ types, impl Trait, or saf-owned wrapper structs.",
+      "result": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "svc_returns",
+      "category": "encapsulation",
+      "description": "saf/ public function return types must match crate extensibility: return impl Trait when spi/ exists; return concrete types when spi/ is absent.",
+      "result": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "returns_api_types",
+      "category": "encapsulation",
+      "description": "saf/ pub fn return types must be declared in api/types/ (when spi/ is absent) — saf/ is the only public surface and all its concrete return types must be owned by the contract layer.",
+      "result": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "no_wrapper_methods",
+      "category": "encapsulation",
+      "description": "saf/ methods must not be thin wrappers that delegate entirely to a free function — the logic must live directly in the saf/ method body.",
+      "result": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "no_inherent_impl_on_api_type",
+      "category": "encapsulation",
+      "description": "saf/ must not declare inherent impl blocks for types defined in api/ — a type's inherent methods must live in the same layer as its struct declaration.",
+      "result": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "no_direct_api_impl_reexport",
+      "category": "encapsulation",
+      "description": "lib.rs must not re-export concrete *Impl types directly from api/ — all exports must flow through saf/ so the facade controls what is visible.",
+      "result": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "mod_exists",
+      "category": "interface",
+      "description": "main/src/saf/mod.rs must exist and serve as the sole composition root for the crate.",
+      "result": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "svc_single_trait_surface",
+      "category": "encapsulation",
+      "description": "Each _svc_factory.rs in saf/ must re-export only from api/ — pub use crate::core::... in a factory file leaks implementation types.",
+      "result": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "no_trait_impl",
+      "category": "encapsulation",
+      "description": "saf/ files must not contain impl Trait for X blocks (except allowlisted markers like SvcFactory) — trait implementations belong in core/ or spi/.",
+      "result": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "no_env_reads",
+      "category": "interface",
+      "description": "saf/ factory functions must not call `std::env::var`, `env::var`, or any equivalent env-reading API directly.",
+      "result": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "trait_svc_test_exists",
+      "category": "test_organization",
+      "description": "Every _svc_factory.rs file in saf/ must have a corresponding test file in tests/ (e.g. tests/scanner_svc_factory_int_test.rs).",
+      "result": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "trait_svc_fn_scenario_coverage",
+      "category": "test_organization",
+      "description": "Every pub fn in a saf/_svc_factory.rs must have three test functions: one _happy (valid input succeeds), one _error (invalid input returns Err), and one _edge (boundary input behaves correctly).",
+      "result": {
+        "status": "pass"
+      }
+    },
+    {
+      "id": "impl_public_tests_external",
+      "category": "test_organization",
+      "description": "Every public function in saf/ must be verified by an external test file in tests/; saf/ source files must not contain inline tests for public functions.",
+      "result": {
+        "status": "pass"
+      }
     }
   ],
   "summary": {
-    "total": 172,
-    "passed": 167,
-    "failed": 3,
+    "total": 214,
+    "passed": 212,
+    "failed": 0,
     "skipped": 2,
-    "duration_ms": 308.3184
+    "duration_ms": 716.7624999999999
   },
   "project_layout": "library",
   "application_type": "lib",
   "rule_labels": {
+    "core_types_name_cohesive": [
+      "core",
+      "spi"
+    ],
+    "no_loose_core_files": [
+      "core",
+      "spi"
+    ],
     "core_structs_have_trait": [
+      "core",
+      "spi"
+    ],
+    "no_traits_in_impl_layer": [
+      "core",
+      "spi"
+    ],
+    "core_impl_name_has_trait_suffix": [
       "core",
       "spi"
     ],
@@ -1611,27 +1790,8 @@
     "core_filename_matches_type": [
       "core",
       "spi"
-    ],
-    "core_impl_name_has_trait_suffix": [
-      "core",
-      "spi"
-    ],
-    "core_types_name_cohesive": [
-      "core",
-      "spi"
-    ],
-    "no_loose_core_files": [
-      "core",
-      "spi"
-    ],
-    "no_traits_in_impl_layer": [
-      "core",
-      "spi"
     ]
   },
-  "active_filters": [
-    "halted_at=api"
-  ],
   "gate_pipeline": [
     {
       "name": "project",
@@ -1647,25 +1807,23 @@
     },
     {
       "name": "api",
-      "status": "fail",
-      "violations": 3
+      "status": "pass"
     },
     {
       "name": "core",
-      "status": "skipped"
+      "status": "pass"
     },
     {
       "name": "spi",
-      "status": "skipped"
+      "status": "pass"
     },
     {
       "name": "saf",
-      "status": "skipped"
+      "status": "pass"
     },
     {
       "name": "gateway",
       "status": "skipped"
     }
-  ],
-  "halted_at": "api"
+  ]
 }

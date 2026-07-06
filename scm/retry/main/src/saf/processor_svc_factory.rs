@@ -1,7 +1,7 @@
 //! Composition site for [`Processor`] — one file per trait keeps wiring focused.
 
 use crate::api::Processor;
-use crate::core::traits::default_processor::DefaultProcessor;
+use crate::core::retry::traits::default_processor::DefaultProcessor;
 
 /// Factory for the default [`Processor`].
 pub struct ProcessorFactory;

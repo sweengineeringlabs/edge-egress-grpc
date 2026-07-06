@@ -10,8 +10,8 @@ use swe_edge_egress_grpc::{
 use tracing::{debug, trace, warn};
 
 use crate::api::{GrpcRetryClient, RetryDecision};
-use crate::core::backoff_scheduler::BackoffScheduler;
-use crate::core::traits::jitter_rng::DefaultJitterRng;
+use crate::core::retry::backoff::backoff_scheduler::BackoffScheduler;
+use crate::core::retry::traits::jitter_rng::DefaultJitterRng;
 
 impl<T: GrpcEgress + Send + Sync + 'static> GrpcEgress for GrpcRetryClient<T> {
     fn call_unary(&self, request: GrpcRequest) -> BoxFuture<'_, GrpcEgressResult<GrpcResponse>> {
@@ -172,5 +172,79 @@ impl<T: GrpcEgress + Send + Sync + 'static> GrpcRetryClient<T> {
             );
         }
         fits
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::api::GrpcRetryConfig;
+
+    struct RetryEgressAlwaysUnavailable;
+    impl GrpcEgress for RetryEgressAlwaysUnavailable {
+        fn call_unary(&self, _req: GrpcRequest) -> BoxFuture<'_, GrpcEgressResult<GrpcResponse>> {
+            Box::pin(async { Err(GrpcEgressError::Unavailable("down".into())) })
+        }
+        fn call_stream(
+            &self,
+            _method: String,
+            _metadata: GrpcMetadata,
+            messages: GrpcMessageStream,
+        ) -> BoxFuture<'_, GrpcEgressResult<GrpcMessageStream>> {
+            Box::pin(async move { Ok(messages) })
+        }
+        fn health_check(&self) -> BoxFuture<'_, GrpcEgressResult<()>> {
+            Box::pin(async { Ok(()) })
+        }
+    }
+
+    fn no_retry_config() -> GrpcRetryConfig {
+        GrpcRetryConfig::from_config(
+            r#"
+                max_attempts = 1
+                initial_backoff_ms = 1
+                backoff_multiplier = 1.0
+                jitter_factor = 0.0
+                max_backoff_ms = 1
+                rate_limit_max_attempts = 1
+                rate_limit_initial_backoff_ms = 1
+                rate_limit_max_backoff_ms = 1
+            "#,
+        )
+        .expect("valid config")
+    }
+
+    #[tokio::test]
+    async fn test_run_with_retry_single_attempt_surfaces_unavailable() {
+        let client = GrpcRetryClient::new(RetryEgressAlwaysUnavailable, no_retry_config());
+        let req = GrpcRequest::new("svc/M", vec![], std::time::Duration::from_secs(5));
+        let result = client.run_with_retry(req).await;
+        assert!(matches!(result, Err(GrpcEgressError::Unavailable(_))));
+    }
+
+    #[test]
+    fn test_budget_allows_sleep_true_when_within_budget() {
+        let client = GrpcRetryClient::new(RetryEgressAlwaysUnavailable, no_retry_config());
+        let started = Instant::now();
+        assert!(client.budget_allows_sleep(
+            started,
+            std::time::Duration::from_secs(10),
+            std::time::Duration::from_millis(1),
+            0,
+        ));
+    }
+
+    #[test]
+    fn test_budget_allows_sleep_false_when_sleep_would_overrun_budget() {
+        // Negative counterpart: a sleep that would push elapsed past the
+        // total budget must be rejected, not silently allowed.
+        let client = GrpcRetryClient::new(RetryEgressAlwaysUnavailable, no_retry_config());
+        let started = Instant::now();
+        assert!(!client.budget_allows_sleep(
+            started,
+            std::time::Duration::from_millis(1),
+            std::time::Duration::from_secs(10),
+            0,
+        ));
     }
 }

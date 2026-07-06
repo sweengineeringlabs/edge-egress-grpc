@@ -40,9 +40,12 @@ mod saf;
 
 // Public contracts and value objects — all flow directly from api/.
 pub use crate::api::{
-    ApplicationConfigBuilder, BackoffSchedule, ConfigBuilderProvider, ConfigBuilderRequest,
-    ConfigBuilderResponse, Error, GrpcRetryClient, GrpcRetryConfig, GrpcRetryConfigBuilder,
-    GrpcRetryFacade, GrpcRetrySvc, JitterRng, NextUnitRequest, NextUnitResponse, Processor,
-    ProcessorRequest, ResourceExhaustedContext, RetryDecision, ValidationRequest, Validator,
+    ApplicationConfigBuilder, BackoffSchedule, BackoffScheduleRequest, BackoffScheduler,
+    BackoffTrack, ConfigBuilderProvider, ConfigBuilderRequest, ConfigBuilderResponse,
+    DescribePolicyRequest, DescribePolicyResponse, Error, GrpcRetryClient, GrpcRetryConfig,
+    GrpcRetryConfigBuilder, GrpcRetryFacade, GrpcRetrySvc, JitterRng, NextUnitRequest,
+    NextUnitResponse, Processor, ProcessorRequest, ResourceExhaustedContext, RetryDecision,
+    RetryDecorator, RetryInspectRequest, RetryInspectResponse, RetryInspector, ScheduleResponse,
+    ValidationRequest, Validator,
 };
 pub use saf::*;

@@ -90,4 +90,22 @@ mod tests {
         let d = BackoffScheduler::rate_limit_backoff(&cfg, 0, Some(hint), 0.5);
         assert_eq!(d, hint);
     }
+
+    #[test]
+    fn test_exponential_jitter_caps_at_max_ms() {
+        // Attempt high enough that the exponential term would blow past
+        // max_ms without the min() cap -- proves the cap is real, not
+        // just coincidentally unreached by the other tests' small attempts.
+        let d = BackoffScheduler::exponential_jitter(100, 500, 2.0, 0.0, 10, 0.5);
+        assert_eq!(d, Duration::from_millis(500));
+    }
+
+    #[test]
+    fn test_exponential_jitter_zero_jitter_factor_is_deterministic() {
+        let a = BackoffScheduler::exponential_jitter(100, 10_000, 2.0, 0.0, 2, 0.1);
+        let b = BackoffScheduler::exponential_jitter(100, 10_000, 2.0, 0.0, 2, 0.9);
+        // jitter_factor 0.0 means random_unit has no effect on the result.
+        assert_eq!(a, b);
+        assert_eq!(a, Duration::from_millis(400));
+    }
 }

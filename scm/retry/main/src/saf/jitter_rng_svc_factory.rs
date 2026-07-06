@@ -1,7 +1,7 @@
 //! Composition site for [`JitterRng`] — one file per trait keeps wiring focused.
 
 use crate::api::JitterRng;
-use crate::core::traits::jitter_rng::DefaultJitterRng;
+use crate::core::retry::traits::jitter_rng::DefaultJitterRng;
 
 /// Factory for the default [`JitterRng`].
 pub struct JitterRngFactory;
