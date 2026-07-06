@@ -15,7 +15,7 @@ use crate::api::types::GrpcStatusCode;
 /// `ConnectionFailed`, `Timeout`, `Unavailable`, `Cancelled`, and
 /// `Internal` are transport-level conditions that occur *before*
 /// the server returns a status (or after the local timeout fires).
-#[derive(Debug, Error)]
+#[derive(Debug, Clone, Error)]
 pub enum GrpcEgressError {
     /// The remote returned a non-`Ok` gRPC status with a sanitized message.
     #[error("status {0:?}: {1}")]

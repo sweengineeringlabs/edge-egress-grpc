@@ -7,14 +7,16 @@
 
 pub use crate::api::traits::processor::Processor;
 
+use crate::api::{GrpcChannelConfigError, ValidationRequest};
+
 /// Configuration validation contract.
 ///
 /// Implemented by configuration types (e.g. [`crate::api::types::ResilienceConfig`])
 /// to validate their fields before use.
-pub trait Validator {
+pub trait Validator: Send + Sync {
     /// Validate the configuration.
     ///
-    /// Returns `Err` with a human-readable description when the configuration
-    /// contains an invalid combination of fields.
-    fn validate(&self) -> Result<(), String>;
+    /// Returns `Err` when the configuration contains an invalid combination
+    /// of fields.
+    fn validate(&self, req: ValidationRequest) -> Result<(), GrpcChannelConfigError>;
 }

@@ -1,7 +1,7 @@
 //! `Validator` implementation for core configuration types.
 
-use crate::api::ResilienceConfig;
 use crate::api::Validator;
+use crate::api::{GrpcChannelConfigError, ResilienceConfig, ValidationRequest};
 
 /// Zero-size marker identifying this as the `Validator` implementation site.
 #[expect(
@@ -11,29 +11,44 @@ use crate::api::Validator;
 pub(crate) struct ResilienceValidator;
 
 impl Validator for ResilienceConfig {
-    fn validate(&self) -> Result<(), String> {
+    fn validate(&self, _req: ValidationRequest) -> Result<(), GrpcChannelConfigError> {
         if self.max_attempts == 0 {
-            return Err("max_attempts must be >= 1".into());
+            return Err(GrpcChannelConfigError::Config(
+                "max_attempts must be >= 1".into(),
+            ));
         }
         if self.rate_limit_max_attempts == 0 {
-            return Err("rate_limit_max_attempts must be >= 1".into());
+            return Err(GrpcChannelConfigError::Config(
+                "rate_limit_max_attempts must be >= 1".into(),
+            ));
         }
         if self.jitter_factor < 0.0 || self.jitter_factor > 1.0 {
-            return Err(format!(
+            return Err(GrpcChannelConfigError::Config(format!(
                 "jitter_factor must be in [0.0, 1.0], got {:.4}",
                 self.jitter_factor
-            ));
+            )));
         }
         if self.half_open_probe_count == 0 {
-            return Err("half_open_probe_count must be >= 1".into());
-        }
-        if self.rate_limit_max_backoff_ms < self.rate_limit_initial_backoff_ms {
-            return Err(format!(
-                "rate_limit_max_backoff_ms ({}) must be >= rate_limit_initial_backoff_ms ({})",
-                self.rate_limit_max_backoff_ms, self.rate_limit_initial_backoff_ms
+            return Err(GrpcChannelConfigError::Config(
+                "half_open_probe_count must be >= 1".into(),
             ));
         }
+        if self.rate_limit_max_backoff_ms < self.rate_limit_initial_backoff_ms {
+            return Err(GrpcChannelConfigError::Config(format!(
+                "rate_limit_max_backoff_ms ({}) must be >= rate_limit_initial_backoff_ms ({})",
+                self.rate_limit_max_backoff_ms, self.rate_limit_initial_backoff_ms
+            )));
+        }
         Ok(())
+    }
+}
+
+impl crate::api::ResilienceValidator for ResilienceConfig {
+    fn validate_config(
+        &self,
+        req: crate::api::ConfigValidationRequest,
+    ) -> Result<(), GrpcChannelConfigError> {
+        req.config.validate(ValidationRequest)
     }
 }
 
@@ -59,43 +74,43 @@ mod tests {
 
     #[test]
     fn test_validate_valid_config_returns_ok() {
-        assert!(valid().validate().is_ok());
+        assert!(valid().validate(ValidationRequest).is_ok());
         // Sibling negative case in the same test: a single field flipped to
         // invalid on an otherwise-valid config must fail, proving is_ok()
         // above isn't just a stub that always succeeds regardless of input.
         let mut invalid = valid();
         invalid.max_attempts = 0;
-        assert!(invalid.validate().is_err());
+        assert!(invalid.validate(ValidationRequest).is_err());
     }
 
     #[test]
     fn test_validate_rejects_zero_max_attempts() {
         let mut r = valid();
         r.max_attempts = 0;
-        assert!(r.validate().is_err());
+        assert!(r.validate(ValidationRequest).is_err());
     }
 
     #[test]
     fn test_validate_rejects_zero_rate_limit_max_attempts() {
         let mut r = valid();
         r.rate_limit_max_attempts = 0;
-        assert!(r.validate().is_err());
+        assert!(r.validate(ValidationRequest).is_err());
     }
 
     #[test]
     fn test_validate_rejects_jitter_factor_out_of_range() {
         let mut r = valid();
         r.jitter_factor = 1.5;
-        assert!(r.validate().is_err());
+        assert!(r.validate(ValidationRequest).is_err());
         r.jitter_factor = -0.1;
-        assert!(r.validate().is_err());
+        assert!(r.validate(ValidationRequest).is_err());
     }
 
     #[test]
     fn test_validate_rejects_zero_half_open_probe_count() {
         let mut r = valid();
         r.half_open_probe_count = 0;
-        assert!(r.validate().is_err());
+        assert!(r.validate(ValidationRequest).is_err());
     }
 
     #[test]
@@ -103,6 +118,6 @@ mod tests {
         let mut r = valid();
         r.rate_limit_max_backoff_ms = 500;
         r.rate_limit_initial_backoff_ms = 1_000;
-        assert!(r.validate().is_err());
+        assert!(r.validate(ValidationRequest).is_err());
     }
 }

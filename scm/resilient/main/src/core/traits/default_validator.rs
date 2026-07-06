@@ -11,7 +11,7 @@ pub(crate) struct DefaultValidator;
 impl Validator for DefaultValidator {
     fn validate(&self, req: ConfigValidationRequest) -> Result<(), ResilientTransportError> {
         TransportSvc::validate_resilience_config(&req.config.0)
-            .map_err(ResilientTransportError::InvalidResilience)
+            .map_err(|e| ResilientTransportError::InvalidResilience(e.to_string()))
     }
 }
 

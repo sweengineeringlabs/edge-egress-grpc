@@ -62,3 +62,29 @@ pub mod trace_context_source;
 pub use grpc_egress_interceptor_chain::GrpcEgressInterceptorChain;
 pub use trace_context_interceptor::TraceContextInterceptor;
 pub use trace_context_source::TraceContextSource;
+
+pub mod validation_request;
+pub use validation_request::ValidationRequest;
+
+pub mod describe_request;
+pub mod describe_response;
+pub mod processing_request;
+pub use describe_request::DescribeRequest;
+pub use describe_response::DescribeResponse;
+pub use processing_request::ProcessingRequest;
+
+pub mod config_validation_request;
+pub use config_validation_request::ConfigValidationRequest;
+
+pub mod circuit_state_request;
+pub mod circuit_state_response;
+pub mod consecutive_failures_request;
+pub mod consecutive_failures_response;
+pub mod last_error_request;
+pub mod last_error_response;
+pub use circuit_state_request::CircuitStateRequest;
+pub use circuit_state_response::CircuitStateResponse;
+pub use consecutive_failures_request::ConsecutiveFailuresRequest;
+pub use consecutive_failures_response::ConsecutiveFailuresResponse;
+pub use last_error_request::LastErrorRequest;
+pub use last_error_response::LastErrorResponse;

@@ -18,7 +18,7 @@ use swe_edge_loadbalancer::{
 use crate::api::{
     GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcMetadata, GrpcRequest, GrpcResponse,
 };
-use crate::core::status::Conversions as StatusConversions;
+use crate::core::conversions::Conversions as StatusConversions;
 
 const DEFAULT_TIMEOUT: Duration = Duration::from_secs(30);
 

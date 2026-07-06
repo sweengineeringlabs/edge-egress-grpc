@@ -11,16 +11,22 @@ mod spi;
 // trait re-exports and genuinely saf-declared composition helpers, never
 // a pass-through of types declared elsewhere.
 pub use api::{
-    ApplicationConfigBuilder, CallStreamRequest, CallUnaryWithContextRequest, CompressionMode,
-    Conversions, GrpcChannelConfig, GrpcChannelConfigBuilder, GrpcChannelConfigError,
-    GrpcClientBuilder, GrpcEgress, GrpcEgressError, GrpcEgressInterceptor,
-    GrpcEgressInterceptorChain, GrpcEgressResult, GrpcMessageStream, GrpcMetadata, GrpcRequest,
-    GrpcRequestBuilder, GrpcResponse, GrpcStatusCode, HealthCheckRequest, KeepAliveConfig,
-    MtlsConfig, Processor, ResilienceConfig, ResilienceConfigBuilder, ResilienceValidator,
-    ResilientGrpcClientPort, TraceContextInterceptor, TraceContextSource, TransportSvc, Validator,
-    DEFAULT_MAX_MESSAGE_BYTES,
+    ApplicationConfigBuilder, CallStreamRequest, CallUnaryWithContextRequest, CircuitStateRequest,
+    CircuitStateResponse, CompressionMode, ConfigValidationRequest, ConsecutiveFailuresRequest,
+    ConsecutiveFailuresResponse, Conversions, DescribeRequest, DescribeResponse, GrpcChannelConfig,
+    GrpcChannelConfigBuilder, GrpcChannelConfigError, GrpcClientBuilder, GrpcEgress,
+    GrpcEgressError, GrpcEgressInterceptor, GrpcEgressInterceptorChain, GrpcEgressResult,
+    GrpcMessageStream, GrpcMetadata, GrpcRequest, GrpcRequestBuilder, GrpcResponse, GrpcStatusCode,
+    HealthCheckRequest, KeepAliveConfig, LastErrorRequest, LastErrorResponse, MtlsConfig,
+    ProcessingRequest, Processor, ResilienceConfig, ResilienceConfigBuilder, ResilienceValidator,
+    ResilientGrpcClientPort, TraceContextInterceptor, TraceContextSource, TransportSvc,
+    ValidationRequest, Validator, DEFAULT_MAX_MESSAGE_BYTES,
 };
 pub use edge_domain::SecurityContext;
+pub use saf::{
+    GrpcEgressFactory, GrpcEgressInterceptorFactory, ProcessorFactory, ResilienceValidatorFactory,
+    ResilientGrpcClientPortFactory, ValidatorFactory,
+};
 pub use spi::client::tonic::{TonicGrpcClient, TonicGrpcClientBuilder};
 pub use spi::loadbalancer::tonic::TonicLbGrpcClient;
 pub use swe_edge_loadbalancer::{BackendConfig, BackendPoolInstance, LoadbalancerConfig, Strategy};

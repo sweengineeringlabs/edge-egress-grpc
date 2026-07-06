@@ -21,7 +21,7 @@ use crate::api::{
     GrpcEgressInterceptorChain, GrpcEgressResult, GrpcMessageStream, GrpcMetadata, GrpcRequest,
     GrpcResponse, GrpcStatusCode, DEFAULT_MAX_MESSAGE_BYTES,
 };
-use crate::core::status::Conversions as StatusConversions;
+use crate::core::conversions::Conversions as StatusConversions;
 
 const SANITIZED_INTERNAL_MSG: &str = "internal client error";
 
@@ -322,14 +322,20 @@ impl TonicGrpcClientProtocol {
 // ── Processor impl ───────────────────────────────────────────────────────────
 
 impl crate::api::Processor for TonicGrpcClient {
-    fn process(&self) -> futures::future::BoxFuture<'_, Result<(), GrpcEgressError>> {
+    fn process(
+        &self,
+        _req: crate::api::ProcessingRequest,
+    ) -> futures::future::BoxFuture<'_, Result<(), GrpcEgressError>> {
         // Default: verify the endpoint is reachable — a no-op health probe.
         Box::pin(self.health_check(crate::api::HealthCheckRequest))
     }
 
-    fn describe(&self) -> &'static str {
+    fn describe(
+        &self,
+        _req: crate::api::DescribeRequest,
+    ) -> Result<crate::api::DescribeResponse, GrpcEgressError> {
         const LABEL: &str = "tonic-grpc-client";
-        LABEL
+        Ok(crate::api::DescribeResponse { label: LABEL })
     }
 }
 

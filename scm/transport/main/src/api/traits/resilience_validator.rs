@@ -6,14 +6,14 @@
 //! The concrete implementation lives in `core/resilience/` and is wired
 //! through the SAF layer.
 
-use crate::api::types::ResilienceConfig;
+use crate::api::{ConfigValidationRequest, GrpcChannelConfigError};
 
-/// Validates a [`ResilienceConfig`] before it is applied to a gRPC channel.
+/// Validates a [`crate::api::ResilienceConfig`] before it is applied to a gRPC channel.
 ///
-/// Returns `Err` with a human-readable description when the configuration
-/// contains values that would produce unsafe or undefined retry / breaker
-/// behaviour (e.g. `max_attempts == 0`, `backoff_multiplier <= 0.0`).
+/// Returns `Err` when the configuration contains values that would produce
+/// unsafe or undefined retry / breaker behaviour (e.g. `max_attempts == 0`,
+/// `backoff_multiplier <= 0.0`).
 pub trait ResilienceValidator: Send + Sync {
-    /// Validate `config` and return `Err(reason)` on the first violation.
-    fn validate_config(&self, config: &ResilienceConfig) -> Result<(), String>;
+    /// Validate `req.config` and return `Err` on the first violation.
+    fn validate_config(&self, req: ConfigValidationRequest) -> Result<(), GrpcChannelConfigError>;
 }

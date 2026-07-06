@@ -5,7 +5,7 @@ use std::time::Duration;
 
 use crate::api::{
     GrpcChannelConfig, GrpcChannelConfigError, GrpcEgress, GrpcEgressError, ResilienceConfig,
-    TransportSvc, Validator, DEFAULT_REQUEST_TIMEOUT_SECS,
+    TransportSvc, ValidationRequest, Validator, DEFAULT_REQUEST_TIMEOUT_SECS,
 };
 use crate::spi::client::tonic::{TonicGrpcClient, TonicGrpcClientProtocol};
 use crate::spi::loadbalancer::tonic::TonicLbGrpcClient;
@@ -50,8 +50,10 @@ impl TransportSvc {
     }
 
     /// Validate a [`ResilienceConfig`], returning the first constraint violation as `Err`.
-    pub fn validate_resilience_config(config: &ResilienceConfig) -> Result<(), String> {
-        config.validate()
+    pub fn validate_resilience_config(
+        config: &ResilienceConfig,
+    ) -> Result<(), GrpcChannelConfigError> {
+        config.validate(ValidationRequest)
     }
 
     /// Construct a load-balanced [`GrpcEgress`] from a [`LoadbalancerConfig`].
