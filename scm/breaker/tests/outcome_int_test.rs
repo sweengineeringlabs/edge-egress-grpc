@@ -5,11 +5,12 @@
 //! The outcome drives the `record` side of the transition logic.
 //! This stub verifies the public surface that depends on it compiles.
 
+use std::collections::HashMap;
 use std::time::Duration;
 
 use futures::future::BoxFuture;
 use swe_edge_egress_grpc::{
-    GrpcEgress, GrpcEgressResult, GrpcMetadata, GrpcRequest, GrpcResponse, HealthCheckRequest,
+    GrpcEgress, GrpcEgressResult, GrpcRequest, GrpcResponse, HealthCheckRequest,
 };
 use swe_edge_egress_grpc_breaker::{BreakerState, GrpcBreakerClient, GrpcBreakerConfig};
 
@@ -20,7 +21,7 @@ impl GrpcEgress for AlwaysOk {
         Box::pin(async {
             Ok(GrpcResponse {
                 body: vec![],
-                metadata: GrpcMetadata::default(),
+                metadata: HashMap::new(),
             })
         })
     }

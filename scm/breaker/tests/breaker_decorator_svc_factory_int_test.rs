@@ -1,10 +1,12 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Integration tests for [`BreakerDecoratorFactory`].
 
+use std::collections::HashMap;
+
 use futures::future::BoxFuture;
 use swe_edge_egress_grpc::{
-    CallStreamRequest, GrpcEgress, GrpcEgressResult, GrpcMessageStream, GrpcMetadata, GrpcRequest,
-    GrpcResponse, HealthCheckRequest,
+    CallStreamRequest, GrpcEgress, GrpcEgressResult, GrpcMessageStream, GrpcRequest, GrpcResponse,
+    HealthCheckRequest,
 };
 use swe_edge_egress_grpc_breaker::{
     BreakerDecoratorFactory, GrpcBreakerConfig, WrapBreakerRequest,
@@ -16,7 +18,7 @@ impl GrpcEgress for EchoGrpcEgress {
         Box::pin(async {
             Ok(GrpcResponse {
                 body: b"factory-stub".to_vec(),
-                metadata: GrpcMetadata::default(),
+                metadata: HashMap::new(),
             })
         })
     }

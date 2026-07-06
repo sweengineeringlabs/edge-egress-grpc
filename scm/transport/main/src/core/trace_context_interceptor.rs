@@ -27,7 +27,7 @@ impl TraceContextInterceptor {
 
 impl GrpcEgressInterceptor for TraceContextInterceptor {
     fn before_call(&self, req: &mut GrpcRequest) -> Result<(), GrpcEgressError> {
-        if req.metadata.headers.contains_key(TRACEPARENT) {
+        if req.metadata.contains_key(TRACEPARENT) {
             return Ok(());
         }
         match &self.source {
@@ -36,13 +36,9 @@ impl GrpcEgressInterceptor for TraceContextInterceptor {
                 traceparent,
                 tracestate,
             } => {
-                req.metadata
-                    .headers
-                    .insert(TRACEPARENT.into(), traceparent.clone());
+                req.metadata.insert(TRACEPARENT.into(), traceparent.clone());
                 if let Some(state) = tracestate {
-                    req.metadata
-                        .headers
-                        .insert(TRACESTATE.into(), state.clone());
+                    req.metadata.insert(TRACESTATE.into(), state.clone());
                 }
                 Ok(())
             }

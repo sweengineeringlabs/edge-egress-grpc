@@ -1,10 +1,11 @@
 //! `impl` block for [`GrpcRequest`]. The type *declaration* lives in `api/`.
 
+use std::collections::HashMap;
 use std::time::Duration;
 
 use tokio_util::sync::CancellationToken;
 
-use crate::api::{GrpcMetadata, GrpcRequest};
+use crate::api::GrpcRequest;
 
 impl GrpcRequest {
     /// Create a new request for `method` with a raw protobuf `body` and a
@@ -16,21 +17,21 @@ impl GrpcRequest {
         Self {
             method: method.into(),
             body,
-            metadata: GrpcMetadata::default(),
+            metadata: HashMap::new(),
             deadline,
             cancellation: None,
         }
     }
 
     /// Override the entire metadata block.
-    pub fn with_metadata(mut self, metadata: GrpcMetadata) -> Self {
+    pub fn with_metadata(mut self, metadata: HashMap<String, String>) -> Self {
         self.metadata = metadata;
         self
     }
 
     /// Add a single metadata header key/value pair.
     pub fn with_header(mut self, name: impl Into<String>, value: impl Into<String>) -> Self {
-        self.metadata.headers.insert(name.into(), value.into());
+        self.metadata.insert(name.into(), value.into());
         self
     }
 

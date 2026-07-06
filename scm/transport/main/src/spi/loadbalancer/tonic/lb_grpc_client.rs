@@ -15,9 +15,7 @@ use swe_edge_loadbalancer::{
     LoadbalancerConfig, Outcome,
 };
 
-use crate::api::{
-    GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcMetadata, GrpcRequest, GrpcResponse,
-};
+use crate::api::{GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcRequest, GrpcResponse};
 use crate::core::conversions::Conversions as StatusConversions;
 
 const DEFAULT_TIMEOUT: Duration = Duration::from_secs(30);
@@ -125,7 +123,7 @@ impl GrpcEgress for TonicLbGrpcClient {
                 .header(http::header::CONTENT_TYPE, "application/grpc")
                 .header("te", "trailers");
 
-            for (k, v) in &request.metadata.headers {
+            for (k, v) in &request.metadata {
                 builder = builder.header(k.as_str(), v.as_str());
             }
 
@@ -204,9 +202,7 @@ impl GrpcEgress for TonicLbGrpcClient {
 
             Ok(GrpcResponse {
                 body: body_bytes,
-                metadata: GrpcMetadata {
-                    headers: trailer_headers,
-                },
+                metadata: trailer_headers,
             })
         })
     }

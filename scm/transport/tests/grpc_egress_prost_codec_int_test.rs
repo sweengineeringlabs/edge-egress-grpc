@@ -8,14 +8,15 @@
 
 #[cfg(feature = "prost")]
 mod prost_tests {
+    use std::collections::HashMap;
     use std::time::Duration;
 
     use futures::future::BoxFuture;
     use prost::Message;
 
     use swe_edge_egress_grpc_transport::{
-        GrpcEgress, GrpcEgressError, GrpcEgressProstCodec, GrpcEgressResult, GrpcMetadata,
-        GrpcRequest, GrpcResponse,
+        GrpcEgress, GrpcEgressError, GrpcEgressProstCodec, GrpcEgressResult, GrpcRequest,
+        GrpcResponse,
     };
 
     // ── prost message types under test ─────────────────────────────────────────
@@ -50,7 +51,7 @@ mod prost_tests {
                 };
                 Ok(GrpcResponse {
                     body: pong.encode_to_vec(),
-                    metadata: GrpcMetadata::default(),
+                    metadata: HashMap::new(),
                 })
             })
         }
@@ -83,7 +84,7 @@ mod prost_tests {
             Box::pin(async {
                 Ok(GrpcResponse {
                     body: vec![0x08, 0x80],
-                    metadata: GrpcMetadata::default(),
+                    metadata: HashMap::new(),
                 })
             })
         }

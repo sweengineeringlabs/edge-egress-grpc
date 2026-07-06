@@ -2,10 +2,12 @@
 //! Integration tests for the `GrpcEgress` impl on [`GrpcRetryClient`]
 //! in `src/core/retry_egress.rs`.
 
+use std::collections::HashMap;
+
 use futures::future::BoxFuture;
 use swe_edge_egress_grpc::{
-    CallStreamRequest, GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcMetadata, GrpcRequest,
-    GrpcResponse, HealthCheckRequest,
+    CallStreamRequest, GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcRequest, GrpcResponse,
+    HealthCheckRequest,
 };
 use swe_edge_egress_grpc_retry::{GrpcRetryClient, GrpcRetryConfig};
 
@@ -92,7 +94,7 @@ async fn test_call_stream_delegates_to_inner_edge() {
     let result = client
         .call_stream(CallStreamRequest {
             method: "svc/M".into(),
-            metadata: GrpcMetadata::default(),
+            metadata: HashMap::new(),
             messages,
         })
         .await;

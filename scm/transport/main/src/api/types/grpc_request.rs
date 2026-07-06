@@ -1,10 +1,9 @@
 //! gRPC request envelope.
 
+use std::collections::HashMap;
 use std::time::Duration;
 
 use tokio_util::sync::CancellationToken;
-
-use super::grpc_metadata::GrpcMetadata;
 
 /// A gRPC request envelope.
 ///
@@ -29,7 +28,7 @@ pub struct GrpcRequest {
     /// Raw protobuf-encoded request bytes.
     pub body: Vec<u8>,
     /// Request metadata (headers).
-    pub metadata: GrpcMetadata,
+    pub metadata: HashMap<String, String>,
     /// Per-call deadline.  Always present.
     pub deadline: Duration,
     /// Optional caller-supplied cancellation token.

@@ -1,8 +1,9 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Integration tests for `GrpcRequestBuilder`.
 
+use std::collections::HashMap;
 use std::time::Duration;
-use swe_edge_egress_grpc_transport::{GrpcMetadata, GrpcRequestBuilder};
+use swe_edge_egress_grpc_transport::GrpcRequestBuilder;
 
 /// @covers: GrpcRequestBuilder::build — valid request returns Ok
 #[test]
@@ -57,8 +58,8 @@ fn transport_struct_grpc_request_builder_deadline_setter_stores_value_int_test()
 /// @covers: GrpcRequestBuilder::metadata — stores headers in built request
 #[test]
 fn transport_struct_grpc_request_builder_metadata_setter_stores_headers_int_test() {
-    let mut meta = GrpcMetadata::default();
-    meta.headers.insert("x-test".into(), "value".into());
+    let mut meta = HashMap::new();
+    meta.insert("x-test".into(), "value".into());
     let req = GrpcRequestBuilder::new()
         .method("svc/M")
         .deadline(Duration::from_secs(1))
@@ -66,7 +67,7 @@ fn transport_struct_grpc_request_builder_metadata_setter_stores_headers_int_test
         .build()
         .expect("build must succeed");
     assert_eq!(
-        req.metadata.headers.get("x-test").map(String::as_str),
+        req.metadata.get("x-test").map(String::as_str),
         Some("value")
     );
 }

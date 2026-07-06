@@ -2,13 +2,14 @@
 //! End-to-end tests for [`BreakerDecorator`] via a test-double
 //! implementation.
 
+use std::collections::HashMap;
 use std::marker::PhantomData;
 use std::sync::Arc;
 
 use futures::future::BoxFuture;
 use swe_edge_egress_grpc::{
-    CallStreamRequest, GrpcEgress, GrpcEgressResult, GrpcMessageStream, GrpcMetadata, GrpcRequest,
-    GrpcResponse, HealthCheckRequest,
+    CallStreamRequest, GrpcEgress, GrpcEgressResult, GrpcMessageStream, GrpcRequest, GrpcResponse,
+    HealthCheckRequest,
 };
 use swe_edge_egress_grpc_breaker::{
     BreakerDecorator, Error, GrpcBreakerConfig, GrpcBreakerFacade, WrapBreakerRequest,
@@ -21,7 +22,7 @@ impl GrpcEgress for StubEgress {
         Box::pin(async {
             Ok(GrpcResponse {
                 body: b"stub".to_vec(),
-                metadata: GrpcMetadata::default(),
+                metadata: HashMap::new(),
             })
         })
     }

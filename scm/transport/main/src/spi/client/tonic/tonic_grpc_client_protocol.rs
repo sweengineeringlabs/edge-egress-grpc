@@ -18,8 +18,8 @@ use tokio_util::sync::CancellationToken;
 use super::tonic_grpc_client::TonicGrpcClient;
 use crate::api::{
     CompressionMode, GrpcChannelConfig, GrpcChannelConfigError, GrpcEgress, GrpcEgressError,
-    GrpcEgressInterceptorChain, GrpcEgressResult, GrpcMessageStream, GrpcMetadata, GrpcRequest,
-    GrpcResponse, GrpcStatusCode, DEFAULT_MAX_MESSAGE_BYTES,
+    GrpcEgressInterceptorChain, GrpcEgressResult, GrpcMessageStream, GrpcRequest, GrpcResponse,
+    GrpcStatusCode, DEFAULT_MAX_MESSAGE_BYTES,
 };
 use crate::core::conversions::Conversions as StatusConversions;
 
@@ -109,7 +109,7 @@ impl TonicGrpcClientProtocol {
     fn build_http_request(
         uri_str: &str,
         body_bytes: Bytes,
-        metadata: &GrpcMetadata,
+        metadata: &std::collections::HashMap<String, String>,
         deadline: Option<Duration>,
     ) -> GrpcEgressResult<http::Request<Full<Bytes>>> {
         let uri: http::Uri = uri_str.parse().map_err(|e| {
@@ -130,7 +130,7 @@ impl TonicGrpcClientProtocol {
             );
         }
 
-        for (k, v) in &metadata.headers {
+        for (k, v) in metadata {
             builder = builder.header(k.as_str(), v.as_str());
         }
 
@@ -356,12 +356,10 @@ impl GrpcEgress for TonicGrpcClient {
         if let Some(name) = self.compression.header_value() {
             request
                 .metadata
-                .headers
                 .entry("grpc-encoding".to_string())
                 .or_insert_with(|| name.to_string());
             request
                 .metadata
-                .headers
                 .entry("grpc-accept-encoding".to_string())
                 .or_insert_with(|| name.to_string());
         }
@@ -438,9 +436,7 @@ impl GrpcEgress for TonicGrpcClient {
 
             let mut response = GrpcResponse {
                 body,
-                metadata: GrpcMetadata {
-                    headers: trailer_headers,
-                },
+                metadata: trailer_headers,
             };
 
             // Run after-call interceptors; first failure short-circuits.
@@ -661,9 +657,7 @@ impl GrpcEgress for TonicGrpcClient {
 
             let mut response = GrpcResponse {
                 body,
-                metadata: GrpcMetadata {
-                    headers: trailer_headers,
-                },
+                metadata: trailer_headers,
             };
 
             interceptors.run_after(&mut response)?;

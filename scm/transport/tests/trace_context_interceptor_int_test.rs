@@ -3,11 +3,10 @@
 //!
 //! Tests that access the `pub(crate)` field `interceptor.source` are omitted.
 
+use std::collections::HashMap;
 use std::time::Duration;
 use swe_edge_egress_grpc_transport::GrpcEgressInterceptor;
-use swe_edge_egress_grpc_transport::{
-    GrpcMetadata, GrpcRequest, GrpcResponse, TraceContextInterceptor,
-};
+use swe_edge_egress_grpc_transport::{GrpcRequest, GrpcResponse, TraceContextInterceptor};
 
 fn req() -> GrpcRequest {
     GrpcRequest::new("svc/M", vec![], Duration::from_secs(1))
@@ -19,12 +18,10 @@ fn transport_struct_trace_context_interceptor_pass_through_constructs_without_pa
     let upstream = "00-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1-bbbbbbbbbbbbbbbb-01";
     let ic = TraceContextInterceptor::pass_through();
     let mut r = req();
-    r.metadata
-        .headers
-        .insert("traceparent".into(), upstream.into());
+    r.metadata.insert("traceparent".into(), upstream.into());
     ic.before_call(&mut r).expect("before_call must not fail");
     assert_eq!(
-        r.metadata.headers.get("traceparent").map(String::as_str),
+        r.metadata.get("traceparent").map(String::as_str),
         Some(upstream),
         "pass_through must leave an existing upstream traceparent untouched"
     );
@@ -37,7 +34,7 @@ fn transport_struct_trace_context_interceptor_pass_through_does_not_inject_trace
     let mut r = req();
     ic.before_call(&mut r).expect("before_call must not fail");
     assert!(
-        !r.metadata.headers.contains_key("traceparent"),
+        !r.metadata.contains_key("traceparent"),
         "pass_through must not inject a traceparent header"
     );
 }
@@ -51,7 +48,7 @@ fn transport_struct_trace_context_interceptor_with_static_injects_traceparent_wh
     let mut r = req();
     ic.before_call(&mut r).expect("before_call must not fail");
     assert_eq!(
-        r.metadata.headers.get("traceparent").map(String::as_str),
+        r.metadata.get("traceparent").map(String::as_str),
         Some(tp),
         "with_static must inject traceparent when absent"
     );
@@ -66,7 +63,7 @@ fn transport_struct_trace_context_interceptor_with_static_injects_tracestate_whe
     let mut r = req();
     ic.before_call(&mut r).expect("before_call must not fail");
     assert_eq!(
-        r.metadata.headers.get("tracestate").map(String::as_str),
+        r.metadata.get("tracestate").map(String::as_str),
         Some("v=1"),
         "with_static must inject tracestate when configured"
     );
@@ -79,12 +76,10 @@ fn transport_struct_trace_context_interceptor_upstream_traceparent_is_not_overwr
     let injected = "00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01";
     let ic = TraceContextInterceptor::with_static(injected, None);
     let mut r = req();
-    r.metadata
-        .headers
-        .insert("traceparent".into(), upstream.into());
+    r.metadata.insert("traceparent".into(), upstream.into());
     ic.before_call(&mut r).expect("before_call must not fail");
     assert_eq!(
-        r.metadata.headers.get("traceparent").map(String::as_str),
+        r.metadata.get("traceparent").map(String::as_str),
         Some(upstream),
         "existing traceparent must not be overwritten"
     );
@@ -96,8 +91,8 @@ fn transport_struct_trace_context_interceptor_after_call_does_not_modify_respons
     let ic = TraceContextInterceptor::pass_through();
     let mut resp = GrpcResponse {
         body: vec![],
-        metadata: GrpcMetadata::default(),
+        metadata: HashMap::new(),
     };
     ic.after_call(&mut resp).expect("after_call must not fail");
-    assert!(resp.metadata.headers.is_empty());
+    assert!(resp.metadata.is_empty());
 }

@@ -5,7 +5,7 @@
 //! [`GrpcEgress`] so the retry and circuit-breaker logic runs against
 //! configurable response sequences without a real network connection.
 
-use std::collections::VecDeque;
+use std::collections::{HashMap, VecDeque};
 use std::sync::{
     atomic::{AtomicUsize, Ordering},
     Arc, Mutex,
@@ -14,8 +14,8 @@ use std::time::Duration;
 
 use futures::future::BoxFuture;
 use swe_edge_egress_grpc::{
-    GrpcChannelConfig, GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcMetadata, GrpcRequest,
-    GrpcResponse, GrpcStatusCode, HealthCheckRequest, ResilienceConfig,
+    GrpcChannelConfig, GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcRequest, GrpcResponse,
+    GrpcStatusCode, HealthCheckRequest, ResilienceConfig,
 };
 use swe_edge_egress_grpc_breaker::{BreakerState, GrpcBreakerClient, GrpcBreakerConfig};
 use swe_edge_egress_grpc_resilient::{GrpcResilientFacade, ResilientTransportError};
@@ -34,7 +34,7 @@ fn ensure_tls_provider() {
 fn ok_response() -> GrpcEgressResult<GrpcResponse> {
     Ok(GrpcResponse {
         body: vec![],
-        metadata: GrpcMetadata::default(),
+        metadata: HashMap::new(),
     })
 }
 

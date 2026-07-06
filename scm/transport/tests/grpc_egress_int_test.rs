@@ -3,6 +3,7 @@
 //!
 //! Tests spin up a minimal in-process HTTP/2 echo server using `hyper_util`.
 
+use std::collections::HashMap;
 use std::convert::Infallible;
 use std::net::SocketAddr;
 use std::sync::Arc;
@@ -16,8 +17,7 @@ use http_body_util::{BodyExt as _, Full, StreamBody};
 use edge_domain::SecurityContext;
 use swe_edge_egress_grpc_transport::{
     CallStreamRequest, CallUnaryWithContextRequest, GrpcChannelConfig, GrpcEgress, GrpcEgressError,
-    GrpcMessageStream, GrpcMetadata, GrpcRequest, GrpcResponse, GrpcStatusCode, HealthCheckRequest,
-    TransportSvc,
+    GrpcMessageStream, GrpcRequest, GrpcResponse, GrpcStatusCode, HealthCheckRequest, TransportSvc,
 };
 
 fn make_client(addr: SocketAddr) -> Arc<dyn GrpcEgress> {
@@ -317,7 +317,7 @@ async fn transport_struct_call_stream_sends_multiple_frames_and_receives_stream(
     let mut resp_stream = client
         .call_stream(CallStreamRequest {
             method: "echo/Echo".into(),
-            metadata: GrpcMetadata::default(),
+            metadata: HashMap::new(),
             messages,
         })
         .await
@@ -390,13 +390,6 @@ fn transport_struct_grpc_request_holds_method_and_body_int_test() {
     assert_eq!(req.deadline, Duration::from_secs(1));
 }
 
-/// @covers: GrpcMetadata::default — starts with empty headers.
-#[test]
-fn transport_struct_grpc_metadata_default_has_empty_headers_int_test() {
-    let m = GrpcMetadata::default();
-    assert!(m.headers.is_empty());
-}
-
 /// @covers: GrpcStatusCode — distinct variants.
 #[test]
 fn transport_struct_grpc_status_code_ok_is_distinct_from_internal_int_test() {
@@ -408,7 +401,7 @@ fn transport_struct_grpc_status_code_ok_is_distinct_from_internal_int_test() {
 fn transport_struct_grpc_response_holds_body_bytes_int_test() {
     let resp = GrpcResponse {
         body: vec![0x08, 0x01],
-        metadata: GrpcMetadata::default(),
+        metadata: HashMap::new(),
     };
     assert_eq!(resp.body, vec![0x08, 0x01]);
 }
@@ -429,13 +422,10 @@ async fn transport_struct_call_unary_receives_response_metadata_from_trailers() 
         .expect("call_unary should succeed");
     assert_eq!(resp.body, b"hi", "body must be echoed");
     assert_eq!(
-        resp.metadata
-            .headers
-            .get("x-response-id")
-            .map(String::as_str),
+        resp.metadata.get("x-response-id").map(String::as_str),
         Some("meta-42"),
         "x-response-id trailer must be present in response metadata; got: {:?}",
-        resp.metadata.headers
+        resp.metadata
     );
 }
 
@@ -823,7 +813,7 @@ async fn transport_struct_call_unary_sanitizes_internal_error_message_on_truncat
     let result = client
         .call_stream(CallStreamRequest {
             method: "svc/Method".into(),
-            metadata: GrpcMetadata::default(),
+            metadata: HashMap::new(),
             messages,
         })
         .await;
@@ -897,7 +887,7 @@ async fn transport_struct_call_client_stream_sends_multiple_frames_and_receives_
     let response = client
         .call_client_stream(CallStreamRequest {
             method: "svc/ClientStream".into(),
-            metadata: GrpcMetadata::default(),
+            metadata: HashMap::new(),
             messages,
         })
         .await
@@ -926,7 +916,7 @@ async fn transport_struct_call_bidi_stream_sends_multiple_frames_and_receives_st
     let mut stream = client
         .call_bidi_stream(CallStreamRequest {
             method: "svc/Bidi".into(),
-            metadata: GrpcMetadata::default(),
+            metadata: HashMap::new(),
             messages,
         })
         .await

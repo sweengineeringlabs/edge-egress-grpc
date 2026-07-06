@@ -5,14 +5,15 @@
 //! [`GrpcEgress`] is wrapped with [`GrpcRetryClient`] and the
 //! retry loop is observed via call counters and elapsed time.
 
+use std::collections::HashMap;
 use std::sync::atomic::{AtomicU32, Ordering};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 use futures::future::BoxFuture;
 use swe_edge_egress_grpc::{
-    GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcMetadata, GrpcRequest, GrpcResponse,
-    GrpcStatusCode, HealthCheckRequest,
+    GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcRequest, GrpcResponse, GrpcStatusCode,
+    HealthCheckRequest,
 };
 use swe_edge_egress_grpc_retry::{GrpcRetryClient, GrpcRetryConfig, GrpcRetryFacade};
 
@@ -55,7 +56,7 @@ impl ScriptedClient {
         match outcome {
             Outcome::Ok => Ok(GrpcResponse {
                 body: b"ok".to_vec(),
-                metadata: GrpcMetadata::default(),
+                metadata: HashMap::new(),
             }),
             Outcome::Status(code, msg) => Err(GrpcEgressError::Status(code, msg.into())),
             Outcome::Unavailable(msg) => Err(GrpcEgressError::Unavailable(msg.into())),

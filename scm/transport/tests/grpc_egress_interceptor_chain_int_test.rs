@@ -1,13 +1,14 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Integration tests for `api/interceptor/grpc/grpc_egress_interceptor_chain.rs`.
 
+use std::collections::HashMap;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use swe_edge_egress_grpc_transport::{
-    GrpcEgressError, GrpcEgressInterceptor, GrpcEgressInterceptorChain, GrpcMetadata, GrpcRequest,
-    GrpcResponse, GrpcStatusCode,
+    GrpcEgressError, GrpcEgressInterceptor, GrpcEgressInterceptorChain, GrpcRequest, GrpcResponse,
+    GrpcStatusCode,
 };
 
 struct Recorder {
@@ -59,7 +60,7 @@ fn req() -> GrpcRequest {
 fn resp() -> GrpcResponse {
     GrpcResponse {
         body: vec![],
-        metadata: GrpcMetadata::default(),
+        metadata: HashMap::new(),
     }
 }
 

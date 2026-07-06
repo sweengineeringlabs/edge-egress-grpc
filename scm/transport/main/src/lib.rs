@@ -16,7 +16,7 @@ pub use api::{
     ConsecutiveFailuresResponse, Conversions, DescribeRequest, DescribeResponse, GrpcChannelConfig,
     GrpcChannelConfigBuilder, GrpcChannelConfigError, GrpcClientBuilder, GrpcEgress,
     GrpcEgressError, GrpcEgressInterceptor, GrpcEgressInterceptorChain, GrpcEgressResult,
-    GrpcMessageStream, GrpcMetadata, GrpcRequest, GrpcRequestBuilder, GrpcResponse, GrpcStatusCode,
+    GrpcMessageStream, GrpcRequest, GrpcRequestBuilder, GrpcResponse, GrpcStatusCode,
     HealthCheckRequest, KeepAliveConfig, LastErrorRequest, LastErrorResponse, MtlsConfig,
     ProcessingRequest, Processor, ResilienceConfig, ResilienceConfigBuilder, ResilienceValidator,
     ResilientGrpcClientPort, TraceContextInterceptor, TraceContextSource, TransportSvc,

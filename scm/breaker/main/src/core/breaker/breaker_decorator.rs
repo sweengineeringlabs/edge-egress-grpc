@@ -36,12 +36,14 @@ impl<T: GrpcEgress + Send + Sync + 'static> BreakerDecorator<T> for DefaultBreak
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashMap;
+
     use super::*;
     use crate::api::GrpcBreakerConfig;
     use futures::future::BoxFuture;
     use swe_edge_egress_grpc::{
-        CallStreamRequest, GrpcEgressResult, GrpcMessageStream, GrpcMetadata, GrpcRequest,
-        GrpcResponse, HealthCheckRequest,
+        CallStreamRequest, GrpcEgressResult, GrpcMessageStream, GrpcRequest, GrpcResponse,
+        HealthCheckRequest,
     };
 
     struct DefaultBreakerDecoratorNoopEgress;
@@ -50,7 +52,7 @@ mod tests {
             Box::pin(async {
                 Ok(GrpcResponse {
                     body: b"noop-ok".to_vec(),
-                    metadata: GrpcMetadata::default(),
+                    metadata: HashMap::new(),
                 })
             })
         }

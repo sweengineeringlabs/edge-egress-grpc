@@ -1,6 +1,6 @@
 //! gRPC response envelope.
 
-use super::grpc_metadata::GrpcMetadata;
+use std::collections::HashMap;
 
 /// A gRPC response envelope.
 #[derive(Debug, Clone)]
@@ -8,5 +8,5 @@ pub struct GrpcResponse {
     /// The raw decoded response payload bytes.
     pub body: Vec<u8>,
     /// Trailing metadata headers returned by the server.
-    pub metadata: GrpcMetadata,
+    pub metadata: HashMap<String, String>,
 }

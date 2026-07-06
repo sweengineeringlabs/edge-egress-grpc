@@ -55,7 +55,6 @@ impl GrpcEgressInterceptor for BearerEgressInterceptor {
             )
         })?;
         req.metadata
-            .headers
             .insert(AUTHORIZATION_HEADER.to_string(), format!("Bearer {token}"));
         Ok(())
     }

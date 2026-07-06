@@ -1,6 +1,8 @@
 //! `impl` block for [`GrpcRequestBuilder`]. The type *declaration* lives in `api/`.
 
-use crate::api::{GrpcMetadata, GrpcRequest, GrpcRequestBuilder};
+use std::collections::HashMap;
+
+use crate::api::{GrpcRequest, GrpcRequestBuilder};
 
 impl GrpcRequestBuilder {
     /// Create a new empty builder.
@@ -23,7 +25,7 @@ impl GrpcRequestBuilder {
         self
     }
     /// Attach outbound metadata headers.
-    pub fn metadata(mut self, v: GrpcMetadata) -> Self {
+    pub fn metadata(mut self, v: HashMap<String, String>) -> Self {
         self.metadata = v;
         self
     }

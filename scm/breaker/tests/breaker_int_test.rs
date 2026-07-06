@@ -1,14 +1,15 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Integration tests for the gRPC circuit-breaker decorator.
 
+use std::collections::HashMap;
 use std::sync::atomic::{AtomicU32, Ordering};
 use std::sync::Arc;
 use std::time::Duration;
 
 use futures::future::BoxFuture;
 use swe_edge_egress_grpc::{
-    GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcMetadata, GrpcRequest, GrpcResponse,
-    GrpcStatusCode, HealthCheckRequest,
+    GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcRequest, GrpcResponse, GrpcStatusCode,
+    HealthCheckRequest,
 };
 use swe_edge_egress_grpc_breaker::{
     BreakerState, GrpcBreakerClient, GrpcBreakerConfig, GrpcBreakerFacade,
@@ -49,7 +50,7 @@ impl GrpcEgress for Shared {
             match inner.mode.load(Ordering::SeqCst) {
                 0 => Ok(GrpcResponse {
                     body: b"ok".to_vec(),
-                    metadata: GrpcMetadata::default(),
+                    metadata: HashMap::new(),
                 }),
                 1 => Err(GrpcEgressError::Status(
                     GrpcStatusCode::Unavailable,

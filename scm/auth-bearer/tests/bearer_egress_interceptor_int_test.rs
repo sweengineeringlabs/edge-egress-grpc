@@ -37,7 +37,6 @@ fn test_before_call_injects_bearer_authorization_header() {
     interceptor.before_call(&mut req).expect("before_call");
     let auth = req
         .metadata
-        .headers
         .get(AUTHORIZATION_HEADER)
         .cloned()
         .expect("authorization header must be injected");
@@ -73,7 +72,6 @@ fn test_sign_token_round_trips_through_jsonwebtoken_verifier() {
     interceptor.before_call(&mut req).expect("before_call");
     let auth = req
         .metadata
-        .headers
         .get(AUTHORIZATION_HEADER)
         .cloned()
         .expect("auth header");
