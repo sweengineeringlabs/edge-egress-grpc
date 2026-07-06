@@ -16,14 +16,11 @@ use http_body_util::{BodyExt as _, Full};
 use tokio_util::sync::CancellationToken;
 
 use super::tonic_grpc_client::TonicGrpcClient;
-use crate::api::error::{GrpcChannelConfigError, GrpcEgressError};
-use crate::api::traits::GrpcEgress;
-use crate::api::types::interceptor::GrpcEgressInterceptorChain;
-use crate::api::types::{
-    CompressionMode, GrpcChannelConfig, GrpcMetadata, GrpcRequest, GrpcResponse, GrpcStatusCode,
-    DEFAULT_MAX_MESSAGE_BYTES,
+use crate::api::{
+    CompressionMode, GrpcChannelConfig, GrpcChannelConfigError, GrpcEgress, GrpcEgressError,
+    GrpcEgressInterceptorChain, GrpcEgressResult, GrpcMessageStream, GrpcMetadata, GrpcRequest,
+    GrpcResponse, GrpcStatusCode, DEFAULT_MAX_MESSAGE_BYTES,
 };
-use crate::api::types::{GrpcEgressResult, GrpcMessageStream};
 use crate::core::status::Conversions as StatusConversions;
 
 const SANITIZED_INTERNAL_MSG: &str = "internal client error";
@@ -247,7 +244,7 @@ impl TonicGrpcClient {
         )
     )]
     fn from_config(config: &GrpcChannelConfig) -> Result<Self, GrpcChannelConfigError> {
-        use crate::api::types::DEFAULT_REQUEST_TIMEOUT_SECS;
+        use crate::api::DEFAULT_REQUEST_TIMEOUT_SECS;
         if config.tls_required && TonicGrpcClientProtocol::is_plaintext_endpoint(&config.endpoint) {
             return Err(GrpcChannelConfigError::PlaintextRejected(
                 config.endpoint.clone(),
@@ -324,10 +321,10 @@ impl TonicGrpcClientProtocol {
 
 // ── Processor impl ───────────────────────────────────────────────────────────
 
-impl crate::api::traits::processor::Processor for TonicGrpcClient {
+impl crate::api::Processor for TonicGrpcClient {
     fn process(&self) -> futures::future::BoxFuture<'_, Result<(), GrpcEgressError>> {
         // Default: verify the endpoint is reachable — a no-op health probe.
-        Box::pin(self.health_check(crate::api::types::HealthCheckRequest))
+        Box::pin(self.health_check(crate::api::HealthCheckRequest))
     }
 
     fn describe(&self) -> &'static str {
@@ -461,9 +458,9 @@ impl GrpcEgress for TonicGrpcClient {
     /// `timeout`.  Phase 2 will plumb a `GrpcRequest`-shaped streaming envelope.
     fn call_stream(
         &self,
-        req: crate::api::types::CallStreamRequest,
+        req: crate::api::CallStreamRequest,
     ) -> BoxFuture<'_, GrpcEgressResult<GrpcMessageStream>> {
-        let crate::api::types::CallStreamRequest {
+        let crate::api::CallStreamRequest {
             method,
             metadata,
             messages,
@@ -585,9 +582,9 @@ impl GrpcEgress for TonicGrpcClient {
     /// Send a client-streaming request — multiple request frames, single response.
     fn call_client_stream(
         &self,
-        req: crate::api::types::CallStreamRequest,
+        req: crate::api::CallStreamRequest,
     ) -> BoxFuture<'_, GrpcEgressResult<GrpcResponse>> {
-        let crate::api::types::CallStreamRequest {
+        let crate::api::CallStreamRequest {
             method,
             metadata,
             messages,
@@ -673,14 +670,14 @@ impl GrpcEgress for TonicGrpcClient {
     /// [`call_stream`]: GrpcEgress::call_stream
     fn call_bidi_stream(
         &self,
-        req: crate::api::types::CallStreamRequest,
+        req: crate::api::CallStreamRequest,
     ) -> BoxFuture<'_, GrpcEgressResult<GrpcMessageStream>> {
         self.call_stream(req)
     }
 
     fn health_check(
         &self,
-        _req: crate::api::types::HealthCheckRequest,
+        _req: crate::api::HealthCheckRequest,
     ) -> BoxFuture<'_, GrpcEgressResult<()>> {
         let base_uri = self.base_uri.clone();
 
@@ -869,8 +866,7 @@ mod tests {
         rustls::crypto::aws_lc_rs::default_provider()
             .install_default()
             .ok();
-        let cfg =
-            crate::api::types::GrpcChannelConfig::new("http://localhost:50051").allow_plaintext();
+        let cfg = crate::api::GrpcChannelConfig::new("http://localhost:50051").allow_plaintext();
         let client = TonicGrpcClient::from_config(&cfg).expect("valid plaintext config");
         assert_eq!(client.base_uri, "http://localhost:50051");
     }
@@ -880,7 +876,7 @@ mod tests {
         rustls::crypto::aws_lc_rs::default_provider()
             .install_default()
             .ok();
-        let cfg = crate::api::types::GrpcChannelConfig::new("http://localhost:50051")
+        let cfg = crate::api::GrpcChannelConfig::new("http://localhost:50051")
             .allow_plaintext()
             .with_request_timeout(Duration::from_secs(120));
         let client = TonicGrpcClient::from_config(&cfg).unwrap();
@@ -892,8 +888,7 @@ mod tests {
         rustls::crypto::aws_lc_rs::default_provider()
             .install_default()
             .ok();
-        let cfg =
-            crate::api::types::GrpcChannelConfig::new("http://localhost:50051").allow_plaintext();
+        let cfg = crate::api::GrpcChannelConfig::new("http://localhost:50051").allow_plaintext();
         let client = TonicGrpcClient::from_config(&cfg).unwrap();
         assert_eq!(client.timeout, Duration::from_secs(30));
     }

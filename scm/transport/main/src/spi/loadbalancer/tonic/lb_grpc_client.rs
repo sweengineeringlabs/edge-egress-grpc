@@ -15,9 +15,9 @@ use swe_edge_loadbalancer::{
     LoadbalancerConfig, Outcome,
 };
 
-use crate::api::error::GrpcEgressError;
-use crate::api::traits::GrpcEgress;
-use crate::api::types::{GrpcEgressResult, GrpcMetadata, GrpcRequest, GrpcResponse};
+use crate::api::{
+    GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcMetadata, GrpcRequest, GrpcResponse,
+};
 use crate::core::status::Conversions as StatusConversions;
 
 const DEFAULT_TIMEOUT: Duration = Duration::from_secs(30);
@@ -213,7 +213,7 @@ impl GrpcEgress for TonicLbGrpcClient {
 
     fn health_check(
         &self,
-        _req: crate::api::types::HealthCheckRequest,
+        _req: crate::api::HealthCheckRequest,
     ) -> BoxFuture<'_, GrpcEgressResult<()>> {
         let pool = Arc::clone(&self.pool);
         Box::pin(async move {

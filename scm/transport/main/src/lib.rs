@@ -6,10 +6,24 @@ mod core;
 mod saf;
 mod spi;
 
-pub use saf::*;
-// Re-export key types for dependents
-pub use api::error::GrpcChannelConfigError;
-pub use api::error::GrpcEgressError;
-pub use api::traits::GrpcEgress;
-pub use api::types::GrpcChannelConfig;
-pub use api::types::TransportSvc;
+// Re-export the crate's public contracts and value objects via api/'s own
+// flat re-export surface (crate::api::TypeName) -- saf/ carries only
+// trait re-exports and genuinely saf-declared composition helpers, never
+// a pass-through of types declared elsewhere.
+pub use api::{
+    ApplicationConfigBuilder, CallStreamRequest, CallUnaryWithContextRequest, CompressionMode,
+    Conversions, GrpcChannelConfig, GrpcChannelConfigBuilder, GrpcChannelConfigError,
+    GrpcClientBuilder, GrpcEgress, GrpcEgressError, GrpcEgressInterceptor,
+    GrpcEgressInterceptorChain, GrpcEgressResult, GrpcMessageStream, GrpcMetadata, GrpcRequest,
+    GrpcRequestBuilder, GrpcResponse, GrpcStatusCode, HealthCheckRequest, KeepAliveConfig,
+    MtlsConfig, Processor, ResilienceConfig, ResilienceConfigBuilder, ResilienceValidator,
+    ResilientGrpcClientPort, TraceContextInterceptor, TraceContextSource, TransportSvc, Validator,
+    DEFAULT_MAX_MESSAGE_BYTES,
+};
+pub use edge_domain::SecurityContext;
+pub use spi::client::tonic::{TonicGrpcClient, TonicGrpcClientBuilder};
+pub use spi::loadbalancer::tonic::TonicLbGrpcClient;
+pub use swe_edge_loadbalancer::{BackendConfig, BackendPoolInstance, LoadbalancerConfig, Strategy};
+
+#[cfg(feature = "prost")]
+pub use saf::GrpcEgressProstCodec;

@@ -8,9 +8,7 @@ use std::time::Duration;
 
 use futures::future::BoxFuture;
 
-use crate::api::error::GrpcEgressError;
-use crate::api::traits::GrpcEgress;
-use crate::api::types::{GrpcEgressResult, GrpcRequest};
+use crate::api::{GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcRequest};
 
 /// Typed unary calls over any [`GrpcEgress`], encoding and decoding via `prost`.
 ///

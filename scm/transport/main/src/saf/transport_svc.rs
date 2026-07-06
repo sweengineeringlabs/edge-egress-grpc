@@ -3,35 +3,13 @@
 use std::sync::Arc;
 use std::time::Duration;
 
-use crate::api::error::{GrpcChannelConfigError, GrpcEgressError};
-use crate::api::traits::GrpcEgress;
-use crate::api::types::TransportSvc;
-use crate::api::types::{GrpcChannelConfig, DEFAULT_REQUEST_TIMEOUT_SECS};
-use crate::spi::client::tonic::TonicGrpcClientProtocol;
-
-// Re-export public API types for consumers
-pub use crate::api::traits::interceptor::grpc_egress_interceptor::GrpcEgressInterceptor;
-pub use crate::api::traits::resilience::resilience_validator::ResilienceValidator;
-pub use crate::api::traits::resilience::resilient_grpc_client_port::ResilientGrpcClientPort;
-pub use crate::api::traits::{Processor, Validator};
-pub use crate::api::types::client::grpc_client_builder::GrpcClientBuilder;
-pub use crate::api::types::grpc::grpc_channel_config_builder::GrpcChannelConfigBuilder;
-pub use crate::api::types::grpc::grpc_request_builder::GrpcRequestBuilder;
-pub use crate::api::types::interceptor::{
-    GrpcEgressInterceptorChain, TraceContextInterceptor, TraceContextSource,
+use crate::api::{
+    GrpcChannelConfig, GrpcChannelConfigError, GrpcEgress, GrpcEgressError, ResilienceConfig,
+    TransportSvc, Validator, DEFAULT_REQUEST_TIMEOUT_SECS,
 };
-pub use crate::api::types::status::conversions::Conversions;
-pub use crate::api::types::ApplicationConfigBuilder;
-pub use crate::api::types::{
-    CallStreamRequest, CallUnaryWithContextRequest, CompressionMode, GrpcMetadata, GrpcRequest,
-    GrpcResponse, GrpcStatusCode, HealthCheckRequest, KeepAliveConfig, MtlsConfig,
-    ResilienceConfig, ResilienceConfigBuilder, DEFAULT_MAX_MESSAGE_BYTES,
-};
-pub use crate::api::types::{GrpcEgressResult, GrpcMessageStream};
-pub use crate::spi::client::tonic::{TonicGrpcClient, TonicGrpcClientBuilder};
-pub use crate::spi::loadbalancer::tonic::TonicLbGrpcClient;
-pub use edge_domain::SecurityContext;
-pub use swe_edge_loadbalancer::{BackendConfig, BackendPoolInstance, LoadbalancerConfig, Strategy};
+use crate::spi::client::tonic::{TonicGrpcClient, TonicGrpcClientProtocol};
+use crate::spi::loadbalancer::tonic::TonicLbGrpcClient;
+use swe_edge_loadbalancer::LoadbalancerConfig;
 
 impl TransportSvc {
     /// Create a config builder pre-populated with this crate's name and version.

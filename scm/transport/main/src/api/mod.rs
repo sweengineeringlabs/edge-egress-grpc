@@ -1,6 +1,34 @@
 //! gRPC egress API — ports, interceptors, and value objects.
 
-pub(crate) mod config;
-pub(crate) mod error;
-pub(crate) mod traits;
-pub(crate) mod types;
+mod config;
+mod error;
+mod traits;
+mod types;
+
+// Flat re-export surface: core/, spi/, saf/, and lib.rs may only reach
+// api/ items via `crate::api::TypeName` -- never by traversing into a
+// submodule (`crate::api::types::TypeName`). This is the one place that
+// boundary is crossed; every item any other layer or lib.rs needs must
+// be named here exactly once. `pub` (not `pub(crate)`) so lib.rs can
+// re-export a subset of these further as the crate's public surface --
+// the submodules themselves stay fully private, which is what satisfies
+// the "layer mod paths must be private" half of the rule.
+pub use error::{GrpcChannelConfigError, GrpcEgressError};
+pub use traits::interceptor::grpc_egress_interceptor::GrpcEgressInterceptor;
+pub use traits::resilience::resilience_validator::ResilienceValidator;
+pub use traits::resilience::resilient_grpc_client_port::ResilientGrpcClientPort;
+pub use traits::{GrpcEgress, Processor, Validator};
+pub use types::client::grpc_client_builder::GrpcClientBuilder;
+pub use types::grpc::grpc_channel_config_builder::GrpcChannelConfigBuilder;
+pub use types::grpc::grpc_request_builder::GrpcRequestBuilder;
+pub use types::interceptor::{
+    GrpcEgressInterceptorChain, TraceContextInterceptor, TraceContextSource,
+};
+pub use types::status::conversions::Conversions;
+pub use types::ApplicationConfigBuilder;
+pub use types::{
+    CallStreamRequest, CallUnaryWithContextRequest, CompressionMode, GrpcChannelConfig,
+    GrpcEgressResult, GrpcMessageStream, GrpcMetadata, GrpcRequest, GrpcResponse, GrpcStatusCode,
+    HealthCheckRequest, KeepAliveConfig, MtlsConfig, ResilienceConfig, ResilienceConfigBuilder,
+    TransportSvc, DEFAULT_MAX_MESSAGE_BYTES, DEFAULT_REQUEST_TIMEOUT_SECS,
+};

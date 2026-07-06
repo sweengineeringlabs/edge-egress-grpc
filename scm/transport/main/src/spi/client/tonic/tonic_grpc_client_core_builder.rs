@@ -3,8 +3,7 @@
 use std::time::Duration;
 
 use super::tonic_grpc_client::TonicGrpcClient;
-use crate::api::types::interceptor::GrpcEgressInterceptorChain;
-use crate::api::types::{CompressionMode, DEFAULT_MAX_MESSAGE_BYTES};
+use crate::api::{CompressionMode, GrpcEgressInterceptorChain, DEFAULT_MAX_MESSAGE_BYTES};
 
 /// Builder for [`TonicGrpcClient`].
 pub(crate) struct TonicGrpcClientBuilder {
@@ -94,8 +93,7 @@ impl TonicGrpcClientBuilder {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::api::error::GrpcEgressError;
-    use crate::api::types::{GrpcRequest, GrpcResponse};
+    use crate::api::{GrpcEgressError, GrpcRequest, GrpcResponse};
     use crate::GrpcEgressInterceptor;
 
     struct NoopInterceptor;
