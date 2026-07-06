@@ -1,7 +1,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Integration tests for [`DescribeRequest`].
 
-use swe_edge_egress_grpc_resilient::{DescribeRequest, GrpcResilientSvc, Processor};
+use swe_edge_egress_grpc_resilient::{DescribeRequest, GrpcResilientSvcProcessor, Processor};
 
 /// @covers: DescribeRequest
 #[test]
@@ -13,7 +13,7 @@ fn test_describe_request_is_constructible_happy() {
 /// @covers: DescribeRequest
 #[test]
 fn test_describe_request_used_by_real_processor_error() {
-    let resp = GrpcResilientSvc
+    let resp = GrpcResilientSvcProcessor
         .describe(DescribeRequest)
         .expect("real processor must accept this request type");
     assert!(!resp.label.is_empty());

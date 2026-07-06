@@ -10,14 +10,15 @@ use swe_edge_egress_grpc_retry::{GrpcRetryClient, GrpcRetryConfig};
 
 use crate::api::{
     ApplicationConfigBuilder, ConfigBuilderProvider, ConfigBuilderRequest, ConfigValidationRequest,
-    GrpcResilientFacade, GrpcResilientSvc, ResilienceConfig, ResilientTransportError, Validator,
+    GrpcResilientFacade, GrpcResilientSvcProcessor, ResilienceConfig, ResilientTransportError,
+    Validator,
 };
 use crate::core::traits::default_validator::DefaultValidator;
 
 impl GrpcResilientFacade {
     /// Return a config builder pre-seeded with this crate's name and version.
     pub fn create_config_builder() -> Result<ApplicationConfigBuilder, ResilientTransportError> {
-        Ok(GrpcResilientSvc
+        Ok(GrpcResilientSvcProcessor
             .create_config_builder(ConfigBuilderRequest)?
             .builder)
     }

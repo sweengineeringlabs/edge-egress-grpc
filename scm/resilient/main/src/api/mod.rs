@@ -8,5 +8,6 @@ pub use error::ResilientTransportError;
 pub use traits::{ConfigBuilderProvider, Processor, Validator};
 pub use types::{
     ApplicationConfigBuilder, ConfigBuilderRequest, ConfigBuilderResponse, ConfigValidationRequest,
-    DescribeRequest, DescribeResponse, GrpcResilientFacade, GrpcResilientSvc, ResilienceConfig,
+    DescribeRequest, DescribeResponse, GrpcResilientFacade, GrpcResilientSvcProcessor,
+    ResilienceConfig,
 };

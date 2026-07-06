@@ -1,7 +1,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
-//! Integration tests for the `Processor` trait contract on `GrpcResilientSvc`.
+//! Integration tests for the `Processor` trait contract on `GrpcResilientSvcProcessor`.
 
-use swe_edge_egress_grpc_resilient::{DescribeRequest, GrpcResilientSvc, Processor};
+use swe_edge_egress_grpc_resilient::{DescribeRequest, GrpcResilientSvcProcessor, Processor};
 
 /// @covers: Processor — trait is object-safe
 #[test]
@@ -12,7 +12,7 @@ fn resilient_trait_processor_is_object_safe_int_test() {
 /// @covers: Processor::describe — returns expected label
 #[test]
 fn resilient_struct_grpc_resilient_svc_describe_returns_label_int_test() {
-    let resp = GrpcResilientSvc
+    let resp = GrpcResilientSvcProcessor
         .describe(DescribeRequest)
         .expect("infallible");
     assert_eq!(resp.label, "grpc-resilient");

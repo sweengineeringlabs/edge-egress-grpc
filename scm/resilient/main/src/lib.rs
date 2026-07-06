@@ -25,6 +25,6 @@ mod saf;
 pub use crate::api::{
     ApplicationConfigBuilder, ConfigBuilderProvider, ConfigBuilderRequest, ConfigBuilderResponse,
     ConfigValidationRequest, DescribeRequest, DescribeResponse, GrpcResilientFacade,
-    GrpcResilientSvc, Processor, ResilienceConfig, ResilientTransportError, Validator,
+    GrpcResilientSvcProcessor, Processor, ResilienceConfig, ResilientTransportError, Validator,
 };
 pub use saf::*;

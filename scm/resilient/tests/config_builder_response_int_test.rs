@@ -2,13 +2,13 @@
 //! Integration tests for [`ConfigBuilderResponse`].
 
 use swe_edge_egress_grpc_resilient::{
-    ConfigBuilderProvider, ConfigBuilderRequest, GrpcResilientSvc,
+    ConfigBuilderProvider, ConfigBuilderRequest, GrpcResilientSvcProcessor,
 };
 
 /// @covers: ConfigBuilderResponse
 #[test]
 fn test_config_builder_response_builder_field_is_usable_happy() {
-    let resp = GrpcResilientSvc
+    let resp = GrpcResilientSvcProcessor
         .create_config_builder(ConfigBuilderRequest)
         .expect("real provider must succeed");
     resp.builder.build_loader().expect("builder must be usable");
@@ -19,10 +19,10 @@ fn test_config_builder_response_builder_field_is_usable_happy() {
 fn test_config_builder_response_repeated_construction_error() {
     // "error"-flavored scenario: prove two independently constructed
     // responses don't share broken state (e.g. a poisoned singleton).
-    let first = GrpcResilientSvc
+    let first = GrpcResilientSvcProcessor
         .create_config_builder(ConfigBuilderRequest)
         .expect("first response");
-    let second = GrpcResilientSvc
+    let second = GrpcResilientSvcProcessor
         .create_config_builder(ConfigBuilderRequest)
         .expect("second response");
     first.builder.build_loader().expect("first must build");
@@ -32,7 +32,7 @@ fn test_config_builder_response_repeated_construction_error() {
 /// @covers: ConfigBuilderResponse
 #[test]
 fn test_config_builder_response_builder_consumed_by_value_edge() {
-    let resp = GrpcResilientSvc
+    let resp = GrpcResilientSvcProcessor
         .create_config_builder(ConfigBuilderRequest)
         .expect("real provider must succeed");
     // build_loader() takes `self` by value — proves the field is a genuine

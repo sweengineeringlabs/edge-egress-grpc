@@ -2,7 +2,7 @@
 //! Integration tests for [`ConfigBuilderRequest`].
 
 use swe_edge_egress_grpc_resilient::{
-    ConfigBuilderProvider, ConfigBuilderRequest, GrpcResilientSvc,
+    ConfigBuilderProvider, ConfigBuilderRequest, GrpcResilientSvcProcessor,
 };
 
 /// @covers: ConfigBuilderRequest
@@ -20,7 +20,7 @@ fn test_config_builder_request_used_by_real_provider_error() {
     // "error"-flavored scenario for a zero-field marker type: prove it's
     // not an orphaned placeholder by threading it through a real call and
     // checking the payload, not just success/failure.
-    let resp = GrpcResilientSvc
+    let resp = GrpcResilientSvcProcessor
         .create_config_builder(ConfigBuilderRequest)
         .expect("real provider must accept this request type");
     resp.builder

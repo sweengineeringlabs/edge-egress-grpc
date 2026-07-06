@@ -1,11 +1,11 @@
-//! `impl ConfigBuilderProvider for GrpcResilientSvc`.
+//! `impl ConfigBuilderProvider for GrpcResilientSvcProcessor`.
 
 use crate::api::{
     ApplicationConfigBuilder, ConfigBuilderProvider, ConfigBuilderRequest, ConfigBuilderResponse,
-    GrpcResilientSvc, ResilientTransportError,
+    GrpcResilientSvcProcessor, ResilientTransportError,
 };
 
-impl ConfigBuilderProvider for GrpcResilientSvc {
+impl ConfigBuilderProvider for GrpcResilientSvcProcessor {
     fn create_config_builder(
         &self,
         _req: ConfigBuilderRequest,
@@ -42,7 +42,7 @@ mod tests {
     /// @covers: build_loader
     #[test]
     fn test_create_config_builder_build_loader_produces_a_working_loader() {
-        let resp = GrpcResilientSvc
+        let resp = GrpcResilientSvcProcessor
             .create_config_builder(ConfigBuilderRequest)
             .expect("infallible");
         let loader = resp
@@ -65,7 +65,7 @@ mod tests {
 
     #[test]
     fn test_default_provider_returns_a_grpc_resilient_svc_marker() {
-        let svc = <GrpcResilientSvc as ConfigBuilderProvider>::default_provider();
+        let svc = <GrpcResilientSvcProcessor as ConfigBuilderProvider>::default_provider();
         assert_eq!(std::mem::size_of_val(&svc), 0);
     }
 }
