@@ -1,4 +1,3 @@
 //! Built-in outbound interceptor implementations.
-//!
-//! `TraceContextInterceptor` is implemented directly in the api/ layer since
-//! its `GrpcEgressInterceptor` impl uses only api/-scoped types.
+pub(crate) mod grpc_egress_interceptor_chain;
+pub(crate) mod trace_context_interceptor;

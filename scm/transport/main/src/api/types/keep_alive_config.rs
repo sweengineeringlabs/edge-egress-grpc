@@ -17,13 +17,3 @@ pub struct KeepAliveConfig {
     /// If `true`, send pings even when no streams are active.
     pub permit_without_calls: bool,
 }
-
-impl Default for KeepAliveConfig {
-    fn default() -> Self {
-        Self {
-            interval: Duration::from_secs(10),
-            timeout: Duration::from_secs(20),
-            permit_without_calls: false,
-        }
-    }
-}

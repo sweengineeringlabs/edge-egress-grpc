@@ -1,22 +1,6 @@
-//! `ResilienceConfigBuilder` — builder for [`ResilienceConfig`].
+//! `impl` block for [`ResilienceConfigBuilder`]. The type *declaration* lives in `api/`.
 
-use super::resilience_config::ResilienceConfig;
-
-/// Builder for [`ResilienceConfig`].
-#[derive(Debug, Default)]
-pub struct ResilienceConfigBuilder {
-    max_attempts: Option<u32>,
-    initial_backoff_ms: Option<u64>,
-    backoff_multiplier: Option<f64>,
-    jitter_factor: Option<f64>,
-    max_backoff_ms: Option<u64>,
-    rate_limit_max_attempts: Option<u32>,
-    rate_limit_initial_backoff_ms: Option<u64>,
-    rate_limit_max_backoff_ms: Option<u64>,
-    failure_threshold: Option<u32>,
-    cool_down_seconds: Option<u64>,
-    half_open_probe_count: Option<u32>,
-}
+use crate::api::{ResilienceConfig, ResilienceConfigBuilder};
 
 impl ResilienceConfigBuilder {
     /// Create a new empty builder.
@@ -38,7 +22,7 @@ impl ResilienceConfigBuilder {
         self.backoff_multiplier = Some(v);
         self
     }
-    /// Set the jitter factor applied to each backoff interval (0.0–1.0).
+    /// Set the jitter factor applied to each backoff interval (0.0-1.0).
     pub fn jitter_factor(mut self, v: f64) -> Self {
         self.jitter_factor = Some(v);
         self

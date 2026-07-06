@@ -1,21 +1,6 @@
-//! `GrpcRequestBuilder` — builder for [`GrpcRequest`].
+//! `impl` block for [`GrpcRequestBuilder`]. The type *declaration* lives in `api/`.
 
-use std::time::Duration;
-
-use tokio_util::sync::CancellationToken;
-
-use super::grpc_metadata::GrpcMetadata;
-use super::grpc_request::GrpcRequest;
-
-/// Builder for [`GrpcRequest`].
-#[derive(Debug, Default)]
-pub struct GrpcRequestBuilder {
-    method: Option<String>,
-    body: Vec<u8>,
-    deadline: Option<Duration>,
-    metadata: GrpcMetadata,
-    cancellation_token: Option<CancellationToken>,
-}
+use crate::api::{GrpcMetadata, GrpcRequest, GrpcRequestBuilder};
 
 impl GrpcRequestBuilder {
     /// Create a new empty builder.
@@ -33,7 +18,7 @@ impl GrpcRequestBuilder {
         self
     }
     /// Set the per-request deadline.
-    pub fn deadline(mut self, v: Duration) -> Self {
+    pub fn deadline(mut self, v: std::time::Duration) -> Self {
         self.deadline = Some(v);
         self
     }
@@ -43,7 +28,7 @@ impl GrpcRequestBuilder {
         self
     }
     /// Attach a cancellation token to abort the in-flight request.
-    pub fn cancellation_token(mut self, v: CancellationToken) -> Self {
+    pub fn cancellation_token(mut self, v: tokio_util::sync::CancellationToken) -> Self {
         self.cancellation_token = Some(v);
         self
     }

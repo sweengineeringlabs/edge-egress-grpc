@@ -7,6 +7,7 @@ pub use traits::{Processor, Validator};
 pub mod grpc_egress;
 pub use grpc_egress::GrpcEgress;
 
-pub mod interceptor;
+pub mod grpc_egress_interceptor;
 pub mod processor;
-pub mod resilience;
+pub mod resilience_validator;
+pub mod resilient_grpc_client_port;

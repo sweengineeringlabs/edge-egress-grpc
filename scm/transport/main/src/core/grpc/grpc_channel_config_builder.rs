@@ -1,22 +1,7 @@
-//! `GrpcChannelConfigBuilder` — builder for [`GrpcChannelConfig`].
+//! `impl` block for [`GrpcChannelConfigBuilder`]. The type *declaration* lives in `api/`.
 
-use super::grpc_channel_config::{GrpcChannelConfig, DEFAULT_MAX_MESSAGE_BYTES};
-use crate::api::types::compression_mode::CompressionMode;
-use crate::api::types::keep_alive_config::KeepAliveConfig;
-use crate::api::types::mtls_config::MtlsConfig;
-use crate::api::types::resilience::resilience_config::ResilienceConfig;
-
-/// Builder for [`GrpcChannelConfig`].
-#[derive(Debug, Default)]
-pub struct GrpcChannelConfigBuilder {
-    endpoint: Option<String>,
-    tls_required: bool,
-    mtls: Option<MtlsConfig>,
-    keep_alive: Option<KeepAliveConfig>,
-    max_message_bytes: Option<usize>,
-    compression: Option<CompressionMode>,
-    resilience: Option<ResilienceConfig>,
-}
+use crate::api::{CompressionMode, GrpcChannelConfig, GrpcChannelConfigBuilder};
+use crate::api::{KeepAliveConfig, MtlsConfig, ResilienceConfig, DEFAULT_MAX_MESSAGE_BYTES};
 
 impl GrpcChannelConfigBuilder {
     /// Create a new builder with TLS required by default.

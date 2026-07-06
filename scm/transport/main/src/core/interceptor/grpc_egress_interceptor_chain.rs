@@ -1,18 +1,9 @@
-//! `GrpcEgressInterceptorChain` — ordered chain of outbound interceptors.
+//! `impl` block for [`GrpcEgressInterceptorChain`]. The type *declaration* lives in `api/`.
 
 use std::sync::Arc;
 
-use crate::api::error::GrpcEgressError;
-use crate::api::traits::interceptor::grpc_egress_interceptor::GrpcEgressInterceptor;
-use crate::api::types::{GrpcRequest, GrpcResponse};
-
-/// A registered chain of [`GrpcEgressInterceptor`]s.
-///
-/// Chain order = the order in which interceptors were added.
-#[derive(Clone, Default)]
-pub struct GrpcEgressInterceptorChain {
-    pub(crate) interceptors: Vec<Arc<dyn GrpcEgressInterceptor>>,
-}
+use crate::api::{GrpcEgressError, GrpcEgressInterceptor, GrpcEgressInterceptorChain};
+use crate::api::{GrpcRequest, GrpcResponse};
 
 impl GrpcEgressInterceptorChain {
     /// Construct an empty chain.

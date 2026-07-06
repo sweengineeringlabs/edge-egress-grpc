@@ -14,21 +14,16 @@ mod types;
 // the submodules themselves stay fully private, which is what satisfies
 // the "layer mod paths must be private" half of the rule.
 pub use error::{GrpcChannelConfigError, GrpcEgressError};
-pub use traits::interceptor::grpc_egress_interceptor::GrpcEgressInterceptor;
-pub use traits::resilience::resilience_validator::ResilienceValidator;
-pub use traits::resilience::resilient_grpc_client_port::ResilientGrpcClientPort;
+pub use traits::grpc_egress_interceptor::GrpcEgressInterceptor;
+pub use traits::resilience_validator::ResilienceValidator;
+pub use traits::resilient_grpc_client_port::ResilientGrpcClientPort;
 pub use traits::{GrpcEgress, Processor, Validator};
-pub use types::client::grpc_client_builder::GrpcClientBuilder;
-pub use types::grpc::grpc_channel_config_builder::GrpcChannelConfigBuilder;
-pub use types::grpc::grpc_request_builder::GrpcRequestBuilder;
-pub use types::interceptor::{
-    GrpcEgressInterceptorChain, TraceContextInterceptor, TraceContextSource,
-};
-pub use types::status::conversions::Conversions;
 pub use types::ApplicationConfigBuilder;
 pub use types::{
-    CallStreamRequest, CallUnaryWithContextRequest, CompressionMode, GrpcChannelConfig,
-    GrpcEgressResult, GrpcMessageStream, GrpcMetadata, GrpcRequest, GrpcResponse, GrpcStatusCode,
-    HealthCheckRequest, KeepAliveConfig, MtlsConfig, ResilienceConfig, ResilienceConfigBuilder,
+    CallStreamRequest, CallUnaryWithContextRequest, CompressionMode, Conversions,
+    GrpcChannelConfig, GrpcChannelConfigBuilder, GrpcClientBuilder, GrpcEgressInterceptorChain,
+    GrpcEgressResult, GrpcMessageStream, GrpcMetadata, GrpcRequest, GrpcRequestBuilder,
+    GrpcResponse, GrpcStatusCode, HealthCheckRequest, KeepAliveConfig, MtlsConfig,
+    ResilienceConfig, ResilienceConfigBuilder, TraceContextInterceptor, TraceContextSource,
     TransportSvc, DEFAULT_MAX_MESSAGE_BYTES, DEFAULT_REQUEST_TIMEOUT_SECS,
 };

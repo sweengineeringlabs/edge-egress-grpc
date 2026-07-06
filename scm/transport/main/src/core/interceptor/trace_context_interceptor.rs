@@ -1,21 +1,10 @@
-//! W3C Trace Context outbound interceptor — declaration and implementation.
+//! `impl` blocks for [`TraceContextInterceptor`]. The type *declaration* lives in `api/`.
 
-use crate::api::error::GrpcEgressError;
-use crate::api::traits::interceptor::grpc_egress_interceptor::GrpcEgressInterceptor;
-use crate::api::types::interceptor::trace_context_source::TraceContextSource;
-use crate::api::types::{GrpcRequest, GrpcResponse};
+use crate::api::{GrpcEgressError, GrpcEgressInterceptor, TraceContextInterceptor};
+use crate::api::{GrpcRequest, GrpcResponse, TraceContextSource};
 
 const TRACEPARENT: &str = "traceparent";
 const TRACESTATE: &str = "tracestate";
-
-/// W3C Trace Context propagation interceptor for outbound gRPC.
-///
-/// Construct via [`TraceContextInterceptor::pass_through`] or
-/// [`TraceContextInterceptor::with_static`].
-#[derive(Clone)]
-pub struct TraceContextInterceptor {
-    pub(crate) source: TraceContextSource,
-}
 
 impl TraceContextInterceptor {
     /// Propagates an upstream `traceparent` only — does not inject.
