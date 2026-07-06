@@ -5,12 +5,14 @@
 //! of randomness to fill an `f64` mantissa, so quality beyond
 //! that doesn't matter.  Not for cryptographic use.
 
+use crate::api::{Error, NextUnitRequest, NextUnitResponse};
+
 /// SplitMix64-based PRNG for jitter computation.
-pub(crate) struct JitterRng {
+pub(crate) struct DefaultJitterRng {
     state: u64,
 }
 
-impl JitterRng {
+impl DefaultJitterRng {
     pub(crate) fn new(seed: u64) -> Self {
         Self {
             state: seed.wrapping_add(0x9E3779B97F4A7C15),
@@ -38,9 +40,11 @@ impl JitterRng {
     }
 }
 
-impl crate::api::traits::jitter_rng::JitterRng for JitterRng {
-    fn next_unit(&mut self) -> f64 {
-        self.next_unit()
+impl crate::api::JitterRng for DefaultJitterRng {
+    fn next_unit(&mut self, _req: NextUnitRequest) -> Result<NextUnitResponse, Error> {
+        Ok(NextUnitResponse {
+            value: DefaultJitterRng::next_unit(self),
+        })
     }
 }
 
@@ -50,22 +54,22 @@ mod tests {
 
     #[test]
     fn test_new_produces_value_in_unit_interval() {
-        let mut rng = JitterRng::new(42);
+        let mut rng = DefaultJitterRng::new(42);
         let v = rng.next_unit();
         assert!((0.0..1.0).contains(&v), "expected [0, 1), got {v}");
     }
 
     #[test]
     fn test_from_clock_produces_value_in_unit_interval() {
-        let mut rng = JitterRng::from_clock();
+        let mut rng = DefaultJitterRng::from_clock();
         let v = rng.next_unit();
         assert!((0.0..1.0).contains(&v), "expected [0, 1), got {v}");
     }
 
     #[test]
     fn test_next_unit_is_deterministic_for_same_seed() {
-        let v1 = JitterRng::new(99).next_unit();
-        let v2 = JitterRng::new(99).next_unit();
+        let v1 = DefaultJitterRng::new(99).next_unit();
+        let v2 = DefaultJitterRng::new(99).next_unit();
         assert_eq!(v1, v2);
     }
 }

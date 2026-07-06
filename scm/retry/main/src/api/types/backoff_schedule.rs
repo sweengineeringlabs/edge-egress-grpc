@@ -1,19 +1,18 @@
 //! Backoff schedule outcome type.
 //!
-//! The implementation lives in `core/backoff_scheduler/`. This file
-//! holds the public type that `core/backoff_scheduler/` produces — a
-//! [`BackoffSchedule`] descriptor — so the layer-boundary check
-//! can find an api/ counterpart for every core/ submodule.
+//! The implementation lives in `core/`. This file holds the public type
+//! that `core/backoff_scheduler.rs` produces — a [`BackoffSchedule`]
+//! descriptor — so the layer-boundary check can find an api/ counterpart
+//! for every core/ submodule.
 
 use std::time::Duration;
 
 /// Outcome of one call to the backoff scheduler.
 ///
-/// Construct via the helpers in `core/backoff_scheduler/` — consumers
-/// outside the crate don't need to build these directly; the
-/// retry loop drives the schedule internally.  The type is
-/// public for tests and observability tools that want to
-/// inspect the computed delay.
+/// Construct via the helpers in `core/` — consumers outside the crate
+/// don't need to build these directly; the retry loop drives the
+/// schedule internally.  The type is public for tests and observability
+/// tools that want to inspect the computed delay.
 ///
 /// # Examples
 ///
@@ -28,11 +27,4 @@ use std::time::Duration;
 pub struct BackoffSchedule {
     /// How long to sleep before the next retry.
     pub sleep: Duration,
-}
-
-impl BackoffSchedule {
-    /// Wrap a [`Duration`] as a [`BackoffSchedule`].
-    pub fn from_duration(sleep: Duration) -> Self {
-        Self { sleep }
-    }
 }

@@ -14,7 +14,7 @@ use swe_edge_egress_grpc::{
     GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcMetadata, GrpcRequest, GrpcResponse,
     GrpcStatusCode,
 };
-use swe_edge_egress_grpc_retry::{GrpcRetryClient, GrpcRetryConfig, GrpcRetrySvc};
+use swe_edge_egress_grpc_retry::{GrpcRetryClient, GrpcRetryConfig, GrpcRetryFacade};
 
 /// Stub `GrpcEgress` that returns a scripted sequence of
 /// outcomes and counts how many times `call_unary` was invoked.
@@ -112,7 +112,7 @@ fn wrap(
     inner: Arc<ScriptedClient>,
     config: GrpcRetryConfig,
 ) -> GrpcRetryClient<SharedClient<ScriptedClient>> {
-    GrpcRetrySvc::wrap_retry(SharedClient::new(inner), config)
+    GrpcRetryFacade::wrap_retry(SharedClient::new(inner), config)
 }
 
 /// @covers: GrpcRetryConfig::default — SWE default has positive max_attempts.
@@ -405,11 +405,11 @@ async fn test_retry_honors_caller_deadline_as_total_budget() {
     );
 }
 
-/// @covers: GrpcRetrySvc::create_retry_client
+/// @covers: GrpcRetryFacade::create_retry_client
 #[test]
 fn test_create_retry_client_wraps_inner_with_default_config() {
     let inner = SharedClient::new(Arc::new(ScriptedClient::new(vec![Outcome::Ok])));
-    let client = GrpcRetrySvc::create_retry_client(inner);
+    let client = GrpcRetryFacade::create_retry_client(inner);
     let default_cfg = GrpcRetryConfig::default();
     assert_eq!(client.config().max_attempts, default_cfg.max_attempts);
     assert_eq!(
@@ -422,13 +422,13 @@ fn test_create_retry_client_wraps_inner_with_default_config() {
     );
 }
 
-/// @covers: GrpcRetrySvc::wrap_retry
+/// @covers: GrpcRetryFacade::wrap_retry
 #[test]
 fn test_wrap_retry_produces_retry_client_with_supplied_config() {
     let inner = SharedClient::new(Arc::new(ScriptedClient::new(vec![Outcome::Ok])));
     let cfg = fast_config();
     let max = cfg.max_attempts;
-    let client = GrpcRetrySvc::wrap_retry(inner, cfg);
+    let client = GrpcRetryFacade::wrap_retry(inner, cfg);
     drop(client);
     assert!(max >= 1);
 }
@@ -438,10 +438,11 @@ struct AbsentSectionProbe {
     marker: bool,
 }
 
-/// @covers: GrpcRetrySvc::create_config_builder
+/// @covers: GrpcRetryFacade::create_config_builder
 #[test]
 fn test_create_config_builder_builds_loader() {
-    let loader = GrpcRetrySvc::create_config_builder()
+    let loader = GrpcRetryFacade::create_config_builder()
+        .expect("infallible")
         .build_loader()
         .expect("a builder pre-seeded with name and version must build a valid loader");
     // In a test environment there is no application.toml at any configured

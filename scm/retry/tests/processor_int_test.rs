@@ -1,11 +1,11 @@
 //! Integration tests for the `Processor` trait contract in `swe-edge-egress-grpc-retry`.
 
-use swe_edge_egress_grpc_retry::{Error, GrpcRetryConfig, Processor};
+use swe_edge_egress_grpc_retry::{Error, GrpcRetryConfig, Processor, ProcessorRequest};
 
 struct AlwaysOk;
 
 impl Processor for AlwaysOk {
-    fn validate(&self, _config: &GrpcRetryConfig) -> Result<(), Error> {
+    fn validate(&self, _req: ProcessorRequest) -> Result<(), Error> {
         Ok(())
     }
 }
@@ -13,7 +13,7 @@ impl Processor for AlwaysOk {
 struct AlwaysErr;
 
 impl Processor for AlwaysErr {
-    fn validate(&self, _config: &GrpcRetryConfig) -> Result<(), Error> {
+    fn validate(&self, _req: ProcessorRequest) -> Result<(), Error> {
         Err(Error::InvalidConfig("always fails".into()))
     }
 }
@@ -22,9 +22,13 @@ impl Processor for AlwaysErr {
 #[test]
 fn retry_trait_processor_custom_impl_accepts_config_int_test() {
     let config = GrpcRetryConfig::default();
-    assert!(AlwaysOk.validate(&config).is_ok());
+    assert!(AlwaysOk
+        .validate(ProcessorRequest {
+            config: config.clone()
+        })
+        .is_ok());
     assert!(matches!(
-        AlwaysErr.validate(&config),
+        AlwaysErr.validate(ProcessorRequest { config }),
         Err(Error::InvalidConfig(_))
     ));
 }
