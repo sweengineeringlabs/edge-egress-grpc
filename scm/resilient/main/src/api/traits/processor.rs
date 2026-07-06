@@ -1,24 +1,24 @@
 //! `Processor` trait — primary processing contract for this crate.
 
-use futures::future::BoxFuture;
+use crate::api::DescribeRequest;
+use crate::api::DescribeResponse;
+use crate::api::GrpcResilientFacade;
+use crate::api::ResilientTransportError;
 
-use crate::api::error::resilient_transport_error::ResilientTransportError;
-
-/// Primary processing trait — required because `service_type = "processor"` in Cargo.toml.
-///
-/// Implemented by `GrpcResilientSvc` in `core/`.
+/// Primary processing trait for this crate (service_type = "processor").
+/// Implemented by [`crate::api::GrpcResilientSvc`] in `core/`.
 pub trait Processor: Send + Sync {
-    /// Assemble and return a resilient gRPC transport.
-    ///
-    /// Returns `Err` when the channel or resilience configuration is invalid.
-    fn process(
-        &self,
-        config: &swe_edge_egress_grpc::GrpcChannelConfig,
-    ) -> BoxFuture<
-        '_,
-        Result<std::sync::Arc<dyn swe_edge_egress_grpc::GrpcEgress>, ResilientTransportError>,
-    >;
-
     /// Identify this processor unit for logging and metrics.
-    fn describe(&self) -> &'static str;
+    fn describe(&self, req: DescribeRequest) -> Result<DescribeResponse, ResilientTransportError>;
+
+    /// Construct the facade that composes this crate's default
+    /// implementations — gives [`GrpcResilientFacade`] a genuine role in
+    /// this trait's signature set. `Self: Sized` keeps this trait
+    /// dyn-compatible for `Box<dyn Trait>`.
+    fn default_facade() -> GrpcResilientFacade
+    where
+        Self: Sized,
+    {
+        GrpcResilientFacade
+    }
 }

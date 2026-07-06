@@ -11,5 +11,4 @@ pub use types::{
     JwtClaims, JwtClaimsBuilder, AUTHORIZATION_HEADER, EXTRACTED_BEARER_SUBJECT,
 };
 
-// GrpcAuthBearerSvc is internal to saf/ only
-pub(crate) use types::GrpcAuthBearerSvc;
+pub use types::GrpcAuthBearerSvc;

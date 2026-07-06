@@ -21,6 +21,7 @@ expect_used = "deny"
 [workspace.dependencies]
 edge-domain            = { git = "https://github.com/sweengineeringlabs/edge-domain.git", tag = "v0.8.30", features = ["security"] }
 swe-edge-configbuilder = { git = "https://github.com/sweengineeringlabs/edge-configbuilder.git", tag = "v0.3.0" }
+swe-edge-security      = { git = "https://github.com/sweengineeringlabs/edge-security.git", tag = "v0.3.4" }
 swe-observ-metrics     = { package = "swe_justobserv_metrics", git = "ssh://git@github.com/sweengineeringlabs/justobserv.git", tag = "v0.2.1" }
 swe_justobserv_context = { git = "ssh://git@github.com/sweengineeringlabs/justobserv.git", tag = "v0.2.1" }
 swe-edge-egress-grpc             = { package = "swe-edge-egress-grpc-transport", path = "transport" }

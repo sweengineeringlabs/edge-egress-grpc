@@ -1,16 +1,40 @@
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Coverage stub for `src/api/breaker/outcome.rs`.
 //!
 //! `Outcome` is `pub(crate)` — not part of the public API.
 //! The outcome drives the `record` side of the transition logic.
 //! This stub verifies the public surface that depends on it compiles.
 
-use swe_edge_egress_grpc_breaker::{BreakerState, GrpcBreakerConfig};
+use std::time::Duration;
+
+use futures::future::BoxFuture;
+use swe_edge_egress_grpc::{GrpcEgress, GrpcEgressResult, GrpcMetadata, GrpcRequest, GrpcResponse};
+use swe_edge_egress_grpc_breaker::{BreakerState, GrpcBreakerClient, GrpcBreakerConfig};
+
+/// Always-succeeding inner client so a real `Outcome::Success` is recorded.
+struct AlwaysOk;
+impl GrpcEgress for AlwaysOk {
+    fn call_unary(&self, _r: GrpcRequest) -> BoxFuture<'_, GrpcEgressResult<GrpcResponse>> {
+        Box::pin(async {
+            Ok(GrpcResponse {
+                body: vec![],
+                metadata: GrpcMetadata::default(),
+            })
+        })
+    }
+    fn health_check(&self) -> BoxFuture<'_, GrpcEgressResult<()>> {
+        Box::pin(async { Ok(()) })
+    }
+}
 
 /// @covers: Outcome (internal) — BreakerState reflects recorded outcomes
-#[test]
-fn breaker_enum_outcome_state_reflects_success_outcome_int_test() {
+#[tokio::test]
+async fn breaker_enum_outcome_state_reflects_success_outcome_int_test() {
     // Outcome::Success keeps the breaker Closed. The public observable
-    // is BreakerState; verify Closed equality as a proxy.
-    let _ = std::mem::size_of::<GrpcBreakerConfig>();
-    assert_eq!(BreakerState::Closed, BreakerState::Closed);
+    // is BreakerState; drive one real successful call through the
+    // transition logic and confirm it stays Closed.
+    let client = GrpcBreakerClient::new(AlwaysOk, GrpcBreakerConfig::default());
+    let request = GrpcRequest::new("svc.Test/Method", vec![], Duration::from_secs(5));
+    client.call_unary(request).await.expect("always succeeds");
+    assert_eq!(client.state().await, BreakerState::Closed);
 }

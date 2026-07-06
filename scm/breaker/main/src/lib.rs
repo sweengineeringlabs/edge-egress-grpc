@@ -34,10 +34,20 @@
 #![warn(missing_docs)]
 #![deny(unsafe_code)]
 #![warn(clippy::all)]
+#![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used))]
 
 mod api;
 mod core;
 mod saf;
 
-pub use api::traits::Processor;
+// Public contracts and value objects — all flow directly from api/.
+pub use crate::api::{
+    Admission, AdmitRequest, AdmitResponse, ApplicationConfigBuilder, BreakerDecorator,
+    BreakerObservable, BreakerState, BreakerTransition, ClassifyRequest, ClassifyResponse,
+    ConfigBuilderProvider, ConfigBuilderRequest, ConfigBuilderResponse, ConfigValidationRequest,
+    DescribeRequest, DescribeResponse, Error, FailureClassifier, GrpcBreakerClient,
+    GrpcBreakerConfig, GrpcBreakerFacade, GrpcBreakerSvc, ObserveStateRequest,
+    ObserveStateResponse, Outcome, Processor, RecordOutcomeRequest, RecordOutcomeResponse,
+    Validator, WrapBreakerRequest, WrapBreakerResponse,
+};
 pub use saf::*;

@@ -2,10 +2,15 @@
 
 use swe_edge_egress_grpc_transport::TraceContextSource;
 
+/// @covers: TraceContextSource::PassThrough — Clone preserves the variant
 #[test]
 fn transport_struct_pass_through_variant_is_clone_int_test() {
     let s = TraceContextSource::PassThrough;
-    let _ = s.clone();
+    let cloned = s.clone();
+    assert!(
+        matches!(cloned, TraceContextSource::PassThrough),
+        "clone of PassThrough must still be PassThrough"
+    );
 }
 
 #[test]

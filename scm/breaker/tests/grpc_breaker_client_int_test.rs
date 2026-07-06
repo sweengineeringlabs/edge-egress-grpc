@@ -2,10 +2,13 @@
 
 use swe_edge_egress_grpc_breaker::{GrpcBreakerClient, GrpcBreakerConfig};
 
-/// @covers: GrpcBreakerClient — type is accessible and constructible
+/// @covers: GrpcBreakerClient — type is accessible and holds real state (not zero-sized)
 #[test]
 fn breaker_struct_grpc_breaker_client_is_accessible_int_test() {
-    let _ = std::mem::size_of::<GrpcBreakerClient<()>>();
+    assert!(
+        std::mem::size_of::<GrpcBreakerClient<()>>() > 0,
+        "GrpcBreakerClient holds inner/config/node fields and must not be zero-sized"
+    );
 }
 
 /// @covers: GrpcBreakerClient::new — config is stored and accessible

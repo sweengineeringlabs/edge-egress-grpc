@@ -3,7 +3,7 @@
 //! `BreakerTransition` trait is `pub(crate)` — not part of the public API.
 //! This file exercises the public types that the transition logic operates on.
 
-use swe_edge_egress_grpc_breaker::{BreakerState, GrpcBreakerConfig};
+use swe_edge_egress_grpc_breaker::{BreakerState, GrpcBreakerClient, GrpcBreakerConfig};
 
 /// @covers: BreakerTransition (internal) — config fields used by admit/record
 #[test]
@@ -16,9 +16,9 @@ fn breaker_trait_breaker_transition_config_fields_are_accessible_int_test() {
 }
 
 /// @covers: BreakerTransition (internal) — BreakerState Closed is the initial state
-#[test]
-fn breaker_trait_breaker_transition_initial_state_is_closed_int_test() {
+#[tokio::test]
+async fn breaker_trait_breaker_transition_initial_state_is_closed_int_test() {
     // A freshly-constructed client starts Closed (admit returns Proceed).
-    let _ = std::mem::size_of::<BreakerState>();
-    assert_eq!(BreakerState::Closed, BreakerState::Closed);
+    let client = GrpcBreakerClient::new((), GrpcBreakerConfig::default());
+    assert_eq!(client.state().await, BreakerState::Closed);
 }

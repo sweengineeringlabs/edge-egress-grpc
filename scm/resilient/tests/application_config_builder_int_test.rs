@@ -1,10 +1,48 @@
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Coverage stub for `src/api/types/application_config_builder.rs`.
 
-use swe_edge_egress_grpc_resilient::GrpcResilientSvc;
+use swe_edge_configbuilder::SectionLoaderImpl;
+use swe_edge_egress_grpc_resilient::GrpcResilientFacade;
 
-/// @covers: ApplicationConfigBuilder — create_config_builder returns a builder
+#[derive(serde::Deserialize, Default, PartialEq, Debug)]
+struct AbsentSectionProbe {
+    marker: bool,
+}
+
+/// @covers: create_config_builder
 #[test]
-fn resilient_type_application_config_builder_is_accessible_int_test() {
-    let builder = GrpcResilientSvc::create_config_builder();
-    let _loader = builder.build_loader();
+fn test_create_config_builder_returns_a_working_loader_happy() {
+    let loader: SectionLoaderImpl = GrpcResilientFacade::create_config_builder()
+        .expect("infallible")
+        .build_loader()
+        .expect("a builder pre-seeded with name and version must build a valid loader");
+    // In a test environment there is no application.toml at any configured
+    // directory, so querying any section must fail with NotFound — proves
+    // the loader is genuinely wired to the filesystem, not a no-op stub.
+    let err = loader
+        .load_section::<AbsentSectionProbe>("resilient_test_probe_section_that_does_not_exist")
+        .expect_err("no config directory exists in the test environment");
+    assert!(
+        err.to_string()
+            .contains("resilient_test_probe_section_that_does_not_exist"),
+        "error must name the missing section, got: {err}"
+    );
+}
+
+/// @covers: create_config_builder
+#[test]
+fn test_create_config_builder_different_section_name_reports_that_name_edge() {
+    let loader: SectionLoaderImpl = GrpcResilientFacade::create_config_builder()
+        .expect("infallible")
+        .build_loader()
+        .expect("a builder pre-seeded with name and version must build a valid loader");
+    // A second, differently-named absent section proves the loader's error
+    // genuinely echoes back whatever section name is requested, rather
+    // than a single hardcoded message from the happy-path test above.
+    let err = loader
+        .load_section::<AbsentSectionProbe>("resilient_test_probe_section_that_does_not_exist_2")
+        .expect_err("no config directory exists in the test environment");
+    assert!(err
+        .to_string()
+        .contains("resilient_test_probe_section_that_does_not_exist_2"));
 }

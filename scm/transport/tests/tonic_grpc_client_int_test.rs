@@ -2,7 +2,11 @@
 
 use swe_edge_egress_grpc_transport::TonicGrpcClient;
 
+/// @covers: TonicGrpcClient — type is accessible and holds real fields (not zero-sized)
 #[test]
 fn transport_struct_tonic_grpc_client_exists_int_test() {
-    let _ = std::mem::size_of::<TonicGrpcClient>();
+    assert!(
+        std::mem::size_of::<TonicGrpcClient>() > 0,
+        "TonicGrpcClient holds base_uri/client/timeout/interceptors fields and must not be zero-sized"
+    );
 }

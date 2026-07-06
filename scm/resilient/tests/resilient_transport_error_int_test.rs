@@ -1,11 +1,18 @@
 //! Coverage stub for `src/api/error/resilient_transport_error.rs`.
 
+use swe_edge_egress_grpc::GrpcChannelConfigError;
 use swe_edge_egress_grpc_resilient::ResilientTransportError;
 
-/// @covers: ResilientTransportError — type is accessible
+/// @covers: ResilientTransportError::ChannelConfig — wraps and displays the source error
 #[test]
 fn resilient_enum_resilient_transport_error_is_accessible_int_test() {
-    let _ = std::mem::size_of::<ResilientTransportError>();
+    let err: ResilientTransportError =
+        GrpcChannelConfigError::PlaintextRejected("http://x".into()).into();
+    let s = err.to_string();
+    assert!(
+        s.contains("http://x"),
+        "ChannelConfig must transparently forward the source error's display, got: {s}",
+    );
 }
 
 /// @covers: ResilientTransportError::InvalidResilience — display is non-empty

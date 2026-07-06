@@ -3,9 +3,8 @@
 
 use std::time::Duration;
 
-use swe_edge_egress_grpc_transport::{
-    BackendConfig, LoadbalancerConfig, Strategy, TonicLbGrpcClient, TransportSvc,
-};
+use swe_edge_egress_grpc_transport::{TonicLbGrpcClient, TransportSvc};
+use swe_edge_loadbalancer::{BackendConfig, LoadbalancerConfig, Strategy};
 
 fn one_backend_config(url: &str) -> LoadbalancerConfig {
     LoadbalancerConfig {

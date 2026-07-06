@@ -14,6 +14,10 @@ categories   = ["network-programming"]
 application_type = "lib"
 service_type     = "processor"
 
+[package.metadata.arch]
+application_type = "lib"
+service_type     = "processor"
+
 [lib]
 path = "main/src/lib.rs"
 
@@ -26,10 +30,6 @@ prost = ["dep:prost"]
 [[example]]
 name = "basic_transport"
 path = "examples/basic_transport.rs"
-
-[[test]]
-name = "egress_lb_int_test"
-path = "tests/egress_lb_int_test.rs"
 
 [dependencies]
 serde.workspace       = true

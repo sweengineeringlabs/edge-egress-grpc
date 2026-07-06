@@ -25,22 +25,24 @@
 //!
 //! ## Composition
 //!
-//! Wrap any [`GrpcEgress`] implementor:
-//!
-//! ```ignore
-//! use swe_edge_egress_grpc_retry::{wrap_retry, GrpcRetryConfig};
-//!
-//! let inner   = my_grpc_client();
-//! let retried = wrap_retry(inner, GrpcRetryConfig::default());
-//! ```
+//! Wrap any [`GrpcEgress`] implementor via
+//! [`GrpcRetryFacade::create_retry_client`] or
+//! [`GrpcRetryFacade::wrap_retry`].
 
 #![warn(missing_docs)]
 #![deny(unsafe_code)]
 #![warn(clippy::all)]
+#![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used))]
 
 mod api;
 mod core;
 mod saf;
 
-pub use api::traits::Processor;
+// Public contracts and value objects — all flow directly from api/.
+pub use crate::api::{
+    ApplicationConfigBuilder, BackoffSchedule, ConfigBuilderProvider, ConfigBuilderRequest,
+    ConfigBuilderResponse, Error, GrpcRetryClient, GrpcRetryConfig, GrpcRetryConfigBuilder,
+    GrpcRetryFacade, GrpcRetrySvc, JitterRng, NextUnitRequest, NextUnitResponse, Processor,
+    ProcessorRequest, ResourceExhaustedContext, RetryDecision, ValidationRequest, Validator,
+};
 pub use saf::*;

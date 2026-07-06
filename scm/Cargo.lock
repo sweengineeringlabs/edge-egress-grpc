@@ -13,9 +13,9 @@ dependencies = [
 
 [[package]]
 name = "anyhow"
-version = "1.0.102"
+version = "1.0.103"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7f202df86484c868dbad7eaa557ef785d5c66295e41b460ef922eca0723b842c"
+checksum = "2a4385e2e34eb35d6b3efe798b9eb88096925d87726c0798709bf56d9ed84af3"
 
 [[package]]
 name = "async-stream"
@@ -241,16 +241,16 @@ source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.30#
 dependencies = [
  "async-trait",
  "edge-domain-clock",
- "edge-domain-command",
+ "edge-domain-command 0.1.0 (git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.30)",
  "edge-domain-entity",
  "edge-domain-event",
- "edge-domain-handler",
+ "edge-domain-handler 0.1.1 (git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.30)",
  "edge-domain-policy",
  "edge-domain-projection",
  "edge-domain-query",
  "edge-domain-repository",
  "edge-domain-saga",
- "edge-domain-security",
+ "edge-domain-security 0.1.0 (git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.30)",
  "edge-domain-service",
  "edge-domain-snapshot",
  "edge-domain-validator",
@@ -282,6 +282,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "edge-domain-command"
+version = "0.1.0"
+source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.31#53d99b9dca91b691adf6446efb9d278a61a689f1"
+dependencies = [
+ "async-trait",
+ "futures",
+ "thiserror 2.0.18",
+ "tracing",
+]
+
+[[package]]
 name = "edge-domain-entity"
 version = "0.1.0"
 source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.30#25b8652a0630a1ed63c3f20d0b3c4997d1c4fc0d"
@@ -304,8 +315,20 @@ version = "0.1.1"
 source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.30#25b8652a0630a1ed63c3f20d0b3c4997d1c4fc0d"
 dependencies = [
  "async-trait",
- "edge-domain-command",
- "edge-domain-security",
+ "edge-domain-command 0.1.0 (git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.30)",
+ "edge-domain-security 0.1.0 (git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.30)",
+ "parking_lot",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "edge-domain-handler"
+version = "0.1.1"
+source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.31#53d99b9dca91b691adf6446efb9d278a61a689f1"
+dependencies = [
+ "async-trait",
+ "edge-domain-command 0.1.0 (git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.31)",
+ "edge-domain-security 0.1.0 (git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.31)",
  "parking_lot",
  "thiserror 2.0.18",
 ]
@@ -353,7 +376,7 @@ name = "edge-domain-saga"
 version = "0.1.0"
 source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.30#25b8652a0630a1ed63c3f20d0b3c4997d1c4fc0d"
 dependencies = [
- "edge-domain-command",
+ "edge-domain-command 0.1.0 (git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.30)",
  "edge-domain-event",
  "futures",
  "thiserror 2.0.18",
@@ -363,6 +386,14 @@ dependencies = [
 name = "edge-domain-security"
 version = "0.1.0"
 source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.30#25b8652a0630a1ed63c3f20d0b3c4997d1c4fc0d"
+dependencies = [
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "edge-domain-security"
+version = "0.1.0"
+source = "git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.31#53d99b9dca91b691adf6446efb9d278a61a689f1"
 dependencies = [
  "thiserror 2.0.18",
 ]
@@ -1316,6 +1347,7 @@ dependencies = [
  "subtle",
  "swe-edge-configbuilder",
  "swe-edge-egress-grpc-transport",
+ "swe-edge-security",
  "thiserror 2.0.18",
  "tokio",
  "tracing",
@@ -1341,6 +1373,7 @@ version = "0.5.0"
 dependencies = [
  "futures",
  "rustls",
+ "serde",
  "swe-edge-configbuilder",
  "swe-edge-egress-grpc-breaker",
  "swe-edge-egress-grpc-retry",
@@ -1401,6 +1434,20 @@ dependencies = [
  "thiserror 2.0.18",
  "toml",
  "tracing",
+]
+
+[[package]]
+name = "swe-edge-security"
+version = "0.3.4"
+source = "git+https://github.com/sweengineeringlabs/edge-security.git?tag=v0.3.4#f22ad2959eb69fd1b6c4a2ad37b73380f7d06d0e"
+dependencies = [
+ "async-trait",
+ "dirs",
+ "edge-domain-handler 0.1.1 (git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.31)",
+ "edge-domain-security 0.1.0 (git+https://github.com/sweengineeringlabs/edge-domain.git?tag=v0.8.31)",
+ "serde",
+ "thiserror 2.0.18",
+ "tokio",
 ]
 
 [[package]]

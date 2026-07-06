@@ -2,7 +2,7 @@
 //! Integration tests for `ResilientTransportError`.
 
 use swe_edge_egress_grpc::GrpcChannelConfig;
-use swe_edge_egress_grpc_resilient::{GrpcResilientSvc, ResilientTransportError};
+use swe_edge_egress_grpc_resilient::{GrpcResilientFacade, ResilientTransportError};
 
 /// @covers: ResilientTransportError::ChannelConfig
 #[test]
@@ -11,7 +11,7 @@ fn test_error_channel_config_variant_produced_on_plaintext_rejection() {
         .install_default()
         .ok();
     let config = GrpcChannelConfig::new("http://127.0.0.1:50051");
-    let err = GrpcResilientSvc::create_resilient_transport_from_config(&config)
+    let err = GrpcResilientFacade::create_resilient_transport_from_config(&config)
         .err()
         .unwrap();
     assert!(matches!(err, ResilientTransportError::ChannelConfig(_)));
@@ -32,7 +32,7 @@ fn test_error_invalid_resilience_variant_produced_on_bad_config() {
     let config = GrpcChannelConfig::new("http://127.0.0.1:50051")
         .allow_plaintext()
         .with_resilience(r);
-    let err = GrpcResilientSvc::create_resilient_transport_from_config(&config)
+    let err = GrpcResilientFacade::create_resilient_transport_from_config(&config)
         .err()
         .unwrap();
     assert!(matches!(err, ResilientTransportError::InvalidResilience(_)));

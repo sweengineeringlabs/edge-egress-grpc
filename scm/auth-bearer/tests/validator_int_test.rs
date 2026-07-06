@@ -37,7 +37,7 @@ fn test_validate_empty_issuer_returns_err() {
     let result = config.validate();
     assert!(result.is_err(), "empty issuer must fail validation");
     assert!(
-        result.unwrap_err().contains("issuer"),
+        result.unwrap_err().to_string().contains("issuer"),
         "error must mention issuer"
     );
 }
@@ -51,7 +51,7 @@ fn test_validate_empty_audience_returns_err() {
     let result = config.validate();
     assert!(result.is_err(), "empty audience must fail validation");
     assert!(
-        result.unwrap_err().contains("audience"),
+        result.unwrap_err().to_string().contains("audience"),
         "error must mention audience"
     );
 }
@@ -65,7 +65,7 @@ fn test_validate_empty_subject_returns_err() {
     let result = config.validate();
     assert!(result.is_err(), "empty subject must fail validation");
     assert!(
-        result.unwrap_err().contains("subject"),
+        result.unwrap_err().to_string().contains("subject"),
         "error must mention subject"
     );
 }

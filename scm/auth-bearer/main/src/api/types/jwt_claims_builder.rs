@@ -1,6 +1,6 @@
 //! Builder for [`JwtClaims`].
 
-use crate::api::types::jwt_claims::JwtClaims;
+use swe_edge_security::JwtClaims;
 
 /// Fluent builder for [`JwtClaims`].
 #[derive(Debug, Default)]

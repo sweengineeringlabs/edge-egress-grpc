@@ -22,6 +22,12 @@ fn valid() -> ResilienceConfig {
 #[test]
 fn transport_struct_resilience_config_valid_config_is_accepted_int_test() {
     assert!(TransportSvc::validate_resilience_config(&valid()).is_ok());
+    // Sibling negative case in the same test: a single field flipped to
+    // invalid on an otherwise-valid config must fail, proving is_ok() above
+    // isn't just a stub that always succeeds regardless of input.
+    let mut invalid = valid();
+    invalid.max_attempts = 0;
+    assert!(TransportSvc::validate_resilience_config(&invalid).is_err());
 }
 
 /// @covers: TransportSvc::validate_resilience_config — zero max_attempts is rejected.

@@ -1,12 +1,5 @@
 //! [`GrpcEgress`] impl for [`GrpcRetryClient`].
 
-/// Impl unit — satisfies SEA rule 89.
-#[expect(
-    dead_code,
-    reason = "SEA structural marker — impl site anchor, not instantiated"
-)]
-pub(crate) struct RetryEgress;
-
 use std::time::Instant;
 
 use futures::future::BoxFuture;
@@ -16,10 +9,9 @@ use swe_edge_egress_grpc::{
 };
 use tracing::{debug, trace, warn};
 
-use crate::api::types::grpc_retry_client::GrpcRetryClient;
-use crate::api::types::retry_decision::RetryDecision;
+use crate::api::{GrpcRetryClient, RetryDecision};
 use crate::core::backoff_scheduler::BackoffScheduler;
-use crate::core::jitter_rng::JitterRng;
+use crate::core::traits::jitter_rng::DefaultJitterRng;
 
 impl<T: GrpcEgress + Send + Sync + 'static> GrpcEgress for GrpcRetryClient<T> {
     fn call_unary(&self, request: GrpcRequest) -> BoxFuture<'_, GrpcEgressResult<GrpcResponse>> {
@@ -46,7 +38,7 @@ impl<T: GrpcEgress + Send + Sync + 'static> GrpcRetryClient<T> {
         let total_budget = request.deadline;
         let max_attempts = self.config.max_attempts;
         let rate_limit_max = self.config.rate_limit_max_attempts;
-        let mut rng = JitterRng::from_clock();
+        let mut rng = DefaultJitterRng::from_clock();
         let mut standard_attempt = 0u32;
         let mut rate_lim_attempt = 0u32;
         let mut last_error: Option<GrpcEgressError> = None;

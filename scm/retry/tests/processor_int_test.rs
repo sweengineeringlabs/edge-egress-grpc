@@ -1,21 +1,36 @@
 //! Integration tests for the `Processor` trait contract in `swe-edge-egress-grpc-retry`.
 
-use swe_edge_egress_grpc_retry::{GrpcRetryConfig, Processor};
+use swe_edge_egress_grpc_retry::{Error, GrpcRetryConfig, Processor, ProcessorRequest};
 
 struct AlwaysOk;
 
 impl Processor for AlwaysOk {
-    fn validate(&self, _config: &GrpcRetryConfig) -> Result<(), swe_edge_egress_grpc_retry::Error> {
+    fn validate(&self, _req: ProcessorRequest) -> Result<(), Error> {
         Ok(())
     }
 }
 
-/// @covers: Processor — trait is implementable
+struct AlwaysErr;
+
+impl Processor for AlwaysErr {
+    fn validate(&self, _req: ProcessorRequest) -> Result<(), Error> {
+        Err(Error::InvalidConfig("always fails".into()))
+    }
+}
+
+/// @covers: Processor — trait is implementable for both Ok and Err outcomes
 #[test]
 fn retry_trait_processor_custom_impl_accepts_config_int_test() {
-    let p = AlwaysOk;
     let config = GrpcRetryConfig::default();
-    assert!(p.validate(&config).is_ok());
+    assert!(AlwaysOk
+        .validate(ProcessorRequest {
+            config: config.clone()
+        })
+        .is_ok());
+    assert!(matches!(
+        AlwaysErr.validate(ProcessorRequest { config }),
+        Err(Error::InvalidConfig(_))
+    ));
 }
 
 /// @covers: Processor — trait is object-safe

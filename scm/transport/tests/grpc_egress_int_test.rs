@@ -13,9 +13,10 @@ use futures::stream;
 use http_body::Frame;
 use http_body_util::{BodyExt as _, Full, StreamBody};
 
+use edge_domain::SecurityContext;
 use swe_edge_egress_grpc_transport::{
     GrpcChannelConfig, GrpcEgress, GrpcEgressError, GrpcMessageStream, GrpcMetadata, GrpcRequest,
-    GrpcResponse, GrpcStatusCode, SecurityContext, TransportSvc,
+    GrpcResponse, GrpcStatusCode, TransportSvc,
 };
 
 fn make_client(addr: SocketAddr) -> Arc<dyn GrpcEgress> {

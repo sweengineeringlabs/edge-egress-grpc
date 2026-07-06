@@ -2,10 +2,13 @@
 
 use swe_edge_egress_grpc_breaker::GrpcBreakerConfig;
 
-/// @covers: GrpcBreakerConfig — type is accessible
+/// @covers: GrpcBreakerConfig — type is accessible and holds real fields (not zero-sized)
 #[test]
 fn breaker_struct_grpc_breaker_config_is_accessible_int_test() {
-    let _ = std::mem::size_of::<GrpcBreakerConfig>();
+    assert!(
+        std::mem::size_of::<GrpcBreakerConfig>() > 0,
+        "GrpcBreakerConfig holds failure_threshold/cool_down_seconds/half_open_probe_count and must not be zero-sized"
+    );
 }
 
 /// @covers: GrpcBreakerConfig::default — positive defaults

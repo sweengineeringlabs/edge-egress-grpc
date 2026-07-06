@@ -94,6 +94,19 @@ impl TonicGrpcClientBuilder {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::api::error::GrpcEgressError;
+    use crate::api::types::{GrpcRequest, GrpcResponse};
+    use crate::GrpcEgressInterceptor;
+
+    struct NoopInterceptor;
+    impl GrpcEgressInterceptor for NoopInterceptor {
+        fn before_call(&self, _req: &mut GrpcRequest) -> Result<(), GrpcEgressError> {
+            Ok(())
+        }
+        fn after_call(&self, _resp: &mut GrpcResponse) -> Result<(), GrpcEgressError> {
+            Ok(())
+        }
+    }
 
     #[test]
     fn test_new_constructs_with_defaults() {
@@ -101,7 +114,11 @@ mod tests {
             .install_default()
             .ok();
         let b = TonicGrpcClientBuilder::new("http://localhost:50051");
-        let _ = b.build();
+        let client = b.build();
+        assert_eq!(client.base_uri, "http://localhost:50051");
+        assert_eq!(client.timeout, Duration::from_secs(30));
+        assert_eq!(client.max_message_bytes, DEFAULT_MAX_MESSAGE_BYTES);
+        assert_eq!(client.compression, CompressionMode::None);
     }
 
     #[test]
@@ -109,11 +126,14 @@ mod tests {
         rustls::crypto::aws_lc_rs::default_provider()
             .install_default()
             .ok();
-        let _ = TonicGrpcClientBuilder::new("http://localhost:50051")
+        let client = TonicGrpcClientBuilder::new("http://localhost:50051")
             .timeout(Duration::from_secs(10))
             .max_message_bytes(8 * 1024 * 1024)
             .compression(CompressionMode::Gzip)
             .build();
+        assert_eq!(client.timeout, Duration::from_secs(10));
+        assert_eq!(client.max_message_bytes, 8 * 1024 * 1024);
+        assert_eq!(client.compression, CompressionMode::Gzip);
     }
 
     #[test]
@@ -121,9 +141,10 @@ mod tests {
         rustls::crypto::aws_lc_rs::default_provider()
             .install_default()
             .ok();
-        let _ = TonicGrpcClientBuilder::new("http://localhost:50051")
+        let client = TonicGrpcClientBuilder::new("http://localhost:50051")
             .timeout(Duration::from_secs(5))
             .build();
+        assert_eq!(client.timeout, Duration::from_secs(5));
     }
 
     #[test]
@@ -131,10 +152,11 @@ mod tests {
         rustls::crypto::aws_lc_rs::default_provider()
             .install_default()
             .ok();
-        let chain = GrpcEgressInterceptorChain::new();
-        let _ = TonicGrpcClientBuilder::new("http://localhost:50051")
+        let chain = GrpcEgressInterceptorChain::new().push(std::sync::Arc::new(NoopInterceptor));
+        let client = TonicGrpcClientBuilder::new("http://localhost:50051")
             .interceptors(chain)
             .build();
+        assert_eq!(client.interceptors.len(), 1);
     }
 
     #[test]
@@ -142,9 +164,10 @@ mod tests {
         rustls::crypto::aws_lc_rs::default_provider()
             .install_default()
             .ok();
-        let _ = TonicGrpcClientBuilder::new("http://localhost:50051")
+        let client = TonicGrpcClientBuilder::new("http://localhost:50051")
             .max_message_bytes(2 * 1024 * 1024)
             .build();
+        assert_eq!(client.max_message_bytes, 2 * 1024 * 1024);
     }
 
     #[test]
@@ -152,8 +175,9 @@ mod tests {
         rustls::crypto::aws_lc_rs::default_provider()
             .install_default()
             .ok();
-        let _ = TonicGrpcClientBuilder::new("http://localhost:50051")
-            .compression(CompressionMode::None)
+        let client = TonicGrpcClientBuilder::new("http://localhost:50051")
+            .compression(CompressionMode::Zstd)
             .build();
+        assert_eq!(client.compression, CompressionMode::Zstd);
     }
 }

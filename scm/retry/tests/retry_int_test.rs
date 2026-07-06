@@ -14,7 +14,7 @@ use swe_edge_egress_grpc::{
     GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcMetadata, GrpcRequest, GrpcResponse,
     GrpcStatusCode,
 };
-use swe_edge_egress_grpc_retry::{GrpcRetryClient, GrpcRetryConfig, GrpcRetrySvc};
+use swe_edge_egress_grpc_retry::{GrpcRetryClient, GrpcRetryConfig, GrpcRetryFacade};
 
 /// Stub `GrpcEgress` that returns a scripted sequence of
 /// outcomes and counts how many times `call_unary` was invoked.
@@ -112,7 +112,7 @@ fn wrap(
     inner: Arc<ScriptedClient>,
     config: GrpcRetryConfig,
 ) -> GrpcRetryClient<SharedClient<ScriptedClient>> {
-    GrpcRetrySvc::wrap_retry(SharedClient::new(inner), config)
+    GrpcRetryFacade::wrap_retry(SharedClient::new(inner), config)
 }
 
 /// @covers: GrpcRetryConfig::default — SWE default has positive max_attempts.
@@ -405,29 +405,57 @@ async fn test_retry_honors_caller_deadline_as_total_budget() {
     );
 }
 
-/// @covers: GrpcRetrySvc::create_retry_client
+/// @covers: GrpcRetryFacade::create_retry_client
 #[test]
 fn test_create_retry_client_wraps_inner_with_default_config() {
     let inner = SharedClient::new(Arc::new(ScriptedClient::new(vec![Outcome::Ok])));
-    let client = GrpcRetrySvc::create_retry_client(inner);
-    drop(client);
+    let client = GrpcRetryFacade::create_retry_client(inner);
+    let default_cfg = GrpcRetryConfig::default();
+    assert_eq!(client.config().max_attempts, default_cfg.max_attempts);
+    assert_eq!(
+        client.config().initial_backoff_ms,
+        default_cfg.initial_backoff_ms
+    );
+    assert_eq!(
+        client.config().backoff_multiplier,
+        default_cfg.backoff_multiplier
+    );
 }
 
-/// @covers: GrpcRetrySvc::wrap_retry
+/// @covers: GrpcRetryFacade::wrap_retry
 #[test]
 fn test_wrap_retry_produces_retry_client_with_supplied_config() {
     let inner = SharedClient::new(Arc::new(ScriptedClient::new(vec![Outcome::Ok])));
     let cfg = fast_config();
     let max = cfg.max_attempts;
-    let client = GrpcRetrySvc::wrap_retry(inner, cfg);
+    let client = GrpcRetryFacade::wrap_retry(inner, cfg);
     drop(client);
     assert!(max >= 1);
 }
 
-/// @covers: GrpcRetrySvc::create_config_builder
+#[derive(serde::Deserialize, Default, PartialEq, Debug)]
+struct AbsentSectionProbe {
+    marker: bool,
+}
+
+/// @covers: GrpcRetryFacade::create_config_builder
 #[test]
 fn test_create_config_builder_builds_loader() {
-    let _loader = GrpcRetrySvc::create_config_builder().build_loader();
+    let loader = GrpcRetryFacade::create_config_builder()
+        .expect("infallible")
+        .build_loader()
+        .expect("a builder pre-seeded with name and version must build a valid loader");
+    // In a test environment there is no application.toml at any configured
+    // directory, so querying any section must fail with NotFound — proves
+    // the loader is genuinely wired to the filesystem, not a no-op stub.
+    let err = loader
+        .load_section::<AbsentSectionProbe>("retry_test_probe_section_that_does_not_exist")
+        .expect_err("no config directory exists in the test environment");
+    assert!(
+        err.to_string()
+            .contains("retry_test_probe_section_that_does_not_exist"),
+        "error must name the missing section, got: {err}"
+    );
 }
 
 /// @covers: GrpcRetryConfig::section_name

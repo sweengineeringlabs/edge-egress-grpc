@@ -23,4 +23,8 @@ pub enum BearerAuthError {
     /// System clock is before the Unix epoch — should never happen.
     #[error("system clock is before Unix epoch")]
     InvalidSystemTime,
+
+    /// A required configuration field failed validation.
+    #[error("validation error: {0}")]
+    ValidationFailed(String),
 }

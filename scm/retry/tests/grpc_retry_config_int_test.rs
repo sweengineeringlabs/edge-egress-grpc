@@ -3,10 +3,13 @@
 
 use swe_edge_egress_grpc_retry::GrpcRetryConfig;
 
-/// @covers: GrpcRetryConfig — type is accessible
+/// @covers: GrpcRetryConfig — type is accessible and holds real fields (not zero-sized)
 #[test]
 fn retry_struct_grpc_retry_config_is_accessible_int_test() {
-    let _ = std::mem::size_of::<GrpcRetryConfig>();
+    assert!(
+        std::mem::size_of::<GrpcRetryConfig>() > 0,
+        "GrpcRetryConfig holds max_attempts/backoff/jitter fields and must not be zero-sized"
+    );
 }
 
 /// @covers: GrpcRetryConfig::default — SWE default values are valid

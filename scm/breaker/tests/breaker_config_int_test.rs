@@ -45,7 +45,8 @@ fn test_zero_threshold_is_invalid() {
         cool_down_seconds = 30
         half_open_probe_count = 1
     "#;
-    GrpcBreakerConfig::from_config(toml).expect_err("zero threshold must fail");
+    let result = GrpcBreakerConfig::from_config(toml);
+    assert!(result.is_err(), "zero threshold must fail");
 }
 
 /// @covers: from_config
@@ -56,7 +57,8 @@ fn test_zero_probe_count_is_invalid() {
         cool_down_seconds = 30
         half_open_probe_count = 0
     "#;
-    GrpcBreakerConfig::from_config(toml).expect_err("zero probe count must fail");
+    let result = GrpcBreakerConfig::from_config(toml);
+    assert!(result.is_err(), "zero probe count must fail");
 }
 
 /// @covers: default

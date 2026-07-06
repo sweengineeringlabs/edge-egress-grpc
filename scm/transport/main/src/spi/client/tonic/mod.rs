@@ -5,8 +5,8 @@
 pub(crate) mod tonic_grpc_client;
 pub(crate) mod tonic_grpc_client_builder;
 pub(crate) mod tonic_grpc_client_core_builder;
-pub(crate) mod tonic_grpc_client_impl;
+pub(crate) mod tonic_grpc_client_protocol;
 
 pub use tonic_grpc_client::TonicGrpcClient;
 pub use tonic_grpc_client_builder::TonicGrpcClientBuilder;
-pub(crate) use tonic_grpc_client_impl::TonicGrpcClientCore;
+pub(crate) use tonic_grpc_client_protocol::TonicGrpcClientProtocol;
