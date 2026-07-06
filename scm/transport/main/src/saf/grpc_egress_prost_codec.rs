@@ -1,4 +1,4 @@
-//! `GrpcEgressProstExt` — opt-in prost codec ergonomics for outbound gRPC (ADR-026).
+//! `GrpcEgressProstCodec` — opt-in prost codec ergonomics for outbound gRPC (ADR-026).
 //!
 //! Feature-gated extension trait so the core [`GrpcEgress`] contract stays
 //! byte-oriented and codec-free. Available only under the `prost` feature; the
@@ -15,9 +15,9 @@ use crate::api::types::{GrpcEgressResult, GrpcRequest};
 /// Typed unary calls over any [`GrpcEgress`], encoding and decoding via `prost`.
 ///
 /// Blanket-implemented for every [`GrpcEgress`], so any client gains
-/// [`call_unary_typed`](GrpcEgressProstExt::call_unary_typed) with no extra
+/// [`call_unary_typed`](GrpcEgressProstCodec::call_unary_typed) with no extra
 /// wiring when the `prost` feature is enabled.
-pub trait GrpcEgressProstExt: GrpcEgress {
+pub trait GrpcEgressProstCodec: GrpcEgress {
     /// Encode `req` via prost, dispatch `method` with `deadline`, then decode the
     /// response body via prost.
     ///
@@ -44,4 +44,4 @@ pub trait GrpcEgressProstExt: GrpcEgress {
     }
 }
 
-impl<T: GrpcEgress + ?Sized> GrpcEgressProstExt for T {}
+impl<T: GrpcEgress + ?Sized> GrpcEgressProstCodec for T {}

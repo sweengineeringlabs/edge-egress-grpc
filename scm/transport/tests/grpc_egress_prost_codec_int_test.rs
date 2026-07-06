@@ -1,4 +1,4 @@
-//! Scenario tests for `GrpcEgressProstExt::call_unary_typed` (ADR-026).
+//! Scenario tests for `GrpcEgressProstCodec::call_unary_typed` (ADR-026).
 //!
 //! Active only under `--features prost`. Exercise the typed unary helper over a
 //! mock [`GrpcEgress`], proving the request is prost-encoded, the response is
@@ -14,7 +14,7 @@ mod prost_tests {
     use prost::Message;
 
     use swe_edge_egress_grpc_transport::{
-        GrpcEgress, GrpcEgressError, GrpcEgressProstExt, GrpcEgressResult, GrpcMetadata,
+        GrpcEgress, GrpcEgressError, GrpcEgressProstCodec, GrpcEgressResult, GrpcMetadata,
         GrpcRequest, GrpcResponse,
     };
 
@@ -94,7 +94,7 @@ mod prost_tests {
 
     // ── _happy: typed request encoded, response decoded ────────────────────────
 
-    /// @covers: GrpcEgressProstExt::call_unary_typed
+    /// @covers: GrpcEgressProstCodec::call_unary_typed
     #[tokio::test]
     async fn test_call_unary_typed_roundtrips_prost_message_happy() {
         let client = DoublingEgress;
@@ -116,7 +116,7 @@ mod prost_tests {
 
     // ── _error: transport error propagates unchanged ───────────────────────────
 
-    /// @covers: GrpcEgressProstExt::call_unary_typed
+    /// @covers: GrpcEgressProstCodec::call_unary_typed
     #[tokio::test]
     async fn test_call_unary_typed_propagates_transport_error() {
         let client = UnavailableEgress;
@@ -137,7 +137,7 @@ mod prost_tests {
 
     // ── _edge: undecodable response → Internal (client-side) ───────────────────
 
-    /// @covers: GrpcEgressProstExt::call_unary_typed
+    /// @covers: GrpcEgressProstCodec::call_unary_typed
     /// A response body that cannot be decoded is an unexpected client-side
     /// condition, mapped to `GrpcEgressError::Internal` — not silently dropped.
     #[tokio::test]
