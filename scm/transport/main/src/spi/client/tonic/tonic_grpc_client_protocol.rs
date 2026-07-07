@@ -929,4 +929,158 @@ mod tests {
             TonicGrpcClient::new("http://localhost:50051").with_compression(CompressionMode::Gzip);
         assert_eq!(client.compression, CompressionMode::Gzip);
     }
+
+    // ── build_http_request (private fn — inline per rule 37) ────────────────
+
+    #[test]
+    fn test_build_http_request_sets_grpc_headers() {
+        let req = TonicGrpcClientProtocol::build_http_request(
+            "http://localhost:50051/pkg.Svc/Method",
+            Bytes::from_static(b"payload"),
+            &std::collections::HashMap::new(),
+            None,
+        )
+        .expect("valid uri must build");
+        assert_eq!(
+            req.headers().get(http::header::CONTENT_TYPE).unwrap(),
+            "application/grpc"
+        );
+        assert_eq!(req.headers().get("te").unwrap(), "trailers");
+    }
+
+    #[test]
+    fn test_build_http_request_invalid_uri_returns_internal_error() {
+        let result = TonicGrpcClientProtocol::build_http_request(
+            "not a valid uri",
+            Bytes::new(),
+            &std::collections::HashMap::new(),
+            None,
+        );
+        assert!(matches!(result, Err(GrpcEgressError::Internal(_))));
+    }
+
+    #[test]
+    fn test_build_http_request_with_deadline_sets_grpc_timeout_header() {
+        let req = TonicGrpcClientProtocol::build_http_request(
+            "http://localhost:50051/pkg.Svc/Method",
+            Bytes::new(),
+            &std::collections::HashMap::new(),
+            Some(Duration::from_secs(5)),
+        )
+        .expect("valid uri must build");
+        assert!(req.headers().contains_key("grpc-timeout"));
+    }
+
+    // ── header_map_to_hash (private fn — inline per rule 37) ─────────────────
+
+    #[test]
+    fn test_header_map_to_hash_none_returns_empty_map() {
+        let out = TonicGrpcClientProtocol::header_map_to_hash(None);
+        assert!(out.is_empty());
+    }
+
+    #[test]
+    fn test_header_map_to_hash_extracts_string_values() {
+        let mut headers = http::HeaderMap::new();
+        headers.insert("x-trace-id", "abc123".parse().unwrap());
+        let out = TonicGrpcClientProtocol::header_map_to_hash(Some(&headers));
+        assert_eq!(out.get("x-trace-id"), Some(&"abc123".to_string()));
+    }
+
+    // ── check_grpc_status (private fn — inline per rule 37) ──────────────────
+
+    #[test]
+    fn test_check_grpc_status_zero_status_returns_ok() {
+        let mut trailers = http::HeaderMap::new();
+        trailers.insert("grpc-status", "0".parse().unwrap());
+        assert!(TonicGrpcClientProtocol::check_grpc_status(Some(&trailers), None).is_ok());
+    }
+
+    #[test]
+    fn test_check_grpc_status_nonzero_status_returns_err() {
+        let mut trailers = http::HeaderMap::new();
+        trailers.insert("grpc-status", "13".parse().unwrap());
+        trailers.insert("grpc-message", "boom".parse().unwrap());
+        let err = TonicGrpcClientProtocol::check_grpc_status(Some(&trailers), None)
+            .expect_err("nonzero status must be Err");
+        match err {
+            GrpcEgressError::Status(GrpcStatusCode::Internal, msg) => {
+                assert_eq!(msg, "boom");
+            }
+            other => panic!("expected Status(Internal, _), got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn test_check_grpc_status_resource_exhausted_embeds_retry_after_hint_edge() {
+        let mut trailers = http::HeaderMap::new();
+        trailers.insert("grpc-status", "8".parse().unwrap()); // RESOURCE_EXHAUSTED
+        let mut response_headers = http::HeaderMap::new();
+        response_headers.insert("retry-after", "30".parse().unwrap());
+        let err =
+            TonicGrpcClientProtocol::check_grpc_status(Some(&trailers), Some(&response_headers))
+                .expect_err("nonzero status must be Err");
+        match err {
+            GrpcEgressError::Status(GrpcStatusCode::ResourceExhausted, msg) => {
+                assert!(
+                    msg.contains("[retry-after=30s]"),
+                    "expected retry-after hint embedded, got: {msg}"
+                );
+            }
+            other => panic!("expected Status(ResourceExhausted, _), got {other:?}"),
+        }
+    }
+
+    // ── race_deadline_and_cancel (private fn — inline per rule 37) ───────────
+
+    #[tokio::test]
+    async fn test_race_deadline_and_cancel_completes_before_deadline() {
+        let result = TonicGrpcClientProtocol::race_deadline_and_cancel(
+            async { 42 },
+            Duration::from_secs(5),
+            None,
+        )
+        .await;
+        assert_eq!(result.unwrap(), 42);
+    }
+
+    #[tokio::test]
+    async fn test_race_deadline_and_cancel_times_out() {
+        let result = TonicGrpcClientProtocol::race_deadline_and_cancel(
+            async {
+                tokio::time::sleep(Duration::from_secs(60)).await;
+            },
+            Duration::from_millis(10),
+            None,
+        )
+        .await;
+        assert!(matches!(result, Err(GrpcEgressError::Timeout(_))));
+    }
+
+    #[tokio::test]
+    async fn test_race_deadline_and_cancel_cancellation_fires_first_edge() {
+        let token = CancellationToken::new();
+        token.cancel();
+        let result = TonicGrpcClientProtocol::race_deadline_and_cancel(
+            async {
+                tokio::time::sleep(Duration::from_secs(60)).await;
+            },
+            Duration::from_secs(60),
+            Some(&token),
+        )
+        .await;
+        assert!(matches!(result, Err(GrpcEgressError::Cancelled(_))));
+    }
+
+    // ── _suppress_status_code_unused_import_warning (private fn — inline per rule 37) ──
+
+    #[test]
+    fn test_suppress_status_code_unused_import_warning_returns_input_unchanged() {
+        assert_eq!(
+            TonicGrpcClientProtocol::_suppress_status_code_unused_import_warning(
+                GrpcStatusCode::Ok
+            ),
+            GrpcStatusCode::Ok
+        );
+    }
 }

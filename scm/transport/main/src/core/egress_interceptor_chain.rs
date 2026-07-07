@@ -1,4 +1,7 @@
 //! `impl` block for [`GrpcEgressInterceptorChain`]. The type *declaration* lives in `api/`.
+//!
+//! Renamed from `grpc_egress_interceptor_chain.rs` (dropping the redundant
+//! `grpc_` prefix) — see `core/channel_config.rs`'s doc comment for why.
 
 use std::sync::Arc;
 
