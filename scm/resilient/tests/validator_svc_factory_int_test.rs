@@ -1,7 +1,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Integration tests for [`ValidatorFactory`].
 
-use swe_edge_egress_grpc::ResilienceConfig as ForeignResilienceConfig;
+use swe_edge_egress_grpc::ResilienceConfigResilienceValidator as ForeignResilienceConfig;
 use swe_edge_egress_grpc_resilient::{ConfigValidationRequest, ResilienceConfig, ValidatorFactory};
 
 fn valid() -> ForeignResilienceConfig {

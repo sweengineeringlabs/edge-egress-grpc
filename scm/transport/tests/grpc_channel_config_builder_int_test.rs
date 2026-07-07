@@ -3,7 +3,8 @@
 
 use std::time::Duration;
 use swe_edge_egress_grpc_transport::{
-    CompressionMode, GrpcChannelConfigBuilder, KeepAliveConfig, MtlsConfig, ResilienceConfig,
+    CompressionMode, GrpcChannelConfigBuilder, KeepAliveConfig, MtlsConfig,
+    ResilienceConfigResilienceValidator,
 };
 
 /// @covers: GrpcChannelConfigBuilder::build — valid endpoint returns Ok
@@ -86,7 +87,7 @@ fn transport_struct_grpc_channel_config_builder_compression_sets_mode_int_test()
 /// @covers: GrpcChannelConfigBuilder::resilience — stores policy
 #[test]
 fn transport_struct_grpc_channel_config_builder_resilience_stores_policy_int_test() {
-    let r = ResilienceConfig {
+    let r = ResilienceConfigResilienceValidator {
         max_attempts: 3,
         initial_backoff_ms: 100,
         backoff_multiplier: 2.0,

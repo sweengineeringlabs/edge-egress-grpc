@@ -1,7 +1,7 @@
 //! Integration tests for [`ResilienceConfig`] (local newtype wrapping the
 //! transport crate's foreign `ResilienceConfig`).
 
-use swe_edge_egress_grpc::ResilienceConfig as ForeignResilienceConfig;
+use swe_edge_egress_grpc::ResilienceConfigResilienceValidator as ForeignResilienceConfig;
 use swe_edge_egress_grpc_resilient::ResilienceConfig;
 
 /// @covers: ResilienceConfig

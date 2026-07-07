@@ -15,7 +15,7 @@ use std::time::Duration;
 use futures::future::BoxFuture;
 use swe_edge_egress_grpc::{
     GrpcChannelConfig, GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcRequest, GrpcResponse,
-    GrpcStatusCode, HealthCheckRequest, ResilienceConfig,
+    GrpcStatusCode, HealthCheckRequest, ResilienceConfigResilienceValidator,
 };
 use swe_edge_egress_grpc_breaker::{BreakerState, GrpcBreakerClient, GrpcBreakerConfig};
 use swe_edge_egress_grpc_resilient::{GrpcResilientFacade, ResilientTransportError};
@@ -63,8 +63,8 @@ fn req() -> GrpcRequest {
     GrpcRequest::new("svc/Method", vec![], Duration::from_secs(10))
 }
 
-fn valid_resilience() -> ResilienceConfig {
-    ResilienceConfig {
+fn valid_resilience() -> ResilienceConfigResilienceValidator {
+    ResilienceConfigResilienceValidator {
         max_attempts: 3,
         initial_backoff_ms: 10,
         backoff_multiplier: 2.0,

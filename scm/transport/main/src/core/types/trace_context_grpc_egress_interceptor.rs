@@ -1,14 +1,14 @@
-//! `impl` blocks for [`TraceContextInterceptor`]. The type *declaration* lives in `api/`.
+//! `impl` blocks for [`TraceContextGrpcEgressInterceptor`]. The type *declaration* lives in `api/`.
 
 use crate::api::{
-    AfterCallRequest, GrpcEgressError, GrpcEgressInterceptor, TraceContextInterceptor,
+    AfterCallRequest, GrpcEgressError, GrpcEgressInterceptor, TraceContextGrpcEgressInterceptor,
 };
 use crate::api::{GrpcRequest, TraceContextSource};
 
 const TRACEPARENT: &str = "traceparent";
 const TRACESTATE: &str = "tracestate";
 
-impl TraceContextInterceptor {
+impl TraceContextGrpcEgressInterceptor {
     /// Propagates an upstream `traceparent` only — does not inject.
     pub fn pass_through() -> Self {
         Self {
@@ -27,7 +27,7 @@ impl TraceContextInterceptor {
     }
 }
 
-impl GrpcEgressInterceptor for TraceContextInterceptor {
+impl GrpcEgressInterceptor for TraceContextGrpcEgressInterceptor {
     fn before_call(&self, req: &mut GrpcRequest) -> Result<(), GrpcEgressError> {
         if req.metadata.contains_key(TRACEPARENT) {
             return Ok(());

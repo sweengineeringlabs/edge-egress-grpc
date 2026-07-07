@@ -1,6 +1,6 @@
-//! `ResilienceConfigBuilder` — builder for [`crate::api::ResilienceConfig`].
+//! `ResilienceConfigBuilder` — builder for [`crate::api::ResilienceConfigResilienceValidator`].
 
-/// Builder for [`crate::api::ResilienceConfig`].
+/// Builder for [`crate::api::ResilienceConfigResilienceValidator`].
 #[derive(Debug, Default)]
 pub struct ResilienceConfigBuilder {
     pub(crate) max_attempts: Option<u32>,

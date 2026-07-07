@@ -5,11 +5,11 @@ use std::time::Duration;
 
 use crate::api::{
     ApplicationConfigBuilder, GrpcChannelConfig, GrpcChannelConfigError, GrpcEgress,
-    GrpcEgressError, Processor, ResilienceConfig, TransportSvc, ValidationRequest, Validator,
-    DEFAULT_REQUEST_TIMEOUT_SECS,
+    GrpcEgressError, Processor, ResilienceConfigResilienceValidator, TransportSvc,
+    ValidationRequest, Validator, DEFAULT_REQUEST_TIMEOUT_SECS,
 };
-use crate::spi::client::tonic::{TonicGrpcClient, TonicGrpcClientProtocol};
-use crate::spi::loadbalancer::tonic::TonicLbGrpcClient;
+use crate::spi::client::tonic::{TonicGrpcEgress, TonicGrpcEgressProtocol};
+use crate::spi::loadbalancer::tonic::TonicLbGrpcEgress;
 use swe_edge_loadbalancer::LoadbalancerConfig;
 
 impl TransportSvc {
@@ -40,7 +40,7 @@ impl TransportSvc {
     pub fn create_tonic_client_from_config(
         config: &GrpcChannelConfig,
     ) -> Result<impl GrpcEgress + Processor, GrpcChannelConfigError> {
-        if config.tls_required && TonicGrpcClientProtocol::is_plaintext_endpoint(&config.endpoint) {
+        if config.tls_required && TonicGrpcEgressProtocol::is_plaintext_endpoint(&config.endpoint) {
             return Err(GrpcChannelConfigError::PlaintextRejected(
                 config.endpoint.clone(),
             ));
@@ -50,15 +50,15 @@ impl TransportSvc {
                 .request_timeout_secs
                 .unwrap_or(DEFAULT_REQUEST_TIMEOUT_SECS),
         );
-        let mut client = TonicGrpcClient::with_timeout(&config.endpoint, timeout);
+        let mut client = TonicGrpcEgress::with_timeout(&config.endpoint, timeout);
         client.max_message_bytes = config.max_message_bytes;
         client.compression = config.compression;
         Ok(client)
     }
 
-    /// Validate a [`ResilienceConfig`], returning the first constraint violation as `Err`.
+    /// Validate a [`ResilienceConfigResilienceValidator`], returning the first constraint violation as `Err`.
     pub fn validate_resilience_config(
-        config: &ResilienceConfig,
+        config: &ResilienceConfigResilienceValidator,
     ) -> Result<(), GrpcChannelConfigError> {
         config.validate(ValidationRequest)
     }
@@ -75,7 +75,7 @@ impl TransportSvc {
     pub fn create_lb_transport_from_config(
         config: LoadbalancerConfig,
     ) -> Result<Arc<dyn GrpcEgress>, GrpcEgressError> {
-        let client = TonicLbGrpcClient::from_config(config)?;
+        let client = TonicLbGrpcEgress::from_config(config)?;
         Ok(Arc::new(client))
     }
 }

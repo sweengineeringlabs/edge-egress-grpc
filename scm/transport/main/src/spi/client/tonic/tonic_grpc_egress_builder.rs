@@ -1,4 +1,4 @@
-//! `TonicGrpcClientBuilder` — internal builder for [`super::tonic_grpc_client::TonicGrpcClient`].
+//! `TonicGrpcEgressBuilder` — internal builder for [`super::tonic_grpc_egress::TonicGrpcEgress`].
 //!
 //! Not part of the crate's public surface — external consumers construct a
 //! `GrpcEgress` via `TransportSvc`/`GrpcEgressFactory` from a
@@ -9,11 +9,11 @@ use std::time::Duration;
 
 use crate::api::{CompressionMode, GrpcEgressInterceptorChain, DEFAULT_MAX_MESSAGE_BYTES};
 
-/// Builder for [`super::tonic_grpc_client::TonicGrpcClient`].
+/// Builder for [`super::tonic_grpc_egress::TonicGrpcEgress`].
 ///
 /// Each setter is a fluent method that returns `Self`; call [`Self::build`]
 /// when all settings are configured.
-pub(crate) struct TonicGrpcClientBuilder {
+pub(crate) struct TonicGrpcEgressBuilder {
     base_uri: String,
     timeout: Duration,
     interceptors: GrpcEgressInterceptorChain,
@@ -28,7 +28,7 @@ pub(crate) struct TonicGrpcClientBuilder {
         reason = "only exercised in this crate's own tests; production wiring pending"
     )
 )]
-impl TonicGrpcClientBuilder {
+impl TonicGrpcEgressBuilder {
     /// Create a builder targeting `base_uri`.
     ///
     /// Defaults: 30 s timeout, no interceptors, 4 MiB max message, no compression.
@@ -66,9 +66,9 @@ impl TonicGrpcClientBuilder {
         self
     }
 
-    /// Consume the builder and return a configured [`super::tonic_grpc_client::TonicGrpcClient`].
-    pub(crate) fn build(self) -> super::tonic_grpc_client::TonicGrpcClient {
-        super::tonic_grpc_client::TonicGrpcClient::new(self.base_uri)
+    /// Consume the builder and return a configured [`super::tonic_grpc_egress::TonicGrpcEgress`].
+    pub(crate) fn build(self) -> super::tonic_grpc_egress::TonicGrpcEgress {
+        super::tonic_grpc_egress::TonicGrpcEgress::new(self.base_uri)
     }
 }
 
@@ -96,50 +96,50 @@ mod tests {
         );
     }
 
-    /// @covers: TonicGrpcClientBuilder::new, build — builder produces a client without panic
+    /// @covers: TonicGrpcEgressBuilder::new, build — builder produces a client without panic
     #[tokio::test]
     async fn test_build_produces_client() {
         ensure_rustls_provider();
-        let client = TonicGrpcClientBuilder::new("http://127.0.0.1:50051").build();
+        let client = TonicGrpcEgressBuilder::new("http://127.0.0.1:50051").build();
         assert_genuinely_connectable(client).await;
     }
 
-    /// @covers: TonicGrpcClientBuilder::timeout — fluent setter returns Self
+    /// @covers: TonicGrpcEgressBuilder::timeout — fluent setter returns Self
     #[tokio::test]
     async fn test_timeout_setter_is_fluent() {
         ensure_rustls_provider();
-        let client = TonicGrpcClientBuilder::new("http://127.0.0.1:50051")
+        let client = TonicGrpcEgressBuilder::new("http://127.0.0.1:50051")
             .timeout(Duration::from_secs(5))
             .build();
         assert_genuinely_connectable(client).await;
     }
 
-    /// @covers: TonicGrpcClientBuilder::max_message_bytes — fluent setter returns Self
+    /// @covers: TonicGrpcEgressBuilder::max_message_bytes — fluent setter returns Self
     #[tokio::test]
     async fn test_max_message_bytes_setter_is_fluent() {
         ensure_rustls_provider();
-        let client = TonicGrpcClientBuilder::new("http://127.0.0.1:50051")
+        let client = TonicGrpcEgressBuilder::new("http://127.0.0.1:50051")
             .max_message_bytes(8 * 1024 * 1024)
             .build();
         assert_genuinely_connectable(client).await;
     }
 
-    /// @covers: TonicGrpcClientBuilder::compression — fluent setter returns Self
+    /// @covers: TonicGrpcEgressBuilder::compression — fluent setter returns Self
     #[tokio::test]
     async fn test_compression_setter_is_fluent() {
         ensure_rustls_provider();
-        let client = TonicGrpcClientBuilder::new("http://127.0.0.1:50051")
+        let client = TonicGrpcEgressBuilder::new("http://127.0.0.1:50051")
             .compression(CompressionMode::Gzip)
             .build();
         assert_genuinely_connectable(client).await;
     }
 
-    /// @covers: TonicGrpcClientBuilder::interceptors — fluent setter returns Self
+    /// @covers: TonicGrpcEgressBuilder::interceptors — fluent setter returns Self
     #[tokio::test]
     async fn test_interceptors_setter_is_fluent() {
         ensure_rustls_provider();
         let chain = GrpcEgressInterceptorChain::new();
-        let client = TonicGrpcClientBuilder::new("http://127.0.0.1:50051")
+        let client = TonicGrpcEgressBuilder::new("http://127.0.0.1:50051")
             .interceptors(chain)
             .build();
         assert_genuinely_connectable(client).await;

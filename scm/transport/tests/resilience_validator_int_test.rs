@@ -1,8 +1,11 @@
 //! Integration tests for `ResilienceValidator` trait.
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 
+use std::sync::Arc;
+
 use swe_edge_egress_grpc_transport::{
-    ConfigValidationRequest, GrpcChannelConfigError, ResilienceConfig, ResilienceValidator,
+    ConfigValidationRequest, GrpcChannelConfigError, ResilienceConfigResilienceValidator,
+    ResilienceValidator,
 };
 
 /// @covers: ResilienceValidator is object-safe
@@ -26,7 +29,7 @@ impl ResilienceValidator for StubResilienceValidator {
 /// @covers: default_config_builder
 #[test]
 fn test_default_config_builder_missing_fields_is_error() {
-    // A fresh builder has none of ResilienceConfig's required fields set —
+    // A fresh builder has none of ResilienceConfigResilienceValidator's required fields set —
     // `.build()` must reject it, proving this isn't a stub that always
     // succeeds.
     let err = <StubResilienceValidator as ResilienceValidator>::default_config_builder()
@@ -38,7 +41,7 @@ fn test_default_config_builder_missing_fields_is_error() {
 /// @covers: default_config_builder
 #[test]
 fn test_default_config_builder_fully_populated_builds_valid_config_happy() {
-    let config: ResilienceConfig =
+    let config: ResilienceConfigResilienceValidator =
         <StubResilienceValidator as ResilienceValidator>::default_config_builder()
             .max_attempts(3)
             .rate_limit_max_attempts(2)
@@ -60,10 +63,10 @@ fn test_default_config_builder_repeated_calls_are_independent_edge() {
     assert_eq!(a.build().is_err(), b.build().is_err());
 }
 
-// ── ResilienceValidator::validate_config (real impl: ResilienceConfig) ──────
+// ── ResilienceValidator::validate_config (real impl: ResilienceConfigResilienceValidator) ──────
 
-fn valid_config() -> ResilienceConfig {
-    ResilienceConfig {
+fn valid_config() -> ResilienceConfigResilienceValidator {
+    ResilienceConfigResilienceValidator {
         max_attempts: 3,
         initial_backoff_ms: 100,
         backoff_multiplier: 2.0,
@@ -84,7 +87,7 @@ fn test_validate_config_valid_config_happy() {
     let config = valid_config();
     config
         .validate_config(ConfigValidationRequest {
-            config: config.clone(),
+            config: Arc::new(config.clone()),
         })
         .expect("a fully valid config must be accepted");
 }
@@ -96,7 +99,7 @@ fn test_validate_config_zero_max_attempts_error() {
     config.max_attempts = 0;
     let err = config
         .validate_config(ConfigValidationRequest {
-            config: config.clone(),
+            config: Arc::new(config.clone()),
         })
         .expect_err("max_attempts == 0 must be rejected");
     assert!(matches!(err, GrpcChannelConfigError::Config(_)));
@@ -111,7 +114,9 @@ fn test_validate_config_ignores_receiver_uses_request_config_edge() {
     let mut requested = valid_config();
     requested.rate_limit_max_attempts = 0;
     let err = receiver
-        .validate_config(ConfigValidationRequest { config: requested })
+        .validate_config(ConfigValidationRequest {
+            config: Arc::new(requested),
+        })
         .expect_err("the request's config must be validated, not the receiver's");
     assert!(matches!(err, GrpcChannelConfigError::Config(_)));
 }

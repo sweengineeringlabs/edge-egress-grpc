@@ -28,14 +28,14 @@ const DEFAULT_TIMEOUT: Duration = Duration::from_secs(30);
 /// through tonic's built-in load-balancer channel, and reports success or
 /// failure back to the pool so downstream calls can avoid degraded backends.
 #[derive(Debug)]
-pub(crate) struct TonicLbGrpcClient {
+pub(crate) struct TonicLbGrpcEgress {
     pub(crate) channel: tonic::transport::Channel,
     pub(crate) pool: Arc<BackendPoolInstance>,
     pub(crate) timeout: Duration,
 }
 
-impl TonicLbGrpcClient {
-    /// Construct a `TonicLbGrpcClient` from a [`LoadbalancerConfig`].
+impl TonicLbGrpcEgress {
+    /// Construct a `TonicLbGrpcEgress` from a [`LoadbalancerConfig`].
     ///
     /// # Errors
     ///
@@ -88,7 +88,7 @@ impl TonicLbGrpcClient {
     }
 }
 
-impl GrpcEgress for TonicLbGrpcClient {
+impl GrpcEgress for TonicLbGrpcEgress {
     fn call_unary(&self, request: GrpcRequest) -> BoxFuture<'_, GrpcEgressResult<GrpcResponse>> {
         let pool = Arc::clone(&self.pool);
         let timeout = self.timeout;
@@ -223,7 +223,7 @@ impl GrpcEgress for TonicLbGrpcClient {
 }
 
 #[cfg(feature = "prost")]
-impl crate::api::GrpcEgressProstCodec for TonicLbGrpcClient {}
+impl crate::api::GrpcEgressProstCodec for TonicLbGrpcEgress {}
 
 #[cfg(test)]
 mod tests {
@@ -231,7 +231,7 @@ mod tests {
 
     use swe_edge_loadbalancer::{BackendConfig, LoadbalancerConfig, Strategy};
 
-    use super::{TonicLbGrpcClient, DEFAULT_TIMEOUT};
+    use super::{TonicLbGrpcEgress, DEFAULT_TIMEOUT};
 
     fn one_backend(url: &str) -> LoadbalancerConfig {
         LoadbalancerConfig {
@@ -252,7 +252,7 @@ mod tests {
             strategy: Strategy::RoundRobin,
             backends: vec![],
         };
-        let err = TonicLbGrpcClient::from_config(config).unwrap_err();
+        let err = TonicLbGrpcEgress::from_config(config).unwrap_err();
         assert!(
             err.to_string().contains("no backends"),
             "expected 'no backends' in error, got: {err}"
@@ -263,7 +263,7 @@ mod tests {
     #[test]
     fn test_from_config_invalid_url_returns_unavailable() {
         let config = one_backend("!! not a valid url !!");
-        let err = TonicLbGrpcClient::from_config(config).unwrap_err();
+        let err = TonicLbGrpcEgress::from_config(config).unwrap_err();
         assert!(
             err.to_string().contains("invalid backend URL"),
             "expected 'invalid backend URL' in error, got: {err}"
@@ -277,7 +277,7 @@ mod tests {
     fn test_from_config_valid_url_builds_client() {
         let rt = tokio::runtime::Runtime::new().expect("runtime");
         let client = rt.block_on(async {
-            TonicLbGrpcClient::from_config(one_backend("http://localhost:50051"))
+            TonicLbGrpcEgress::from_config(one_backend("http://localhost:50051"))
         });
         assert!(client.is_ok(), "expected Ok, got: {:?}", client.err());
     }
@@ -289,7 +289,7 @@ mod tests {
     fn test_with_timeout_overrides_default() {
         let rt = tokio::runtime::Runtime::new().expect("runtime");
         let client = rt.block_on(async {
-            TonicLbGrpcClient::from_config(one_backend("http://localhost:50051"))
+            TonicLbGrpcEgress::from_config(one_backend("http://localhost:50051"))
                 .unwrap()
                 .with_timeout(Duration::from_secs(5))
         });
@@ -301,7 +301,7 @@ mod tests {
     fn test_from_config_defaults_timeout_when_not_overridden() {
         let rt = tokio::runtime::Runtime::new().expect("runtime");
         let client = rt.block_on(async {
-            TonicLbGrpcClient::from_config(one_backend("http://localhost:50051")).unwrap()
+            TonicLbGrpcEgress::from_config(one_backend("http://localhost:50051")).unwrap()
         });
         assert_eq!(client.timeout, DEFAULT_TIMEOUT);
     }
@@ -310,7 +310,7 @@ mod tests {
     #[tokio::test]
     async fn test_health_check_with_healthy_pool_returns_ok() {
         use crate::api::{GrpcEgress, HealthCheckRequest};
-        let client = TonicLbGrpcClient::from_config(one_backend("http://localhost:50051"))
+        let client = TonicLbGrpcEgress::from_config(one_backend("http://localhost:50051"))
             .expect("valid config");
         // Pool has one healthy backend — health_check only probes pool membership,
         // no network call is made.

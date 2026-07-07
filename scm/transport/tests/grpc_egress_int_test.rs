@@ -250,7 +250,7 @@ async fn spawn_metadata_server(listener: tokio::net::TcpListener) -> SocketAddr 
 
 /// Install a rustls CryptoProvider exactly once per test process.  In a
 /// workspace where multiple crates pull both `aws-lc-rs` and `ring`, rustls
-/// 0.23 refuses to auto-select; tests that construct a `TonicGrpcClient`
+/// 0.23 refuses to auto-select; tests that construct a `TonicGrpcEgress`
 /// must call this first so hyper-rustls can build its connector.
 fn ensure_rustls_provider() {
     use std::sync::Once;
@@ -260,7 +260,7 @@ fn ensure_rustls_provider() {
     });
 }
 
-/// @covers: TonicGrpcClient::call_unary — happy path echo.
+/// @covers: TonicGrpcEgress::call_unary — happy path echo.
 #[tokio::test]
 async fn transport_struct_call_unary_sends_request_and_receives_response() {
     ensure_rustls_provider();
@@ -277,7 +277,7 @@ async fn transport_struct_call_unary_sends_request_and_receives_response() {
     assert_eq!(resp.body, b"hello");
 }
 
-/// @covers: TonicGrpcClient::call_unary — grpc-status 13 maps to Status(Internal, _).
+/// @covers: TonicGrpcEgress::call_unary — grpc-status 13 maps to Status(Internal, _).
 #[tokio::test]
 async fn transport_struct_call_unary_propagates_grpc_error_status() {
     let listener = bind_listener().await;
@@ -301,7 +301,7 @@ async fn transport_struct_call_unary_propagates_grpc_error_status() {
     }
 }
 
-/// @covers: TonicGrpcClient::call_stream — multiple frames echoed back.
+/// @covers: TonicGrpcEgress::call_stream — multiple frames echoed back.
 #[tokio::test]
 async fn test_call_stream_multiple_frames_happy() {
     let listener = bind_listener().await;
@@ -397,7 +397,7 @@ async fn test_call_stream_empty_message_list_edge() {
     );
 }
 
-/// @covers: TonicGrpcClient::health_check — succeeds when server is listening.
+/// @covers: TonicGrpcEgress::health_check — succeeds when server is listening.
 #[tokio::test]
 async fn test_health_check_server_listening_happy() {
     let listener = bind_listener().await;
@@ -411,7 +411,7 @@ async fn test_health_check_server_listening_happy() {
         .expect("health_check should succeed when port is open");
 }
 
-/// @covers: TonicGrpcClient::health_check — fails when nothing is listening.
+/// @covers: TonicGrpcEgress::health_check — fails when nothing is listening.
 #[tokio::test]
 async fn test_health_check_no_server_listening_error() {
     // Bind to get an OS-assigned port, then drop the listener so nothing is listening on it.
@@ -484,7 +484,7 @@ fn transport_struct_grpc_response_holds_body_bytes_int_test() {
     assert_eq!(resp.body, vec![0x08, 0x01]);
 }
 
-/// @covers: TonicGrpcClient::call_unary — response metadata from HTTP/2 trailers is preserved.
+/// @covers: TonicGrpcEgress::call_unary — response metadata from HTTP/2 trailers is preserved.
 #[tokio::test]
 async fn transport_struct_call_unary_receives_response_metadata_from_trailers() {
     let listener = bind_listener().await;
@@ -507,7 +507,7 @@ async fn transport_struct_call_unary_receives_response_metadata_from_trailers() 
     );
 }
 
-/// @covers: TonicGrpcClient::call_unary — timeout fires when server does not respond.
+/// @covers: TonicGrpcEgress::call_unary — timeout fires when server does not respond.
 #[tokio::test]
 async fn transport_struct_call_unary_returns_timeout_error_when_server_stalls() {
     let listener = bind_listener().await;
@@ -524,7 +524,7 @@ async fn transport_struct_call_unary_returns_timeout_error_when_server_stalls() 
     );
 }
 
-/// @covers: TonicGrpcClient::call_unary — ConnectionFailed when nothing listens on the port.
+/// @covers: TonicGrpcEgress::call_unary — ConnectionFailed when nothing listens on the port.
 #[tokio::test]
 async fn transport_struct_call_unary_returns_connection_failed_when_no_server_is_listening() {
     let addr = {
@@ -603,7 +603,7 @@ async fn spawn_timeout_recording_server(
     (addr, captured)
 }
 
-/// @covers: TonicGrpcClient::call_unary — request carries `grpc-timeout` header
+/// @covers: TonicGrpcEgress::call_unary — request carries `grpc-timeout` header
 /// derived from the GrpcRequest deadline.
 #[tokio::test]
 async fn transport_struct_call_unary_sends_grpc_timeout_header_from_deadline() {
@@ -635,7 +635,7 @@ async fn transport_struct_call_unary_sends_grpc_timeout_header_from_deadline() {
     );
 }
 
-/// @covers: TonicGrpcClient::call_unary — caller-supplied cancellation token aborts
+/// @covers: TonicGrpcEgress::call_unary — caller-supplied cancellation token aborts
 /// the in-flight request and yields `Cancelled` rather than `Timeout`.
 #[tokio::test]
 async fn transport_struct_call_unary_cancellation_token_aborts_in_flight_request() {
@@ -850,7 +850,7 @@ async fn transport_struct_call_unary_with_context_returns_connection_failed_when
     );
 }
 
-/// @covers: TonicGrpcClient::call_unary — sanitized message is on the wire when
+/// @covers: TonicGrpcEgress::call_unary — sanitized message is on the wire when
 /// the local client encounters an unexpected internal condition.  We inject one
 /// by feeding a server that returns a malformed (truncated) gRPC frame in the
 /// response body.

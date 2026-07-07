@@ -1,4 +1,4 @@
-//! `DefaultResilientGrpcClient` — structural implementor of `ResilientGrpcClientPort`.
+//! `DefaultResilientGrpcClientPort` — structural implementor of `ResilientGrpcClientPort`.
 //!
 //! Genuine circuit-breaker/retry composition is provided by the sibling
 //! `swe-edge-egress-grpc-resilient` crate; this wrapper delegates every
@@ -16,18 +16,18 @@ use crate::api::{
 };
 
 /// Wraps any [`GrpcEgress`] and reports a permanently closed circuit.
-pub(crate) struct DefaultResilientGrpcClient {
+pub(crate) struct DefaultResilientGrpcClientPort {
     inner: Arc<dyn GrpcEgress>,
 }
 
-impl DefaultResilientGrpcClient {
+impl DefaultResilientGrpcClientPort {
     /// Wrap `inner` with a no-op resilience surface.
     pub(crate) fn new(inner: Arc<dyn GrpcEgress>) -> Self {
         Self { inner }
     }
 }
 
-impl GrpcEgress for DefaultResilientGrpcClient {
+impl GrpcEgress for DefaultResilientGrpcClientPort {
     fn call_unary(
         &self,
         request: GrpcRequest,
@@ -76,9 +76,9 @@ impl GrpcEgress for DefaultResilientGrpcClient {
 }
 
 #[cfg(feature = "prost")]
-impl crate::api::GrpcEgressProstCodec for DefaultResilientGrpcClient {}
+impl crate::api::GrpcEgressProstCodec for DefaultResilientGrpcClientPort {}
 
-impl ResilientGrpcClientPort for DefaultResilientGrpcClient {
+impl ResilientGrpcClientPort for DefaultResilientGrpcClientPort {
     fn circuit_state(
         &self,
         _req: CircuitStateRequest,
@@ -103,10 +103,10 @@ mod tests {
     use super::*;
     use crate::api::{GrpcChannelConfig, TransportSvc};
 
-    fn wrapped() -> DefaultResilientGrpcClient {
+    fn wrapped() -> DefaultResilientGrpcClientPort {
         let cfg = GrpcChannelConfig::new("http://127.0.0.1:50999").allow_plaintext();
         let inner = TransportSvc::create_transport_from_config(&cfg).expect("create transport");
-        DefaultResilientGrpcClient::new(inner)
+        DefaultResilientGrpcClientPort::new(inner)
     }
 
     #[test]

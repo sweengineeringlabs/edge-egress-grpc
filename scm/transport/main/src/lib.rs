@@ -19,9 +19,9 @@ pub use api::{
     GrpcEgressInterceptorChain, GrpcEgressResult, GrpcMessageStreamResponse, GrpcRequest,
     GrpcRequestBuilder, GrpcResponse, GrpcStatusCode, HealthCheckRequest, KeepAliveConfig,
     LastErrorRequest, LastErrorResponse, MtlsConfig, ProcessingRequest, Processor,
-    ResilienceConfig, ResilienceConfigBuilder, ResilienceValidator, ResilientGrpcClientPort,
-    TraceContextInterceptor, TraceContextSource, TransportSvc, ValidationRequest, Validator,
-    DEFAULT_MAX_MESSAGE_BYTES,
+    ResilienceConfigBuilder, ResilienceConfigResilienceValidator, ResilienceValidator,
+    ResilientGrpcClientPort, TraceContextGrpcEgressInterceptor, TraceContextSource, TransportSvc,
+    ValidationRequest, Validator, DEFAULT_MAX_MESSAGE_BYTES,
 };
 pub use edge_domain::SecurityContext;
 pub use saf::{

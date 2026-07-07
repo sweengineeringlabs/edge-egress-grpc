@@ -1,10 +1,16 @@
 //! `ConfigValidationRequest` — request for [`crate::api::ResilienceValidator::validate_config`].
 
-use crate::api::types::resilience_config::ResilienceConfig;
+use std::sync::Arc;
 
-/// Request carrying the [`ResilienceConfig`] to validate.
-#[derive(Debug, Clone)]
+use crate::api::Validator;
+
+/// Request carrying the config to validate as an opaque [`Validator`] trait
+/// object — per `field_type_purity`, api/ struct fields must be trait objects
+/// or value types, never a concrete config struct by value. The receiver is
+/// validated purely through [`Validator::validate`], never by reading its
+/// concrete fields.
+#[derive(Clone)]
 pub struct ConfigValidationRequest {
     /// The configuration under validation.
-    pub config: ResilienceConfig,
+    pub config: Arc<dyn Validator>,
 }

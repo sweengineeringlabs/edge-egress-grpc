@@ -1,4 +1,4 @@
-//! `impl` blocks for [`ResilienceConfig`], [`ResilienceConfigBuilder`], and
+//! `impl` blocks for [`ResilienceConfigResilienceValidator`], [`ResilienceConfigBuilder`], and
 //! their `Validator`/`ResilienceValidator` implementations. The type
 //! *declarations* live in `api/`.
 //!
@@ -12,10 +12,11 @@
 
 use crate::api::Validator;
 use crate::api::{
-    GrpcChannelConfigError, ResilienceConfig, ResilienceConfigBuilder, ValidationRequest,
+    GrpcChannelConfigError, ResilienceConfigBuilder, ResilienceConfigResilienceValidator,
+    ValidationRequest,
 };
 
-impl Default for ResilienceConfig {
+impl Default for ResilienceConfigResilienceValidator {
     /// Returns the fast-stateless-gRPC profile: the calibrated baseline that
     /// confirmed ≤ 1.5× retry amplification in load tests.
     fn default() -> Self {
@@ -96,9 +97,9 @@ impl ResilienceConfigBuilder {
         self
     }
 
-    /// Build the [`ResilienceConfig`]. Returns `Err` when any required field is unset.
-    pub fn build(self) -> Result<ResilienceConfig, String> {
-        Ok(ResilienceConfig {
+    /// Build the [`ResilienceConfigResilienceValidator`]. Returns `Err` when any required field is unset.
+    pub fn build(self) -> Result<ResilienceConfigResilienceValidator, String> {
+        Ok(ResilienceConfigResilienceValidator {
             max_attempts: self.max_attempts.ok_or("max_attempts required")?,
             initial_backoff_ms: self.initial_backoff_ms.unwrap_or(100),
             backoff_multiplier: self.backoff_multiplier.unwrap_or(2.0),
@@ -116,7 +117,7 @@ impl ResilienceConfigBuilder {
     }
 }
 
-impl Validator for ResilienceConfig {
+impl Validator for ResilienceConfigResilienceValidator {
     fn validate(&self, _req: ValidationRequest) -> Result<(), GrpcChannelConfigError> {
         if self.max_attempts == 0 {
             return Err(GrpcChannelConfigError::Config(
@@ -149,7 +150,7 @@ impl Validator for ResilienceConfig {
     }
 }
 
-impl crate::api::ResilienceValidator for ResilienceConfig {
+impl crate::api::ResilienceValidator for ResilienceConfigResilienceValidator {
     fn validate_config(
         &self,
         req: crate::api::ConfigValidationRequest,
@@ -162,8 +163,8 @@ impl crate::api::ResilienceValidator for ResilienceConfig {
 mod tests {
     use super::*;
 
-    fn valid() -> ResilienceConfig {
-        ResilienceConfig {
+    fn valid() -> ResilienceConfigResilienceValidator {
+        ResilienceConfigResilienceValidator {
             max_attempts: 3,
             initial_backoff_ms: 100,
             backoff_multiplier: 2.0,

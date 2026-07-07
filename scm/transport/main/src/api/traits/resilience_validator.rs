@@ -8,7 +8,7 @@
 
 use crate::api::{ConfigValidationRequest, GrpcChannelConfigError, ResilienceConfigBuilder};
 
-/// Validates a [`crate::api::ResilienceConfig`] before it is applied to a gRPC channel.
+/// Validates a [`crate::api::ResilienceConfigResilienceValidator`] before it is applied to a gRPC channel.
 ///
 /// Returns `Err` when the configuration contains values that would produce
 /// unsafe or undefined retry / breaker behaviour (e.g. `max_attempts == 0`,

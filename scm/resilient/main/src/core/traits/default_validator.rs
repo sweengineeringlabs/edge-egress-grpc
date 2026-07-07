@@ -20,8 +20,8 @@ mod tests {
     use super::*;
     use crate::api::ResilienceConfig;
 
-    fn valid() -> swe_edge_egress_grpc::ResilienceConfig {
-        swe_edge_egress_grpc::ResilienceConfig {
+    fn valid() -> swe_edge_egress_grpc::ResilienceConfigResilienceValidator {
+        swe_edge_egress_grpc::ResilienceConfigResilienceValidator {
             max_attempts: 3,
             initial_backoff_ms: 10,
             backoff_multiplier: 2.0,

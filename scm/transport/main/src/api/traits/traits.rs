@@ -11,7 +11,7 @@ use crate::api::{GrpcChannelConfigError, ValidationRequest};
 
 /// Configuration validation contract.
 ///
-/// Implemented by configuration types (e.g. [`crate::api::types::ResilienceConfig`])
+/// Implemented by configuration types (e.g. [`crate::api::types::ResilienceConfigResilienceValidator`])
 /// to validate their fields before use.
 pub trait Validator: Send + Sync {
     /// Validate the configuration.

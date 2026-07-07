@@ -21,13 +21,13 @@ fn test_error_channel_config_variant_produced_on_plaintext_rejection() {
 /// @covers: ResilientTransportError::InvalidResilience
 #[test]
 fn test_error_invalid_resilience_variant_produced_on_bad_config() {
-    use swe_edge_egress_grpc::ResilienceConfig;
+    use swe_edge_egress_grpc::ResilienceConfigResilienceValidator;
     rustls::crypto::aws_lc_rs::default_provider()
         .install_default()
         .ok();
-    let r = ResilienceConfig {
+    let r = ResilienceConfigResilienceValidator {
         max_attempts: 0,
-        ..ResilienceConfig::default()
+        ..ResilienceConfigResilienceValidator::default()
     };
     let config = GrpcChannelConfig::new("http://127.0.0.1:50051")
         .allow_plaintext()

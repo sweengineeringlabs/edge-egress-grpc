@@ -1,7 +1,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Integration tests that directly exercise the `tower` dependency used by
-//! `TonicLbGrpcClient::call_unary`, which drives a `tonic::transport::Channel`
-//! via `tower::ServiceExt::oneshot` (see `spi/loadbalancer/tonic/lb_grpc_client.rs`).
+//! `TonicLbGrpcEgress::call_unary`, which drives a `tonic::transport::Channel`
+//! via `tower::ServiceExt::oneshot` (see `spi/loadbalancer/tonic/lb_grpc_egress.rs`).
 //!
 //! These tests verify the same `Service`/`ServiceExt::oneshot` contract this
 //! crate relies on internally, using a minimal `tower::service_fn` stand-in

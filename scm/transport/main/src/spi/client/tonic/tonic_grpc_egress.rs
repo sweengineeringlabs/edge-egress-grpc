@@ -1,4 +1,4 @@
-//! `TonicGrpcClient` struct declaration, type alias, and constructor.
+//! `TonicGrpcEgress` struct declaration, type alias, and constructor.
 
 use std::time::Duration;
 
@@ -8,7 +8,7 @@ use hyper_util::client::legacy::connect::HttpConnector;
 
 use crate::api::{CompressionMode, GrpcEgressInterceptorChain, DEFAULT_MAX_MESSAGE_BYTES};
 
-/// Hyper HTTP/2 client type alias used by [`TonicGrpcClient`].
+/// Hyper HTTP/2 client type alias used by [`TonicGrpcEgress`].
 pub(crate) type HyperClient =
     hyper_util::client::legacy::Client<hyper_rustls::HttpsConnector<HttpConnector>, Full<Bytes>>;
 
@@ -17,7 +17,7 @@ pub(crate) type HyperClient =
 /// Not part of the crate's public surface — external consumers obtain a
 /// `GrpcEgress` via `TransportSvc`/`GrpcEgressFactory`, never by naming this
 /// type directly (see SEA rule `pub_types_in_api_only`).
-pub(crate) struct TonicGrpcClient {
+pub(crate) struct TonicGrpcEgress {
     pub(crate) base_uri: String,
     pub(crate) client: HyperClient,
     pub(crate) timeout: Duration,
@@ -26,7 +26,7 @@ pub(crate) struct TonicGrpcClient {
     pub(crate) compression: CompressionMode,
 }
 
-impl TonicGrpcClient {
+impl TonicGrpcEgress {
     /// Create a client with a 30-second fallback timeout.
     pub(crate) fn new(base_uri: impl Into<String>) -> Self {
         // rustls 0.23 requires a process-wide CryptoProvider before the first
@@ -62,7 +62,7 @@ mod tests {
     /// @covers: new
     #[test]
     fn test_new_constructs_client_with_default_timeout() {
-        let client = TonicGrpcClient::new("http://127.0.0.1:50051");
+        let client = TonicGrpcEgress::new("http://127.0.0.1:50051");
         assert_eq!(client.base_uri, "http://127.0.0.1:50051");
         assert_eq!(client.timeout, Duration::from_secs(30));
     }

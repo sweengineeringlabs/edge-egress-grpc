@@ -2,11 +2,12 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 
 use swe_edge_egress_grpc_transport::{
-    GrpcChannelConfigError, ResilienceConfig, TransportSvc, ValidationRequest, Validator,
+    GrpcChannelConfigError, ResilienceConfigResilienceValidator, TransportSvc, ValidationRequest,
+    Validator,
 };
 
-fn valid() -> ResilienceConfig {
-    ResilienceConfig {
+fn valid() -> ResilienceConfigResilienceValidator {
+    ResilienceConfigResilienceValidator {
         max_attempts: 3,
         initial_backoff_ms: 100,
         backoff_multiplier: 2.0,
@@ -49,7 +50,7 @@ fn transport_struct_resilience_config_jitter_out_of_range_rejected_int_test() {
     assert!(TransportSvc::validate_resilience_config(&r).is_err());
 }
 
-// ── Validator::validate (real impl: ResilienceConfig) ────────────────────────
+// ── Validator::validate (real impl: ResilienceConfigResilienceValidator) ────────────────────────
 
 /// @covers: validate
 #[test]

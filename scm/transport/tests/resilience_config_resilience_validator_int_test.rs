@@ -1,10 +1,10 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
-//! Integration tests for `ResilienceConfig`.
+//! Integration tests for `ResilienceConfigResilienceValidator`.
 
-use swe_edge_egress_grpc_transport::ResilienceConfig;
+use swe_edge_egress_grpc_transport::ResilienceConfigResilienceValidator;
 
-fn sample() -> ResilienceConfig {
-    ResilienceConfig {
+fn sample() -> ResilienceConfigResilienceValidator {
+    ResilienceConfigResilienceValidator {
         max_attempts: 3,
         initial_backoff_ms: 100,
         backoff_multiplier: 2.0,
@@ -19,10 +19,10 @@ fn sample() -> ResilienceConfig {
     }
 }
 
-/// @covers: ResilienceConfig::default — returns the fast-stateless-gRPC profile
+/// @covers: ResilienceConfigResilienceValidator::default — returns the fast-stateless-gRPC profile
 #[test]
 fn transport_struct_resilience_config_default_returns_fast_stateless_grpc_profile_int_test() {
-    let d = ResilienceConfig::default();
+    let d = ResilienceConfigResilienceValidator::default();
     assert_eq!(d.max_attempts, 5);
     assert_eq!(d.failure_threshold, 5);
     assert_eq!(d.cool_down_seconds, 30);
@@ -31,12 +31,13 @@ fn transport_struct_resilience_config_default_returns_fast_stateless_grpc_profil
     assert_eq!(d.rate_limit_max_attempts, 2);
 }
 
-/// @covers: ResilienceConfig serde — round-trips through TOML
+/// @covers: ResilienceConfigResilienceValidator serde — round-trips through TOML
 #[test]
 fn transport_struct_resilience_config_round_trips_through_toml_int_test() {
     let original = sample();
     let encoded = toml::to_string(&original).expect("serialize");
-    let restored: ResilienceConfig = toml::from_str(&encoded).expect("deserialize");
+    let restored: ResilienceConfigResilienceValidator =
+        toml::from_str(&encoded).expect("deserialize");
     assert_eq!(restored.max_attempts, original.max_attempts);
     assert_eq!(restored.failure_threshold, original.failure_threshold);
     assert_eq!(restored.cool_down_seconds, original.cool_down_seconds);
@@ -50,12 +51,12 @@ fn transport_struct_resilience_config_round_trips_through_toml_int_test() {
     );
 }
 
-/// @covers: ResilienceConfig — all fields survive TOML round trip
+/// @covers: ResilienceConfigResilienceValidator — all fields survive TOML round trip
 #[test]
 fn transport_struct_resilience_config_all_fields_survive_round_trip_int_test() {
     let s = sample();
     let t = toml::to_string(&s).expect("serialize");
-    let r: ResilienceConfig = toml::from_str(&t).expect("deserialize");
+    let r: ResilienceConfigResilienceValidator = toml::from_str(&t).expect("deserialize");
     assert_eq!(r.initial_backoff_ms, s.initial_backoff_ms);
     assert!((r.backoff_multiplier - s.backoff_multiplier).abs() < f64::EPSILON);
     assert!((r.jitter_factor - s.jitter_factor).abs() < f64::EPSILON);

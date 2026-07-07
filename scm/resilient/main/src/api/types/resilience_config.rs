@@ -1,8 +1,8 @@
-//! Local newtype wrapping the transport crate's `ResilienceConfig`.
+//! Local newtype wrapping the transport crate's `ResilienceConfigResilienceValidator`.
 
-use swe_edge_egress_grpc::ResilienceConfig as ForeignResilienceConfig;
+use swe_edge_egress_grpc::ResilienceConfigResilienceValidator as ForeignResilienceConfig;
 
-/// Wraps `swe_edge_egress_grpc::ResilienceConfig` so api/ never references
+/// Wraps `swe_edge_egress_grpc::ResilienceConfigResilienceValidator` so api/ never references
 /// the foreign type directly — the delegating validation call lives in
 /// `core/`. The field is `pub` (not `pub(crate)`) because callers must be
 /// able to construct a [`crate::api::ConfigValidationRequest`] with real

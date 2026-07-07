@@ -1,8 +1,8 @@
 //! Integration tests for the load-balanced gRPC egress adapter's public surface.
 //!
-//! `TonicLbGrpcClient` is `pub(crate)` (see SEA rule `pub_types_in_api_only`);
+//! `TonicLbGrpcEgress` is `pub(crate)` (see SEA rule `pub_types_in_api_only`);
 //! its own constructor/timeout/health_check behavior is covered by inline
-//! tests in `spi/loadbalancer/tonic/lb_grpc_client.rs`. This file exercises
+//! tests in `spi/loadbalancer/tonic/lb_grpc_egress.rs`. This file exercises
 //! only what's reachable from the crate's public surface.
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 

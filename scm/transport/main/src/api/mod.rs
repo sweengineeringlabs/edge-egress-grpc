@@ -28,7 +28,7 @@ pub use types::{
     GrpcChannelConfigBuilder, GrpcClientBuilder, GrpcEgressInterceptorChain, GrpcEgressResult,
     GrpcMessageStreamResponse, GrpcRequest, GrpcRequestBuilder, GrpcResponse, GrpcStatusCode,
     HealthCheckRequest, KeepAliveConfig, LastErrorRequest, LastErrorResponse, MtlsConfig,
-    ProcessingRequest, ResilienceConfig, ResilienceConfigBuilder, TraceContextInterceptor,
-    TraceContextSource, TransportSvc, ValidationRequest, DEFAULT_MAX_MESSAGE_BYTES,
-    DEFAULT_REQUEST_TIMEOUT_SECS,
+    ProcessingRequest, ResilienceConfigBuilder, ResilienceConfigResilienceValidator,
+    TraceContextGrpcEgressInterceptor, TraceContextSource, TransportSvc, ValidationRequest,
+    DEFAULT_MAX_MESSAGE_BYTES, DEFAULT_REQUEST_TIMEOUT_SECS,
 };

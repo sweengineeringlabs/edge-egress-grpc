@@ -9,7 +9,7 @@ use std::sync::Arc;
 use swe_edge_egress_grpc_transport::{
     AfterCallRequest, CompressionMode, GrpcChannelConfig, GrpcChannelConfigError, GrpcEgress,
     GrpcEgressError, GrpcEgressInterceptor, GrpcEgressInterceptorChain, GrpcRequest, GrpcResponse,
-    GrpcStatusCode, TraceContextInterceptor, TransportSvc,
+    GrpcStatusCode, TraceContextGrpcEgressInterceptor, TransportSvc,
 };
 
 fn ensure_rustls_provider() {
@@ -81,11 +81,11 @@ fn transport_struct_channel_config_from_config_accepts_https_int_test() {
     );
 }
 
-/// @covers: GrpcEgressInterceptorChain — accepts a TraceContextInterceptor.
+/// @covers: GrpcEgressInterceptorChain — accepts a TraceContextGrpcEgressInterceptor.
 #[test]
 fn transport_struct_channel_config_with_interceptors_accepts_chain_int_test() {
-    let chain =
-        GrpcEgressInterceptorChain::new().push(Arc::new(TraceContextInterceptor::pass_through()));
+    let chain = GrpcEgressInterceptorChain::new()
+        .push(Arc::new(TraceContextGrpcEgressInterceptor::pass_through()));
     assert_eq!(chain.len(), 1);
 }
 

@@ -1,9 +1,13 @@
 //! Integration tests for `ConfigValidationRequest`.
 
-use swe_edge_egress_grpc_transport::{ConfigValidationRequest, ResilienceConfig};
+use std::sync::Arc;
 
-fn sample() -> ResilienceConfig {
-    ResilienceConfig {
+use swe_edge_egress_grpc_transport::{
+    ConfigValidationRequest, ResilienceConfigResilienceValidator, ValidationRequest, Validator,
+};
+
+fn valid_fields() -> ResilienceConfigResilienceValidator {
+    ResilienceConfigResilienceValidator {
         max_attempts: 3,
         initial_backoff_ms: 100,
         backoff_multiplier: 2.0,
@@ -18,31 +22,58 @@ fn sample() -> ResilienceConfig {
     }
 }
 
+fn sample() -> Arc<dyn Validator> {
+    Arc::new(valid_fields())
+}
+
 /// @covers: ConfigValidationRequest
 #[test]
 fn test_config_validation_request_carries_config_happy() {
     let req = ConfigValidationRequest { config: sample() };
-    assert_eq!(req.config.max_attempts, 3);
-}
-
-/// @covers: ConfigValidationRequest
-#[test]
-fn test_config_validation_request_zero_max_attempts_error() {
-    let mut config = sample();
-    config.max_attempts = 0;
-    let req = ConfigValidationRequest { config };
-    assert_eq!(req.config.max_attempts, 0);
-}
-
-/// @covers: ConfigValidationRequest
-#[test]
-fn test_config_validation_request_clone_is_independent_edge() {
-    let req = ConfigValidationRequest { config: sample() };
-    let mut cloned = req.clone();
-    cloned.config.max_attempts = 99;
-    assert_eq!(
-        req.config.max_attempts, 3,
-        "cloning must not alias the original"
+    assert!(
+        req.config.validate(ValidationRequest).is_ok(),
+        "a fully valid config carried by the request must validate cleanly"
     );
-    assert_eq!(cloned.config.max_attempts, 99);
+
+    // Negative counterpart in the same test: an invalid config carried the
+    // same way must fail — proves `config` isn't a stub that always says Ok.
+    let mut invalid_fields = valid_fields();
+    invalid_fields.max_attempts = 0;
+    let invalid_req = ConfigValidationRequest {
+        config: Arc::new(invalid_fields),
+    };
+    assert!(
+        invalid_req.config.validate(ValidationRequest).is_err(),
+        "an invalid config carried the same way must fail validation"
+    );
+}
+
+/// @covers: ConfigValidationRequest
+#[test]
+fn test_config_validation_request_carries_config_error() {
+    let mut fields = valid_fields();
+    fields.max_attempts = 0;
+    let req = ConfigValidationRequest {
+        config: Arc::new(fields),
+    };
+    assert!(
+        req.config.validate(ValidationRequest).is_err(),
+        "max_attempts == 0 must fail validation through the carried config"
+    );
+}
+
+/// @covers: ConfigValidationRequest
+#[test]
+fn test_config_validation_request_independent_instances_validate_independently_edge() {
+    let ok_req = ConfigValidationRequest { config: sample() };
+    let mut bad_fields = valid_fields();
+    bad_fields.rate_limit_max_backoff_ms = 0;
+    bad_fields.rate_limit_initial_backoff_ms = 1;
+    let err_req = ConfigValidationRequest {
+        config: Arc::new(bad_fields),
+    };
+    // Two independently-constructed requests must not interfere with each
+    // other — one valid, one invalid, each judged solely on its own config.
+    assert!(ok_req.config.validate(ValidationRequest).is_ok());
+    assert!(err_req.config.validate(ValidationRequest).is_err());
 }

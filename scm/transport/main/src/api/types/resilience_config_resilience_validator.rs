@@ -65,7 +65,7 @@ use serde::{Deserialize, Serialize};
 /// rate_limit_max_attempts = 2; rate_limit_initial_backoff_ms = 1000; rate_limit_max_backoff_ms = 10000
 /// failure_threshold = 5; cool_down_seconds = 30; half_open_probe_count = 1
 /// ```
-/// This is [`ResilienceConfig::default()`].
+/// This is [`ResilienceConfigResilienceValidator::default()`].
 ///
 /// **CPU-bound embedding** (`justembed`-class — single-threaded, slow recovery):
 /// ```toml
@@ -88,7 +88,7 @@ use serde::{Deserialize, Serialize};
 /// `Retry-After` window is typically 30–60 s — far beyond a typical call deadline.
 /// Let the caller handle quota exhaustion instead of burning the deadline in a retry loop.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ResilienceConfig {
+pub struct ResilienceConfigResilienceValidator {
     // ── Standard retry ────────────────────────────────────────────────────────
     /// Total attempts including the first call. `1` disables retry.
     pub max_attempts: u32,

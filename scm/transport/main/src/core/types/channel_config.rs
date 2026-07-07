@@ -11,7 +11,9 @@
 //! new core/grpc/ directory.
 
 use crate::api::{CompressionMode, GrpcChannelConfig, DEFAULT_MAX_MESSAGE_BYTES};
-use crate::api::{GrpcChannelConfigBuilder, KeepAliveConfig, MtlsConfig, ResilienceConfig};
+use crate::api::{
+    GrpcChannelConfigBuilder, KeepAliveConfig, MtlsConfig, ResilienceConfigResilienceValidator,
+};
 
 impl GrpcChannelConfig {
     /// Construct a TLS-required channel for `endpoint`.
@@ -59,7 +61,7 @@ impl GrpcChannelConfig {
     }
 
     /// Attach a resilience policy (retry + circuit breaker).
-    pub fn with_resilience(mut self, policy: ResilienceConfig) -> Self {
+    pub fn with_resilience(mut self, policy: ResilienceConfigResilienceValidator) -> Self {
         self.resilience = Some(policy);
         self
     }
@@ -132,7 +134,7 @@ impl GrpcChannelConfigBuilder {
         self
     }
     /// Set the resilience (retry/circuit-breaker) configuration.
-    pub fn resilience(mut self, v: ResilienceConfig) -> Self {
+    pub fn resilience(mut self, v: ResilienceConfigResilienceValidator) -> Self {
         self.resilience = Some(v);
         self
     }

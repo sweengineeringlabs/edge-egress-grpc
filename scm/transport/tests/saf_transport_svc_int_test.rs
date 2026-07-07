@@ -3,7 +3,7 @@
 
 use swe_edge_egress_grpc_transport::{
     GrpcChannelConfig, GrpcChannelConfigError, GrpcEgressError, HealthCheckRequest,
-    ResilienceConfig, TransportSvc,
+    ResilienceConfigResilienceValidator, TransportSvc,
 };
 
 fn ensure_rustls_provider() {
@@ -14,8 +14,8 @@ fn ensure_rustls_provider() {
     });
 }
 
-fn resilience() -> ResilienceConfig {
-    ResilienceConfig {
+fn resilience() -> ResilienceConfigResilienceValidator {
+    ResilienceConfigResilienceValidator {
         max_attempts: 3,
         initial_backoff_ms: 100,
         backoff_multiplier: 2.0,

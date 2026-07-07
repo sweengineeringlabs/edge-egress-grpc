@@ -1,6 +1,6 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Integration tests that directly exercise the `hyper-util` dependency used
-//! by `TonicGrpcClient`'s HTTP/2 transport layer.
+//! by `TonicGrpcEgress`'s HTTP/2 transport layer.
 //!
 //! These tests verify that:
 //!   - `hyper_util::rt::TokioExecutor` can drive an HTTP/2 client connection.
@@ -36,7 +36,7 @@ async fn bind_listener() -> tokio::net::TcpListener {
 
 /// Spawn a minimal HTTP/2 server using `hyper_util::rt::TokioIo` and
 /// `hyper_util::rt::TokioExecutor` — the exact types from the `hyper-util`
-/// crate that `TonicGrpcClient` relies on — and return the bound address.
+/// crate that `TonicGrpcEgress` relies on — and return the bound address.
 async fn spawn_hyper_util_http2_server(listener: tokio::net::TcpListener) -> SocketAddr {
     let addr = listener.local_addr().expect("local_addr");
 
@@ -84,7 +84,7 @@ async fn spawn_hyper_util_http2_server(listener: tokio::net::TcpListener) -> Soc
 /// round trip: connect → send gRPC frame → receive gRPC frame → decode status.
 ///
 /// This test exercises `hyper_util::client::legacy::Client` (via the
-/// `TonicGrpcClient` internals) against a server built with
+/// `TonicGrpcEgress` internals) against a server built with
 /// `hyper_util::rt::TokioIo` and `hyper_util::rt::TokioExecutor`.
 #[tokio::test]
 async fn transport_struct_hyper_util_tokio_executor_drives_http2_client_round_trip() {

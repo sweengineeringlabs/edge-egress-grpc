@@ -3,7 +3,7 @@
 use crate::api::types::compression_mode::CompressionMode;
 use crate::api::types::keep_alive_config::KeepAliveConfig;
 use crate::api::types::mtls_config::MtlsConfig;
-use crate::api::types::resilience_config::ResilienceConfig;
+use crate::api::types::resilience_config_resilience_validator::ResilienceConfigResilienceValidator;
 
 /// Builder for [`crate::api::GrpcChannelConfig`].
 #[derive(Debug, Default)]
@@ -14,5 +14,5 @@ pub struct GrpcChannelConfigBuilder {
     pub(crate) keep_alive: Option<KeepAliveConfig>,
     pub(crate) max_message_bytes: Option<usize>,
     pub(crate) compression: Option<CompressionMode>,
-    pub(crate) resilience: Option<ResilienceConfig>,
+    pub(crate) resilience: Option<ResilienceConfigResilienceValidator>,
 }
