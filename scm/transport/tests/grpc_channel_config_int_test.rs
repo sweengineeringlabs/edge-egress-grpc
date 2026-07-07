@@ -7,9 +7,9 @@
 use std::sync::Arc;
 
 use swe_edge_egress_grpc_transport::{
-    CompressionMode, GrpcChannelConfig, GrpcChannelConfigError, GrpcEgress, GrpcEgressError,
-    GrpcEgressInterceptor, GrpcEgressInterceptorChain, GrpcRequest, GrpcResponse, GrpcStatusCode,
-    TraceContextInterceptor, TransportSvc,
+    AfterCallRequest, CompressionMode, GrpcChannelConfig, GrpcChannelConfigError, GrpcEgress,
+    GrpcEgressError, GrpcEgressInterceptor, GrpcEgressInterceptorChain, GrpcRequest, GrpcResponse,
+    GrpcStatusCode, TraceContextInterceptor, TransportSvc,
 };
 
 fn ensure_rustls_provider() {
@@ -104,7 +104,7 @@ async fn transport_struct_channel_config_interceptor_short_circuits_int_test() {
                 "denied".into(),
             ))
         }
-        fn after_call(&self, _: &mut GrpcResponse) -> Result<(), GrpcEgressError> {
+        fn after_call(&self, _: AfterCallRequest<'_>) -> Result<(), GrpcEgressError> {
             Ok(())
         }
     }

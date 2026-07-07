@@ -6,7 +6,7 @@ use std::sync::Arc;
 
 use futures::future::BoxFuture;
 use swe_edge_egress_grpc::{
-    CallStreamRequest, GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcMessageStream,
+    CallStreamRequest, GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcMessageStreamResponse,
     GrpcRequest, GrpcResponse, HealthCheckRequest,
 };
 use swe_edge_egress_grpc_breaker::{BreakerDecorator, GrpcBreakerConfig, GrpcBreakerFacade};
@@ -20,7 +20,7 @@ impl GrpcEgress for CountingEgress {
     fn call_stream(
         &self,
         req: CallStreamRequest,
-    ) -> BoxFuture<'_, GrpcEgressResult<GrpcMessageStream>> {
+    ) -> BoxFuture<'_, GrpcEgressResult<GrpcMessageStreamResponse>> {
         Box::pin(async move { Ok(req.messages) })
     }
     fn health_check(&self, _req: HealthCheckRequest) -> BoxFuture<'_, GrpcEgressResult<()>> {

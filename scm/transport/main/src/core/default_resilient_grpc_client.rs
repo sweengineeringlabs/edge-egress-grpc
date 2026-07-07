@@ -11,7 +11,7 @@ use futures::future::BoxFuture;
 use crate::api::{
     CallStreamRequest, CallUnaryWithContextRequest, CircuitStateRequest, CircuitStateResponse,
     ConsecutiveFailuresRequest, ConsecutiveFailuresResponse, GrpcEgress, GrpcEgressError,
-    GrpcMessageStream, GrpcRequest, GrpcResponse, HealthCheckRequest, LastErrorRequest,
+    GrpcMessageStreamResponse, GrpcRequest, GrpcResponse, HealthCheckRequest, LastErrorRequest,
     LastErrorResponse, ResilientGrpcClientPort,
 };
 
@@ -45,14 +45,14 @@ impl GrpcEgress for DefaultResilientGrpcClient {
     fn call_stream(
         &self,
         req: CallStreamRequest,
-    ) -> BoxFuture<'_, Result<GrpcMessageStream, GrpcEgressError>> {
+    ) -> BoxFuture<'_, Result<GrpcMessageStreamResponse, GrpcEgressError>> {
         self.inner.call_stream(req)
     }
 
     fn call_server_stream(
         &self,
         request: GrpcRequest,
-    ) -> BoxFuture<'_, Result<GrpcMessageStream, GrpcEgressError>> {
+    ) -> BoxFuture<'_, Result<GrpcMessageStreamResponse, GrpcEgressError>> {
         self.inner.call_server_stream(request)
     }
 
@@ -66,7 +66,7 @@ impl GrpcEgress for DefaultResilientGrpcClient {
     fn call_bidi_stream(
         &self,
         req: CallStreamRequest,
-    ) -> BoxFuture<'_, Result<GrpcMessageStream, GrpcEgressError>> {
+    ) -> BoxFuture<'_, Result<GrpcMessageStreamResponse, GrpcEgressError>> {
         self.inner.call_bidi_stream(req)
     }
 

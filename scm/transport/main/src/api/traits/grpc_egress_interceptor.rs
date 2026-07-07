@@ -1,7 +1,8 @@
 //! `GrpcEgressInterceptor` trait — observes/mutates requests before and after dispatch.
 
 use crate::api::error::GrpcEgressError;
-use crate::api::types::{GrpcRequest, GrpcResponse};
+use crate::api::types::GrpcRequest;
+use crate::api::AfterCallRequest;
 
 /// An interceptor for outbound gRPC calls.
 pub trait GrpcEgressInterceptor: Send + Sync {
@@ -11,5 +12,5 @@ pub trait GrpcEgressInterceptor: Send + Sync {
 
     /// Run after a successful response has been read from the wire.
     /// Returning `Err(_)` converts the call result to that error.
-    fn after_call(&self, resp: &mut GrpcResponse) -> Result<(), GrpcEgressError>;
+    fn after_call(&self, req: AfterCallRequest<'_>) -> Result<(), GrpcEgressError>;
 }

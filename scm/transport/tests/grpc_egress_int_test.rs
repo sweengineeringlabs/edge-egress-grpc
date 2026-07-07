@@ -17,7 +17,8 @@ use http_body_util::{BodyExt as _, Full, StreamBody};
 use edge_domain::SecurityContext;
 use swe_edge_egress_grpc_transport::{
     CallStreamRequest, CallUnaryWithContextRequest, GrpcChannelConfig, GrpcEgress, GrpcEgressError,
-    GrpcMessageStream, GrpcRequest, GrpcResponse, GrpcStatusCode, HealthCheckRequest, TransportSvc,
+    GrpcMessageStreamResponse, GrpcRequest, GrpcResponse, GrpcStatusCode, HealthCheckRequest,
+    TransportSvc,
 };
 
 fn make_client(addr: SocketAddr) -> Arc<dyn GrpcEgress> {
@@ -308,13 +309,15 @@ async fn transport_struct_call_stream_sends_multiple_frames_and_receives_stream(
 
     ensure_rustls_provider();
     let client = make_client(addr);
-    let messages: GrpcMessageStream = Box::pin(stream::iter(vec![
-        Ok(b"frame1".to_vec()),
-        Ok(b"frame2".to_vec()),
-        Ok(b"frame3".to_vec()),
-    ]));
+    let messages = GrpcMessageStreamResponse {
+        stream: Box::pin(stream::iter(vec![
+            Ok(b"frame1".to_vec()),
+            Ok(b"frame2".to_vec()),
+            Ok(b"frame3".to_vec()),
+        ])),
+    };
 
-    let mut resp_stream = client
+    let resp_stream = client
         .call_stream(CallStreamRequest {
             method: "echo/Echo".into(),
             metadata: HashMap::new(),
@@ -322,6 +325,7 @@ async fn transport_struct_call_stream_sends_multiple_frames_and_receives_stream(
         })
         .await
         .expect("call_stream should succeed");
+    let mut resp_stream = resp_stream.stream;
 
     let mut items: Vec<Vec<u8>> = Vec::new();
     while let Some(item) = {
@@ -809,7 +813,9 @@ async fn transport_struct_call_unary_sanitizes_internal_error_message_on_truncat
     ensure_rustls_provider();
     let client = make_client(addr);
     // call_stream is the path that decodes frames and surfaces the truncation.
-    let messages: GrpcMessageStream = Box::pin(stream::iter(vec![Ok(b"x".to_vec())]));
+    let messages = GrpcMessageStreamResponse {
+        stream: Box::pin(stream::iter(vec![Ok(b"x".to_vec())])),
+    };
     let result = client
         .call_stream(CallStreamRequest {
             method: "svc/Method".into(),
@@ -852,7 +858,8 @@ async fn transport_struct_call_server_stream_sends_single_request_and_receives_r
     let mut stream = client
         .call_server_stream(req)
         .await
-        .expect("call_server_stream must succeed against echo server");
+        .expect("call_server_stream must succeed against echo server")
+        .stream;
 
     use futures::StreamExt;
     let frame = stream
@@ -880,10 +887,12 @@ async fn transport_struct_call_client_stream_sends_multiple_frames_and_receives_
     let client = make_client(addr);
     // Send two frames; the echo server reflects them.  call_client_stream strips
     // the first 5-byte gRPC header and returns the remainder as the response body.
-    let messages: GrpcMessageStream = Box::pin(stream::iter(vec![
-        Ok(b"frame-1".to_vec()),
-        Ok(b"frame-2".to_vec()),
-    ]));
+    let messages = GrpcMessageStreamResponse {
+        stream: Box::pin(stream::iter(vec![
+            Ok(b"frame-1".to_vec()),
+            Ok(b"frame-2".to_vec()),
+        ])),
+    };
     let response = client
         .call_client_stream(CallStreamRequest {
             method: "svc/ClientStream".into(),
@@ -909,10 +918,12 @@ async fn transport_struct_call_bidi_stream_sends_multiple_frames_and_receives_st
 
     ensure_rustls_provider();
     let client = make_client(addr);
-    let messages: GrpcMessageStream = Box::pin(stream::iter(vec![
-        Ok(b"alpha".to_vec()),
-        Ok(b"beta".to_vec()),
-    ]));
+    let messages = GrpcMessageStreamResponse {
+        stream: Box::pin(stream::iter(vec![
+            Ok(b"alpha".to_vec()),
+            Ok(b"beta".to_vec()),
+        ])),
+    };
     let mut stream = client
         .call_bidi_stream(CallStreamRequest {
             method: "svc/Bidi".into(),
@@ -920,7 +931,8 @@ async fn transport_struct_call_bidi_stream_sends_multiple_frames_and_receives_st
             messages,
         })
         .await
-        .expect("call_bidi_stream must succeed against echo server");
+        .expect("call_bidi_stream must succeed against echo server")
+        .stream;
 
     use futures::StreamExt;
     let frame1 = stream

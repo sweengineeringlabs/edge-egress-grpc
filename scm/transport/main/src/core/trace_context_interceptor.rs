@@ -1,7 +1,9 @@
 //! `impl` blocks for [`TraceContextInterceptor`]. The type *declaration* lives in `api/`.
 
-use crate::api::{GrpcEgressError, GrpcEgressInterceptor, TraceContextInterceptor};
-use crate::api::{GrpcRequest, GrpcResponse, TraceContextSource};
+use crate::api::{
+    AfterCallRequest, GrpcEgressError, GrpcEgressInterceptor, TraceContextInterceptor,
+};
+use crate::api::{GrpcRequest, TraceContextSource};
 
 const TRACEPARENT: &str = "traceparent";
 const TRACESTATE: &str = "tracestate";
@@ -45,7 +47,7 @@ impl GrpcEgressInterceptor for TraceContextInterceptor {
         }
     }
 
-    fn after_call(&self, _resp: &mut GrpcResponse) -> Result<(), GrpcEgressError> {
+    fn after_call(&self, _req: AfterCallRequest<'_>) -> Result<(), GrpcEgressError> {
         Ok(())
     }
 }

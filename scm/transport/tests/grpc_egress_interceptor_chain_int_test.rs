@@ -7,8 +7,8 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use swe_edge_egress_grpc_transport::{
-    GrpcEgressError, GrpcEgressInterceptor, GrpcEgressInterceptorChain, GrpcRequest, GrpcResponse,
-    GrpcStatusCode,
+    AfterCallRequest, GrpcEgressError, GrpcEgressInterceptor, GrpcEgressInterceptorChain,
+    GrpcRequest, GrpcResponse, GrpcStatusCode,
 };
 
 struct Recorder {
@@ -21,7 +21,7 @@ impl GrpcEgressInterceptor for Recorder {
         self.log.lock().unwrap().push(self.marker);
         Ok(())
     }
-    fn after_call(&self, _: &mut GrpcResponse) -> Result<(), GrpcEgressError> {
+    fn after_call(&self, _: AfterCallRequest<'_>) -> Result<(), GrpcEgressError> {
         self.log.lock().unwrap().push(self.marker);
         Ok(())
     }
@@ -36,7 +36,7 @@ impl GrpcEgressInterceptor for AlwaysFailBefore {
             "denied by interceptor".into(),
         ))
     }
-    fn after_call(&self, _: &mut GrpcResponse) -> Result<(), GrpcEgressError> {
+    fn after_call(&self, _: AfterCallRequest<'_>) -> Result<(), GrpcEgressError> {
         Ok(())
     }
 }
@@ -47,7 +47,7 @@ impl GrpcEgressInterceptor for CountAfter {
     fn before_call(&self, _: &mut GrpcRequest) -> Result<(), GrpcEgressError> {
         Ok(())
     }
-    fn after_call(&self, _: &mut GrpcResponse) -> Result<(), GrpcEgressError> {
+    fn after_call(&self, _: AfterCallRequest<'_>) -> Result<(), GrpcEgressError> {
         self.0.fetch_add(1, Ordering::SeqCst);
         Ok(())
     }

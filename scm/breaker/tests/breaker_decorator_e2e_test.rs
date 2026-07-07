@@ -8,8 +8,8 @@ use std::sync::Arc;
 
 use futures::future::BoxFuture;
 use swe_edge_egress_grpc::{
-    CallStreamRequest, GrpcEgress, GrpcEgressResult, GrpcMessageStream, GrpcRequest, GrpcResponse,
-    HealthCheckRequest,
+    CallStreamRequest, GrpcEgress, GrpcEgressResult, GrpcMessageStreamResponse, GrpcRequest,
+    GrpcResponse, HealthCheckRequest,
 };
 use swe_edge_egress_grpc_breaker::{
     BreakerDecorator, Error, GrpcBreakerConfig, GrpcBreakerFacade, WrapBreakerRequest,
@@ -29,7 +29,7 @@ impl GrpcEgress for StubEgress {
     fn call_stream(
         &self,
         _req: CallStreamRequest,
-    ) -> BoxFuture<'_, GrpcEgressResult<GrpcMessageStream>> {
+    ) -> BoxFuture<'_, GrpcEgressResult<GrpcMessageStreamResponse>> {
         unimplemented!("not exercised by this test")
     }
     fn health_check(&self, _req: HealthCheckRequest) -> BoxFuture<'_, GrpcEgressResult<()>> {

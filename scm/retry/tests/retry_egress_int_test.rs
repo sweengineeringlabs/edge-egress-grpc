@@ -19,7 +19,7 @@ impl GrpcEgress for AlwaysFail {
     fn call_stream(
         &self,
         req: CallStreamRequest,
-    ) -> BoxFuture<'_, GrpcEgressResult<swe_edge_egress_grpc::GrpcMessageStream>> {
+    ) -> BoxFuture<'_, GrpcEgressResult<swe_edge_egress_grpc::GrpcMessageStreamResponse>> {
         Box::pin(async move { Ok(req.messages) })
     }
     fn health_check(&self, _req: HealthCheckRequest) -> BoxFuture<'_, GrpcEgressResult<()>> {
@@ -35,7 +35,7 @@ impl GrpcEgress for UnhealthyInner {
     fn call_stream(
         &self,
         req: CallStreamRequest,
-    ) -> BoxFuture<'_, GrpcEgressResult<swe_edge_egress_grpc::GrpcMessageStream>> {
+    ) -> BoxFuture<'_, GrpcEgressResult<swe_edge_egress_grpc::GrpcMessageStreamResponse>> {
         Box::pin(async move { Ok(req.messages) })
     }
     fn health_check(&self, _req: HealthCheckRequest) -> BoxFuture<'_, GrpcEgressResult<()>> {
@@ -89,8 +89,9 @@ async fn test_health_check_delegates_to_inner_error() {
 #[tokio::test]
 async fn test_call_stream_delegates_to_inner_edge() {
     let client = GrpcRetryClient::new(AlwaysFail, no_retry_config());
-    let messages: swe_edge_egress_grpc::GrpcMessageStream =
-        Box::pin(futures::stream::empty::<GrpcEgressResult<Vec<u8>>>());
+    let messages = swe_edge_egress_grpc::GrpcMessageStreamResponse {
+        stream: Box::pin(futures::stream::empty::<GrpcEgressResult<Vec<u8>>>()),
+    };
     let result = client
         .call_stream(CallStreamRequest {
             method: "svc/M".into(),

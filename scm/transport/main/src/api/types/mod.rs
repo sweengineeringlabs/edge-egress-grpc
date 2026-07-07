@@ -7,9 +7,9 @@ pub mod transport_svc;
 pub use transport_svc::TransportSvc;
 
 pub mod grpc_egress_result;
-pub mod grpc_message_stream;
+pub mod grpc_message_stream_response;
 pub use grpc_egress_result::GrpcEgressResult;
-pub use grpc_message_stream::GrpcMessageStream;
+pub use grpc_message_stream_response::GrpcMessageStreamResponse;
 
 pub mod compression_mode;
 pub use compression_mode::CompressionMode;
@@ -86,3 +86,6 @@ pub use consecutive_failures_request::ConsecutiveFailuresRequest;
 pub use consecutive_failures_response::ConsecutiveFailuresResponse;
 pub use last_error_request::LastErrorRequest;
 pub use last_error_response::LastErrorResponse;
+
+pub mod after_call_request;
+pub use after_call_request::AfterCallRequest;

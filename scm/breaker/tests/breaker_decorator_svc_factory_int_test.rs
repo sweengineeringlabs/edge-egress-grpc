@@ -5,8 +5,8 @@ use std::collections::HashMap;
 
 use futures::future::BoxFuture;
 use swe_edge_egress_grpc::{
-    CallStreamRequest, GrpcEgress, GrpcEgressResult, GrpcMessageStream, GrpcRequest, GrpcResponse,
-    HealthCheckRequest,
+    CallStreamRequest, GrpcEgress, GrpcEgressResult, GrpcMessageStreamResponse, GrpcRequest,
+    GrpcResponse, HealthCheckRequest,
 };
 use swe_edge_egress_grpc_breaker::{
     BreakerDecoratorFactory, GrpcBreakerConfig, WrapBreakerRequest,
@@ -25,7 +25,7 @@ impl GrpcEgress for EchoGrpcEgress {
     fn call_stream(
         &self,
         req: CallStreamRequest,
-    ) -> BoxFuture<'_, GrpcEgressResult<GrpcMessageStream>> {
+    ) -> BoxFuture<'_, GrpcEgressResult<GrpcMessageStreamResponse>> {
         Box::pin(async move { Ok(req.messages) })
     }
     fn health_check(&self, _req: HealthCheckRequest) -> BoxFuture<'_, GrpcEgressResult<()>> {

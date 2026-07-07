@@ -3,7 +3,7 @@
 use futures::future::BoxFuture;
 
 use crate::api::error::GrpcEgressError;
-use crate::api::types::GrpcMessageStream;
+use crate::api::types::GrpcMessageStreamResponse;
 use crate::api::types::{
     CallStreamRequest, CallUnaryWithContextRequest, GrpcRequest, GrpcResponse, GrpcStatusCode,
     HealthCheckRequest,
@@ -36,7 +36,7 @@ pub trait GrpcEgress: Send + Sync {
     fn call_stream(
         &self,
         req: CallStreamRequest,
-    ) -> BoxFuture<'_, Result<GrpcMessageStream, GrpcEgressError>> {
+    ) -> BoxFuture<'_, Result<GrpcMessageStreamResponse, GrpcEgressError>> {
         let _ = req;
         Box::pin(futures::future::ready(Err(GrpcEgressError::Status(
             GrpcStatusCode::Unimplemented,
@@ -51,7 +51,7 @@ pub trait GrpcEgress: Send + Sync {
     fn call_server_stream(
         &self,
         request: GrpcRequest,
-    ) -> BoxFuture<'_, Result<GrpcMessageStream, GrpcEgressError>> {
+    ) -> BoxFuture<'_, Result<GrpcMessageStreamResponse, GrpcEgressError>> {
         let _ = request;
         Box::pin(futures::future::ready(Err(GrpcEgressError::Status(
             GrpcStatusCode::Unimplemented,
@@ -82,7 +82,7 @@ pub trait GrpcEgress: Send + Sync {
     fn call_bidi_stream(
         &self,
         req: CallStreamRequest,
-    ) -> BoxFuture<'_, Result<GrpcMessageStream, GrpcEgressError>> {
+    ) -> BoxFuture<'_, Result<GrpcMessageStreamResponse, GrpcEgressError>> {
         self.call_stream(req)
     }
 

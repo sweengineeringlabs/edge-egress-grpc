@@ -6,7 +6,9 @@
 use std::collections::HashMap;
 use std::time::Duration;
 use swe_edge_egress_grpc_transport::GrpcEgressInterceptor;
-use swe_edge_egress_grpc_transport::{GrpcRequest, GrpcResponse, TraceContextInterceptor};
+use swe_edge_egress_grpc_transport::{
+    AfterCallRequest, GrpcRequest, GrpcResponse, TraceContextInterceptor,
+};
 
 fn req() -> GrpcRequest {
     GrpcRequest::new("svc/M", vec![], Duration::from_secs(1))
@@ -93,6 +95,9 @@ fn transport_struct_trace_context_interceptor_after_call_does_not_modify_respons
         body: vec![],
         metadata: HashMap::new(),
     };
-    ic.after_call(&mut resp).expect("after_call must not fail");
+    ic.after_call(AfterCallRequest {
+        response: &mut resp,
+    })
+    .expect("after_call must not fail");
     assert!(resp.metadata.is_empty());
 }

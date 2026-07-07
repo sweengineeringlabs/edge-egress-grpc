@@ -18,8 +18,8 @@ use tokio_util::sync::CancellationToken;
 use super::tonic_grpc_client::TonicGrpcClient;
 use crate::api::{
     CompressionMode, GrpcChannelConfig, GrpcChannelConfigError, GrpcEgress, GrpcEgressError,
-    GrpcEgressInterceptorChain, GrpcEgressResult, GrpcMessageStream, GrpcRequest, GrpcResponse,
-    GrpcStatusCode, DEFAULT_MAX_MESSAGE_BYTES,
+    GrpcEgressInterceptorChain, GrpcEgressResult, GrpcMessageStreamResponse, GrpcRequest,
+    GrpcResponse, GrpcStatusCode, DEFAULT_MAX_MESSAGE_BYTES,
 };
 use crate::core::conversions::Conversions as StatusConversions;
 
@@ -449,7 +449,7 @@ impl GrpcEgress for TonicGrpcClient {
     /// Send a gRPC streaming call.
     ///
     /// **Buffering limitation**: both the request and response are fully buffered
-    /// in memory before this future resolves. The `GrpcMessageStream` input is
+    /// in memory before this future resolves. The `GrpcMessageStreamResponse` input is
     /// collected into a single HTTP/2 DATA frame sequence, and the response body
     /// is collected before returning. This is functionally correct for small
     /// message sets but is not suitable for large or infinite streams. True
@@ -461,7 +461,7 @@ impl GrpcEgress for TonicGrpcClient {
     fn call_stream(
         &self,
         req: crate::api::CallStreamRequest,
-    ) -> BoxFuture<'_, GrpcEgressResult<GrpcMessageStream>> {
+    ) -> BoxFuture<'_, GrpcEgressResult<GrpcMessageStreamResponse>> {
         let crate::api::CallStreamRequest {
             method,
             metadata,
@@ -473,7 +473,7 @@ impl GrpcEgress for TonicGrpcClient {
         Box::pin(async move {
             // Collect all input messages into one body (multiple gRPC frames).
             let mut body_buf = BytesMut::new();
-            let mut stream = messages;
+            let mut stream = messages.stream;
             while let Some(item) = stream.next().await {
                 let payload = item?;
                 let frame = TonicGrpcClientProtocol::encode_grpc_frame(&payload);
@@ -509,7 +509,9 @@ impl GrpcEgress for TonicGrpcClient {
             let data = collected.to_bytes();
             let frames = TonicGrpcClientProtocol::decode_grpc_frames(data)?;
             let items: Vec<GrpcEgressResult<Vec<u8>>> = frames.into_iter().map(Ok).collect();
-            Ok(Box::pin(futures::stream::iter(items)) as GrpcMessageStream)
+            Ok(GrpcMessageStreamResponse {
+                stream: Box::pin(futures::stream::iter(items)),
+            })
         })
     }
 
@@ -517,7 +519,7 @@ impl GrpcEgress for TonicGrpcClient {
     fn call_server_stream(
         &self,
         mut request: GrpcRequest,
-    ) -> BoxFuture<'_, GrpcEgressResult<GrpcMessageStream>> {
+    ) -> BoxFuture<'_, GrpcEgressResult<GrpcMessageStreamResponse>> {
         if let Err(e) = self.interceptors.run_before(&mut request) {
             return Box::pin(futures::future::ready(Err(e)));
         }
@@ -577,7 +579,9 @@ impl GrpcEgress for TonicGrpcClient {
             let data = collected.to_bytes();
             let frames = TonicGrpcClientProtocol::decode_grpc_frames(data)?;
             let items: Vec<GrpcEgressResult<Vec<u8>>> = frames.into_iter().map(Ok).collect();
-            Ok(Box::pin(futures::stream::iter(items)) as GrpcMessageStream)
+            Ok(GrpcMessageStreamResponse {
+                stream: Box::pin(futures::stream::iter(items)),
+            })
         })
     }
 
@@ -600,7 +604,7 @@ impl GrpcEgress for TonicGrpcClient {
         Box::pin(async move {
             // Collect all request frames into one body.
             let mut body_buf = BytesMut::new();
-            let mut stream = messages;
+            let mut stream = messages.stream;
             while let Some(item) = stream.next().await {
                 let payload = item?;
                 body_buf.put(TonicGrpcClientProtocol::encode_grpc_frame(&payload));
@@ -671,7 +675,7 @@ impl GrpcEgress for TonicGrpcClient {
     fn call_bidi_stream(
         &self,
         req: crate::api::CallStreamRequest,
-    ) -> BoxFuture<'_, GrpcEgressResult<GrpcMessageStream>> {
+    ) -> BoxFuture<'_, GrpcEgressResult<GrpcMessageStreamResponse>> {
         self.call_stream(req)
     }
 

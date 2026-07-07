@@ -93,7 +93,7 @@ impl TonicGrpcClientBuilder {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::api::{GrpcEgressError, GrpcRequest, GrpcResponse};
+    use crate::api::{AfterCallRequest, GrpcEgressError, GrpcRequest};
     use crate::GrpcEgressInterceptor;
 
     struct NoopInterceptor;
@@ -101,7 +101,7 @@ mod tests {
         fn before_call(&self, _req: &mut GrpcRequest) -> Result<(), GrpcEgressError> {
             Ok(())
         }
-        fn after_call(&self, _resp: &mut GrpcResponse) -> Result<(), GrpcEgressError> {
+        fn after_call(&self, _req: AfterCallRequest<'_>) -> Result<(), GrpcEgressError> {
             Ok(())
         }
     }

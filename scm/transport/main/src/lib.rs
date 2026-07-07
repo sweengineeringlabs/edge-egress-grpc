@@ -11,16 +11,17 @@ mod spi;
 // trait re-exports and genuinely saf-declared composition helpers, never
 // a pass-through of types declared elsewhere.
 pub use api::{
-    ApplicationConfigBuilder, CallStreamRequest, CallUnaryWithContextRequest, CircuitStateRequest,
-    CircuitStateResponse, CompressionMode, ConfigValidationRequest, ConsecutiveFailuresRequest,
-    ConsecutiveFailuresResponse, Conversions, DescribeRequest, DescribeResponse, GrpcChannelConfig,
-    GrpcChannelConfigBuilder, GrpcChannelConfigError, GrpcClientBuilder, GrpcEgress,
-    GrpcEgressError, GrpcEgressInterceptor, GrpcEgressInterceptorChain, GrpcEgressResult,
-    GrpcMessageStream, GrpcRequest, GrpcRequestBuilder, GrpcResponse, GrpcStatusCode,
-    HealthCheckRequest, KeepAliveConfig, LastErrorRequest, LastErrorResponse, MtlsConfig,
-    ProcessingRequest, Processor, ResilienceConfig, ResilienceConfigBuilder, ResilienceValidator,
-    ResilientGrpcClientPort, TraceContextInterceptor, TraceContextSource, TransportSvc,
-    ValidationRequest, Validator, DEFAULT_MAX_MESSAGE_BYTES,
+    AfterCallRequest, ApplicationConfigBuilder, CallStreamRequest, CallUnaryWithContextRequest,
+    CircuitStateRequest, CircuitStateResponse, CompressionMode, ConfigValidationRequest,
+    ConsecutiveFailuresRequest, ConsecutiveFailuresResponse, Conversions, DescribeRequest,
+    DescribeResponse, GrpcChannelConfig, GrpcChannelConfigBuilder, GrpcChannelConfigError,
+    GrpcClientBuilder, GrpcEgress, GrpcEgressError, GrpcEgressInterceptor,
+    GrpcEgressInterceptorChain, GrpcEgressResult, GrpcMessageStreamResponse, GrpcRequest,
+    GrpcRequestBuilder, GrpcResponse, GrpcStatusCode, HealthCheckRequest, KeepAliveConfig,
+    LastErrorRequest, LastErrorResponse, MtlsConfig, ProcessingRequest, Processor,
+    ResilienceConfig, ResilienceConfigBuilder, ResilienceValidator, ResilientGrpcClientPort,
+    TraceContextInterceptor, TraceContextSource, TransportSvc, ValidationRequest, Validator,
+    DEFAULT_MAX_MESSAGE_BYTES,
 };
 pub use edge_domain::SecurityContext;
 pub use saf::{

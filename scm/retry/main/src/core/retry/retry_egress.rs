@@ -4,7 +4,7 @@ use std::time::Instant;
 
 use futures::future::BoxFuture;
 use swe_edge_egress_grpc::{
-    CallStreamRequest, GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcMessageStream,
+    CallStreamRequest, GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcMessageStreamResponse,
     GrpcRequest, GrpcResponse, HealthCheckRequest,
 };
 use tracing::{debug, trace, warn};
@@ -21,7 +21,7 @@ impl<T: GrpcEgress + Send + Sync + 'static> GrpcEgress for GrpcRetryClient<T> {
     fn call_stream(
         &self,
         req: CallStreamRequest,
-    ) -> BoxFuture<'_, GrpcEgressResult<GrpcMessageStream>> {
+    ) -> BoxFuture<'_, GrpcEgressResult<GrpcMessageStreamResponse>> {
         self.inner.call_stream(req)
     }
 
@@ -186,7 +186,7 @@ mod tests {
         fn call_stream(
             &self,
             req: CallStreamRequest,
-        ) -> BoxFuture<'_, GrpcEgressResult<GrpcMessageStream>> {
+        ) -> BoxFuture<'_, GrpcEgressResult<GrpcMessageStreamResponse>> {
             Box::pin(async move { Ok(req.messages) })
         }
         fn health_check(&self, _req: HealthCheckRequest) -> BoxFuture<'_, GrpcEgressResult<()>> {

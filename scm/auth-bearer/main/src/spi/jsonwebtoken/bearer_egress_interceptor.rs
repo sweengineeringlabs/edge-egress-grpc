@@ -5,7 +5,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use jsonwebtoken::{Algorithm, EncodingKey, Header};
 use swe_edge_egress_grpc::{
-    GrpcEgressError, GrpcEgressInterceptor, GrpcRequest, GrpcResponse, GrpcStatusCode,
+    AfterCallRequest, GrpcEgressError, GrpcEgressInterceptor, GrpcRequest, GrpcStatusCode,
 };
 
 use crate::api::{
@@ -59,7 +59,7 @@ impl GrpcEgressInterceptor for BearerEgressInterceptor {
         Ok(())
     }
 
-    fn after_call(&self, _resp: &mut GrpcResponse) -> Result<(), GrpcEgressError> {
+    fn after_call(&self, _req: AfterCallRequest<'_>) -> Result<(), GrpcEgressError> {
         Ok(())
     }
 }

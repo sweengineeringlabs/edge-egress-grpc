@@ -2,7 +2,9 @@
 
 use std::sync::Arc;
 
-use crate::api::{GrpcEgressError, GrpcEgressInterceptor, GrpcEgressInterceptorChain};
+use crate::api::{
+    AfterCallRequest, GrpcEgressError, GrpcEgressInterceptor, GrpcEgressInterceptorChain,
+};
 use crate::api::{GrpcRequest, GrpcResponse};
 
 impl GrpcEgressInterceptorChain {
@@ -40,7 +42,7 @@ impl GrpcEgressInterceptorChain {
     /// Run every `after_call` in order until one fails or all succeed.
     pub fn run_after(&self, resp: &mut GrpcResponse) -> Result<(), GrpcEgressError> {
         for interceptor in &self.interceptors {
-            interceptor.after_call(resp)?;
+            interceptor.after_call(AfterCallRequest { response: resp })?;
         }
         Ok(())
     }

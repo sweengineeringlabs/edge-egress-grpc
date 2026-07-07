@@ -42,7 +42,7 @@ mod tests {
     use crate::api::GrpcBreakerConfig;
     use futures::future::BoxFuture;
     use swe_edge_egress_grpc::{
-        CallStreamRequest, GrpcEgressResult, GrpcMessageStream, GrpcRequest, GrpcResponse,
+        CallStreamRequest, GrpcEgressResult, GrpcMessageStreamResponse, GrpcRequest, GrpcResponse,
         HealthCheckRequest,
     };
 
@@ -59,7 +59,7 @@ mod tests {
         fn call_stream(
             &self,
             _req: CallStreamRequest,
-        ) -> BoxFuture<'_, GrpcEgressResult<GrpcMessageStream>> {
+        ) -> BoxFuture<'_, GrpcEgressResult<GrpcMessageStreamResponse>> {
             unimplemented!("not exercised by this test")
         }
         fn health_check(&self, _req: HealthCheckRequest) -> BoxFuture<'_, GrpcEgressResult<()>> {

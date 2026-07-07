@@ -20,11 +20,11 @@ pub use traits::resilient_grpc_client_port::ResilientGrpcClientPort;
 pub use traits::{GrpcEgress, Processor, Validator};
 pub use types::ApplicationConfigBuilder;
 pub use types::{
-    CallStreamRequest, CallUnaryWithContextRequest, CircuitStateRequest, CircuitStateResponse,
-    CompressionMode, ConfigValidationRequest, ConsecutiveFailuresRequest,
+    AfterCallRequest, CallStreamRequest, CallUnaryWithContextRequest, CircuitStateRequest,
+    CircuitStateResponse, CompressionMode, ConfigValidationRequest, ConsecutiveFailuresRequest,
     ConsecutiveFailuresResponse, Conversions, DescribeRequest, DescribeResponse, GrpcChannelConfig,
     GrpcChannelConfigBuilder, GrpcClientBuilder, GrpcEgressInterceptorChain, GrpcEgressResult,
-    GrpcMessageStream, GrpcRequest, GrpcRequestBuilder, GrpcResponse, GrpcStatusCode,
+    GrpcMessageStreamResponse, GrpcRequest, GrpcRequestBuilder, GrpcResponse, GrpcStatusCode,
     HealthCheckRequest, KeepAliveConfig, LastErrorRequest, LastErrorResponse, MtlsConfig,
     ProcessingRequest, ResilienceConfig, ResilienceConfigBuilder, TraceContextInterceptor,
     TraceContextSource, TransportSvc, ValidationRequest, DEFAULT_MAX_MESSAGE_BYTES,

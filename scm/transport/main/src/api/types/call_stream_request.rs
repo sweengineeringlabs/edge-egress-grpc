@@ -5,7 +5,7 @@
 
 use std::collections::HashMap;
 
-use crate::api::GrpcMessageStream;
+use crate::api::GrpcMessageStreamResponse;
 
 /// Input to a streaming [`crate::api::GrpcEgress`] call.
 pub struct CallStreamRequest {
@@ -14,5 +14,5 @@ pub struct CallStreamRequest {
     /// Request metadata (headers).
     pub metadata: HashMap<String, String>,
     /// Inbound stream of request messages.
-    pub messages: GrpcMessageStream,
+    pub messages: GrpcMessageStreamResponse,
 }
