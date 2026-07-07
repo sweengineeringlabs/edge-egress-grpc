@@ -101,11 +101,13 @@ impl ResilientGrpcClientPort for DefaultResilientGrpcClientPort {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::api::{GrpcChannelConfig, TransportSvc};
+    use crate::api::GrpcChannelConfig;
+    use crate::saf::TransportConstruction;
 
     fn wrapped() -> DefaultResilientGrpcClientPort {
         let cfg = GrpcChannelConfig::new("http://127.0.0.1:50999").allow_plaintext();
-        let inner = TransportSvc::create_transport_from_config(&cfg).expect("create transport");
+        let inner =
+            TransportConstruction::create_transport_from_config(&cfg).expect("create transport");
         DefaultResilientGrpcClientPort::new(inner)
     }
 

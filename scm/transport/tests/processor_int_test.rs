@@ -7,7 +7,7 @@ use futures::future::BoxFuture;
 
 use swe_edge_egress_grpc_transport::{
     DescribeRequest, DescribeResponse, GrpcChannelConfig, GrpcChannelConfigError, GrpcEgressError,
-    ProcessingRequest, Processor, TransportSvc,
+    ProcessingRequest, Processor, TransportConstruction,
 };
 
 /// Test-double satisfying `Processor`'s two abstract methods. `process`
@@ -46,21 +46,23 @@ fn ensure_rustls_provider() {
     });
 }
 
-/// @covers: TransportSvc::create_transport_from_config — factory produces a valid transport
+/// @covers: create_transport_from_config — factory produces a valid transport
 #[test]
 fn transport_struct_processor_factory_creates_valid_transport_int_test() {
     ensure_rustls_provider();
     let cfg = GrpcChannelConfig::new("http://127.0.0.1:50051").allow_plaintext();
-    let transport = TransportSvc::create_transport_from_config(&cfg).expect("create transport");
+    let transport =
+        TransportConstruction::create_transport_from_config(&cfg).expect("create transport");
     let _ = transport;
 }
 
-/// @covers: TransportSvc::create_tonic_client_from_config — returns concrete client
+/// @covers: create_tonic_client_from_config — returns concrete client
 #[test]
 fn transport_struct_processor_tonic_client_created_int_test() {
     ensure_rustls_provider();
     let cfg = GrpcChannelConfig::new("http://127.0.0.1:50051").allow_plaintext();
-    let client = TransportSvc::create_tonic_client_from_config(&cfg).expect("tonic client");
+    let client =
+        TransportConstruction::create_tonic_client_from_config(&cfg).expect("tonic client");
     let _ = client;
 }
 
@@ -135,7 +137,7 @@ fn test_default_facade_is_usable_as_the_real_transport_svc_error() {
     ensure_rustls_provider();
     // TLS is required by default and the endpoint is never marked plaintext.
     let cfg = GrpcChannelConfig::new("http://127.0.0.1:50051");
-    let err = TransportSvc::create_transport_from_config(&cfg)
+    let err = TransportConstruction::create_transport_from_config(&cfg)
         .err()
         .expect("plaintext endpoint with tls_required must be rejected");
     assert!(

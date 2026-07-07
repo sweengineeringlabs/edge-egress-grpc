@@ -1,5 +1,5 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
-//! Integration tests for `GrpcEgress` (via `TransportSvc::create_transport_from_config`).
+//! Integration tests for `GrpcEgress` (via `create_transport_from_config`).
 //!
 //! Tests spin up a minimal in-process HTTP/2 echo server using `hyper_util`.
 
@@ -18,14 +18,14 @@ use edge_domain::SecurityContext;
 use swe_edge_egress_grpc_transport::{
     CallStreamRequest, CallUnaryWithContextRequest, GrpcChannelConfig, GrpcEgress, GrpcEgressError,
     GrpcMessageStreamResponse, GrpcRequest, GrpcResponse, GrpcStatusCode, HealthCheckRequest,
-    TransportSvc,
+    TransportConstruction,
 };
 
 fn make_client(addr: SocketAddr) -> Arc<dyn GrpcEgress> {
-    TransportSvc::create_transport_from_config(
+    TransportConstruction::create_transport_from_config(
         &GrpcChannelConfig::new(format!("http://{addr}")).allow_plaintext(),
     )
-    .expect("TransportSvc::create_transport_from_config")
+    .expect("create_transport_from_config")
 }
 
 // ── gRPC frame helpers (duplicated here to keep test self-contained) ─────────

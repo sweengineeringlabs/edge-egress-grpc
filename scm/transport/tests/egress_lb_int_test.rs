@@ -6,7 +6,7 @@
 //! only what's reachable from the crate's public surface.
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 
-use swe_edge_egress_grpc_transport::TransportSvc;
+use swe_edge_egress_grpc_transport::TransportConstruction;
 use swe_edge_loadbalancer::{BackendConfig, LoadbalancerConfig, Strategy};
 
 fn one_backend_config(url: &str) -> LoadbalancerConfig {
@@ -24,7 +24,7 @@ fn one_backend_config(url: &str) -> LoadbalancerConfig {
 #[tokio::test]
 async fn test_create_lb_transport_from_config_returns_dyn_egress() {
     let config = one_backend_config("http://localhost:50051");
-    let transport = TransportSvc::create_lb_transport_from_config(config);
+    let transport = TransportConstruction::create_lb_transport_from_config(config);
     assert!(transport.is_ok());
 }
 

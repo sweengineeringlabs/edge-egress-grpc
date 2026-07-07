@@ -4,7 +4,7 @@
 
 use std::sync::Arc;
 
-use swe_edge_egress_grpc::{GrpcChannelConfig, GrpcEgress, TransportSvc};
+use swe_edge_egress_grpc::{GrpcChannelConfig, GrpcEgress, TransportConstruction};
 use swe_edge_egress_grpc_breaker::{GrpcBreakerClient, GrpcBreakerConfig};
 use swe_edge_egress_grpc_retry::{GrpcRetryClient, GrpcRetryConfig};
 
@@ -30,7 +30,7 @@ impl GrpcResilientFacade {
     pub fn create_resilient_transport_from_config(
         config: &GrpcChannelConfig,
     ) -> Result<Arc<dyn GrpcEgress>, ResilientTransportError> {
-        let base = TransportSvc::create_tonic_client_from_config(config)?;
+        let base = TransportConstruction::create_tonic_client_from_config(config)?;
 
         match &config.resilience {
             None => Ok(Arc::new(base)),

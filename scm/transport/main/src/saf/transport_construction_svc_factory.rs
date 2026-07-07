@@ -1,26 +1,33 @@
-//! `TransportSvc` — impl blocks for the transport SAF facade.
+//! [`TransportConstruction`] — wires together `core/` and `spi/` adapters
+//! into a [`TransportSvc`](crate::api::TransportSvc)-adjacent transport.
+//!
+//! Declared here (not on `TransportSvc` itself) because:
+//! - `no_inherent_impl_on_api_type` bans inherent impls in saf/ for types
+//!   declared in api/ (`TransportSvc` lives in `api/types/`).
+//! - `boundary_peer_isolation` bans core/ and spi/ from importing each
+//!   other directly, and these methods construct concrete `spi/` adapters
+//!   (`TonicGrpcEgress`, `TonicLbGrpcEgress`) — genuine core+spi wiring
+//!   belongs in saf/, the composition layer.
+//! - `layers_no_free_standing_fn` bans bare functions in SEA layer files —
+//!   methods must live on a type declared in the same layer, hence this
+//!   saf/-declared marker struct.
 
 use std::sync::Arc;
 use std::time::Duration;
 
 use crate::api::{
-    ApplicationConfigBuilder, GrpcChannelConfig, GrpcChannelConfigError, GrpcEgress,
-    GrpcEgressError, Processor, ResilienceConfigResilienceValidator, TransportSvc,
-    ValidationRequest, Validator, DEFAULT_REQUEST_TIMEOUT_SECS,
+    GrpcChannelConfig, GrpcChannelConfigError, GrpcEgress, GrpcEgressError, Processor,
+    DEFAULT_REQUEST_TIMEOUT_SECS,
 };
 use crate::spi::client::tonic::{TonicGrpcEgress, TonicGrpcEgressProtocol};
 use crate::spi::loadbalancer::tonic::TonicLbGrpcEgress;
 use swe_edge_loadbalancer::LoadbalancerConfig;
 
-impl TransportSvc {
-    /// Create a config builder pre-populated with this crate's name and version.
-    pub fn create_config_builder() -> ApplicationConfigBuilder {
-        let mut b = swe_edge_configbuilder::ConfigBuilderImpl::new();
-        b = b.with_name(env!("CARGO_PKG_NAME"));
-        b = b.with_version(env!("CARGO_PKG_VERSION"));
-        ApplicationConfigBuilder(b)
-    }
+/// Namespace for the construction methods wiring `core/` + `spi/` adapters
+/// into transports. Zero-sized — never instantiated.
+pub struct TransportConstruction;
 
+impl TransportConstruction {
     /// Construct a boxed [`GrpcEgress`] from a validated [`GrpcChannelConfig`].
     pub fn create_transport_from_config(
         config: &GrpcChannelConfig,
@@ -56,13 +63,6 @@ impl TransportSvc {
         Ok(client)
     }
 
-    /// Validate a [`ResilienceConfigResilienceValidator`], returning the first constraint violation as `Err`.
-    pub fn validate_resilience_config(
-        config: &ResilienceConfigResilienceValidator,
-    ) -> Result<(), GrpcChannelConfigError> {
-        config.validate(ValidationRequest)
-    }
-
     /// Construct a load-balanced [`GrpcEgress`] from a [`LoadbalancerConfig`].
     ///
     /// Uses `tonic::transport::Channel::balance_list` for transport-level routing
@@ -77,5 +77,31 @@ impl TransportSvc {
     ) -> Result<Arc<dyn GrpcEgress>, GrpcEgressError> {
         let client = TonicLbGrpcEgress::from_config(config)?;
         Ok(Arc::new(client))
+    }
+}
+
+#[cfg(feature = "prost")]
+impl TransportConstruction {
+    /// Construct a [`crate::api::GrpcEgressProstCodec`] transport from a validated
+    /// [`GrpcChannelConfig`] — the prost-enabled counterpart of
+    /// [`Self::create_tonic_client_from_config`], boxed as a trait object since the
+    /// concrete adapter type only implements `GrpcEgressProstCodec` under this feature.
+    pub fn create_prost_transport_from_config(
+        config: &GrpcChannelConfig,
+    ) -> Result<Box<dyn crate::api::GrpcEgressProstCodec>, GrpcChannelConfigError> {
+        if config.tls_required && TonicGrpcEgressProtocol::is_plaintext_endpoint(&config.endpoint) {
+            return Err(GrpcChannelConfigError::PlaintextRejected(
+                config.endpoint.clone(),
+            ));
+        }
+        let timeout = Duration::from_secs(
+            config
+                .request_timeout_secs
+                .unwrap_or(DEFAULT_REQUEST_TIMEOUT_SECS),
+        );
+        let mut client = TonicGrpcEgress::with_timeout(&config.endpoint, timeout);
+        client.max_message_bytes = config.max_message_bytes;
+        client.compression = config.compression;
+        Ok(Box::new(client))
     }
 }

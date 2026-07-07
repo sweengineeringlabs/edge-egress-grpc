@@ -10,6 +10,8 @@ mod spi;
 // flat re-export surface (crate::api::TypeName) -- saf/ carries only
 // trait re-exports and genuinely saf-declared composition helpers, never
 // a pass-through of types declared elsewhere.
+#[cfg(feature = "prost")]
+pub use api::GrpcEgressProstCodec;
 pub use api::{
     AfterCallRequest, ApplicationConfigBuilder, CallStreamRequest, CallUnaryWithContextRequest,
     CircuitStateRequest, CircuitStateResponse, CompressionMode, ConfigValidationRequest,
@@ -26,9 +28,9 @@ pub use api::{
 pub use edge_domain::SecurityContext;
 pub use saf::{
     GrpcEgressFactory, GrpcEgressInterceptorFactory, ProcessorFactory, ResilienceValidatorFactory,
-    ResilientGrpcClientPortFactory, ValidatorFactory,
+    ResilientGrpcClientPortFactory, TransportConstruction, ValidatorFactory,
 };
 pub use swe_edge_loadbalancer::{BackendConfig, BackendPoolInstance, LoadbalancerConfig, Strategy};
 
 #[cfg(feature = "prost")]
-pub use saf::GrpcEgressProstCodec;
+pub use saf::GrpcEgressProstCodecFactory;

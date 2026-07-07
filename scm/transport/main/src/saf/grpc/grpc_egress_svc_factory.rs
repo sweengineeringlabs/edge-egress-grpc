@@ -2,7 +2,8 @@
 
 use std::sync::Arc;
 
-use crate::api::{GrpcChannelConfig, GrpcChannelConfigError, GrpcEgress, TransportSvc};
+use crate::api::{GrpcChannelConfig, GrpcChannelConfigError, GrpcEgress};
+use crate::saf::TransportConstruction;
 
 /// Factory for the default [`GrpcEgress`] transport.
 pub struct GrpcEgressFactory;
@@ -12,6 +13,6 @@ impl GrpcEgressFactory {
     pub fn create(
         config: &GrpcChannelConfig,
     ) -> Result<Arc<dyn GrpcEgress>, GrpcChannelConfigError> {
-        TransportSvc::create_transport_from_config(config)
+        TransportConstruction::create_transport_from_config(config)
     }
 }

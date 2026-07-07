@@ -35,7 +35,7 @@ pub struct GrpcChannelConfig {
     pub compression: CompressionMode,
     /// Optional retry + circuit breaker policy.
     ///
-    /// When `Some`, [`crate::saf::create_transport_from_config`] wraps the
+    /// When `Some`, [`crate::saf::TransportConstruction::create_transport_from_config`] wraps the
     /// bare transport in a [`crate::ResilientGrpcClient`] (retry + circuit
     /// breaker). When `None`, the transport is returned unwrapped.
     #[serde(default)]

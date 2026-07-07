@@ -3,5 +3,5 @@
 /// Builder marker type for gRPC clients.
 ///
 /// The concrete builder lives in `core/`; callers use
-/// [`crate::create_transport_from_config`] instead of direct construction.
+/// [`crate::TransportConstruction::create_transport_from_config`] instead of direct construction.
 pub struct GrpcClientBuilder;

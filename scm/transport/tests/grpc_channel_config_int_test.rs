@@ -1,15 +1,15 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
-//! Integration tests for `GrpcChannelConfig` and `TransportSvc::create_transport_from_config`.
+//! Integration tests for `GrpcChannelConfig` and `create_transport_from_config`.
 //!
 //! Verifies the **fail-closed TLS-by-default invariant** at the
-//! public-facade boundary via the `TransportSvc::create_transport_from_config` factory.
+//! public-facade boundary via the `create_transport_from_config` factory.
 
 use std::sync::Arc;
 
 use swe_edge_egress_grpc_transport::{
     AfterCallRequest, CompressionMode, GrpcChannelConfig, GrpcChannelConfigError, GrpcEgress,
     GrpcEgressError, GrpcEgressInterceptor, GrpcEgressInterceptorChain, GrpcRequest, GrpcResponse,
-    GrpcStatusCode, TraceContextGrpcEgressInterceptor, TransportSvc,
+    GrpcStatusCode, TraceContextGrpcEgressInterceptor, TransportConstruction,
 };
 
 fn ensure_rustls_provider() {
@@ -27,12 +27,12 @@ fn transport_struct_channel_config_default_requires_tls_int_test() {
     assert!(cfg.tls_required, "TLS-by-default invariant must hold");
 }
 
-/// @covers: TransportSvc::create_transport_from_config — plaintext endpoint rejected when tls_required.
+/// @covers: create_transport_from_config — plaintext endpoint rejected when tls_required.
 #[test]
 fn transport_struct_channel_config_from_config_rejects_plaintext_int_test() {
     ensure_rustls_provider();
     let cfg = GrpcChannelConfig::new("http://localhost:50051");
-    let result = TransportSvc::create_transport_from_config(&cfg);
+    let result = TransportConstruction::create_transport_from_config(&cfg);
     match result {
         Err(GrpcChannelConfigError::PlaintextRejected(endpoint)) => {
             assert!(
@@ -45,12 +45,12 @@ fn transport_struct_channel_config_from_config_rejects_plaintext_int_test() {
     }
 }
 
-/// @covers: TransportSvc::create_transport_from_config — plaintext accepted with allow_plaintext().
+/// @covers: create_transport_from_config — plaintext accepted with allow_plaintext().
 #[tokio::test]
 async fn transport_struct_channel_config_from_config_accepts_plaintext_with_opt_in_int_test() {
     ensure_rustls_provider();
     let cfg = GrpcChannelConfig::new("http://127.0.0.1:50051").allow_plaintext();
-    let transport = TransportSvc::create_transport_from_config(&cfg)
+    let transport = TransportConstruction::create_transport_from_config(&cfg)
         .expect("plaintext accepted with allow_plaintext()");
     // Nothing listens on 127.0.0.1:50051 in the test environment, so a real
     // call must genuinely fail — proves this is a connectable client, not a stub.
@@ -63,18 +63,18 @@ async fn transport_struct_channel_config_from_config_accepts_plaintext_with_opt_
     );
 }
 
-/// @covers: TransportSvc::create_transport_from_config — https endpoint accepted, unlike
+/// @covers: create_transport_from_config — https endpoint accepted, unlike
 /// plaintext without opt-in — proves tls_required is genuinely scheme-derived, not ignored.
 #[test]
 fn transport_struct_channel_config_from_config_accepts_https_int_test() {
     ensure_rustls_provider();
     let https_cfg = GrpcChannelConfig::new("https://example.com:443");
-    assert!(TransportSvc::create_transport_from_config(&https_cfg).is_ok());
+    assert!(TransportConstruction::create_transport_from_config(&https_cfg).is_ok());
 
     let plaintext_cfg = GrpcChannelConfig::new("http://example.com:80");
     assert!(
         matches!(
-            TransportSvc::create_transport_from_config(&plaintext_cfg),
+            TransportConstruction::create_transport_from_config(&plaintext_cfg),
             Err(GrpcChannelConfigError::PlaintextRejected(_))
         ),
         "same construction path must still reject plaintext without allow_plaintext()"
@@ -110,7 +110,7 @@ async fn transport_struct_channel_config_interceptor_short_circuits_int_test() {
     }
 
     let cfg = GrpcChannelConfig::new("http://127.0.0.1:1").allow_plaintext();
-    let base = TransportSvc::create_transport_from_config(&cfg).expect("transport");
+    let base = TransportConstruction::create_transport_from_config(&cfg).expect("transport");
     let chain = GrpcEgressInterceptorChain::new().push(Arc::new(Deny));
 
     struct WithChain {
