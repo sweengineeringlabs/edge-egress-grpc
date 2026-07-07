@@ -303,7 +303,7 @@ async fn transport_struct_call_unary_propagates_grpc_error_status() {
 
 /// @covers: TonicGrpcClient::call_stream — multiple frames echoed back.
 #[tokio::test]
-async fn transport_struct_call_stream_sends_multiple_frames_and_receives_stream() {
+async fn test_call_stream_multiple_frames_happy() {
     let listener = bind_listener().await;
     let addr = spawn_echo_server(listener).await;
 
@@ -341,9 +341,65 @@ async fn transport_struct_call_stream_sends_multiple_frames_and_receives_stream(
     assert_eq!(items[2], b"frame3");
 }
 
+/// @covers: call_stream
+#[tokio::test]
+async fn test_call_stream_default_impl_unimplemented_error() {
+    // `StubEgress` does not override `call_stream`, so this exercises the
+    // trait's own default body — proving it fails closed with `Unimplemented`
+    // rather than panicking or hanging when a `GrpcEgress` impl opts out of
+    // streaming support.
+    let messages = GrpcMessageStreamResponse {
+        stream: Box::pin(stream::iter(Vec::<Result<Vec<u8>, GrpcEgressError>>::new())),
+    };
+    let result = StubEgress
+        .call_stream(CallStreamRequest {
+            method: "echo/Echo".into(),
+            metadata: HashMap::new(),
+            messages,
+        })
+        .await;
+    assert!(
+        matches!(
+            &result,
+            Err(GrpcEgressError::Status(GrpcStatusCode::Unimplemented, _))
+        ),
+        "expected Status(Unimplemented, _), got {:?}",
+        result.err()
+    );
+}
+
+/// @covers: call_stream
+#[tokio::test]
+async fn test_call_stream_empty_message_list_edge() {
+    let listener = bind_listener().await;
+    let addr = spawn_echo_server(listener).await;
+
+    ensure_rustls_provider();
+    let client = make_client(addr);
+    let messages = GrpcMessageStreamResponse {
+        stream: Box::pin(stream::iter(Vec::<Result<Vec<u8>, GrpcEgressError>>::new())),
+    };
+
+    let resp_stream = client
+        .call_stream(CallStreamRequest {
+            method: "echo/Echo".into(),
+            metadata: HashMap::new(),
+            messages,
+        })
+        .await
+        .expect("call_stream should succeed even with zero request frames");
+    let mut resp_stream = resp_stream.stream;
+
+    use futures::StreamExt as _;
+    assert!(
+        resp_stream.next().await.is_none(),
+        "an empty request stream must yield an empty response stream"
+    );
+}
+
 /// @covers: TonicGrpcClient::health_check — succeeds when server is listening.
 #[tokio::test]
-async fn transport_struct_health_check_succeeds_when_server_is_listening() {
+async fn test_health_check_server_listening_happy() {
     let listener = bind_listener().await;
     let addr = spawn_echo_server(listener).await;
 
@@ -357,7 +413,7 @@ async fn transport_struct_health_check_succeeds_when_server_is_listening() {
 
 /// @covers: TonicGrpcClient::health_check — fails when nothing is listening.
 #[tokio::test]
-async fn transport_struct_health_check_fails_when_no_server_is_listening() {
+async fn test_health_check_no_server_listening_error() {
     // Bind to get an OS-assigned port, then drop the listener so nothing is listening on it.
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
         .await
@@ -381,6 +437,24 @@ async fn transport_struct_health_check_fails_when_no_server_is_listening() {
         }
         other => panic!("expected Unavailable error, got {other:?}"),
     }
+}
+
+/// @covers: health_check
+#[tokio::test]
+async fn test_health_check_repeated_calls_are_idempotent_edge() {
+    let listener = bind_listener().await;
+    let addr = spawn_echo_server(listener).await;
+
+    ensure_rustls_provider();
+    let client = make_client(addr);
+    client
+        .health_check(HealthCheckRequest)
+        .await
+        .expect("first health_check call");
+    client
+        .health_check(HealthCheckRequest)
+        .await
+        .expect("second health_check call must not be affected by the first");
 }
 
 // ── value-object regression tests (kept from original file) ──────────────────
@@ -639,7 +713,7 @@ fn transport_struct_status_error_round_trips_all_17_grpc_status_code_variants_in
 /// Failure mode: if `call_unary_with_context` drops the request or returns a different
 /// body, the `assert_eq!` on `resp.body` will fail.
 #[tokio::test]
-async fn transport_struct_call_unary_with_context_delegates_to_call_unary_and_echoes_body() {
+async fn test_call_unary_with_context_echoes_body_happy() {
     ensure_rustls_provider();
     let listener = bind_listener().await;
     let addr = spawn_echo_server(listener).await;
@@ -698,7 +772,7 @@ async fn transport_struct_call_unary_with_context_accepts_authenticated_context(
 /// Failure mode: if `call_unary_with_context` swallows the error instead of
 /// forwarding the `call_unary` result, this test will fail.
 #[tokio::test]
-async fn transport_struct_call_unary_with_context_propagates_grpc_error_status() {
+async fn test_call_unary_with_context_propagates_grpc_error_status_error() {
     ensure_rustls_provider();
     let listener = bind_listener().await;
     let addr = spawn_error_server(listener).await;
@@ -730,7 +804,7 @@ async fn transport_struct_call_unary_with_context_propagates_grpc_error_status()
 /// Failure mode: if `call_unary_with_context` bypasses the deadline from the request,
 /// this test will hang past the deadline and eventually return Ok instead of Timeout.
 #[tokio::test]
-async fn transport_struct_call_unary_with_context_returns_timeout_when_server_stalls() {
+async fn test_call_unary_with_context_timeout_edge() {
     ensure_rustls_provider();
     let listener = bind_listener().await;
     let addr = spawn_stalling_grpc_server(listener).await;
@@ -844,7 +918,7 @@ async fn transport_struct_call_unary_sanitizes_internal_error_message_on_truncat
 
 /// @covers: call_server_stream
 #[tokio::test]
-async fn transport_struct_call_server_stream_sends_single_request_and_receives_response_stream() {
+async fn test_call_server_stream_single_request_happy() {
     let listener = bind_listener().await;
     let addr = spawn_echo_server(listener).await;
 
@@ -877,9 +951,57 @@ async fn transport_struct_call_server_stream_sends_single_request_and_receives_r
     );
 }
 
+/// @covers: call_server_stream
+#[tokio::test]
+async fn test_call_server_stream_default_impl_unimplemented_error() {
+    // `StubEgress` does not override `call_server_stream`, exercising the
+    // trait's own default body.
+    let req = GrpcRequest::new(
+        "svc/ServerStream",
+        b"hello".to_vec(),
+        Duration::from_secs(5),
+    );
+    let result = StubEgress.call_server_stream(req).await;
+    assert!(
+        matches!(
+            &result,
+            Err(GrpcEgressError::Status(GrpcStatusCode::Unimplemented, _))
+        ),
+        "expected Status(Unimplemented, _), got {:?}",
+        result.err()
+    );
+}
+
+/// @covers: call_server_stream
+#[tokio::test]
+async fn test_call_server_stream_empty_body_edge() {
+    let listener = bind_listener().await;
+    let addr = spawn_echo_server(listener).await;
+
+    ensure_rustls_provider();
+    let client = make_client(addr);
+    let req = GrpcRequest::new("svc/ServerStream", Vec::new(), Duration::from_secs(5));
+    let mut stream = client
+        .call_server_stream(req)
+        .await
+        .expect("call_server_stream must succeed with an empty request body")
+        .stream;
+
+    use futures::StreamExt;
+    let frame = stream
+        .next()
+        .await
+        .expect("stream must yield one item")
+        .expect("frame must be Ok");
+    assert!(
+        frame.is_empty(),
+        "echo server must reflect the empty request payload, got {frame:?}"
+    );
+}
+
 /// @covers: call_client_stream
 #[tokio::test]
-async fn transport_struct_call_client_stream_sends_multiple_frames_and_receives_single_response() {
+async fn test_call_client_stream_multiple_frames_happy() {
     let listener = bind_listener().await;
     let addr = spawn_echo_server(listener).await;
 
@@ -910,9 +1032,60 @@ async fn transport_struct_call_client_stream_sends_multiple_frames_and_receives_
     );
 }
 
+/// @covers: call_client_stream
+#[tokio::test]
+async fn test_call_client_stream_default_impl_unimplemented_error() {
+    // `StubEgress` does not override `call_client_stream`, exercising the
+    // trait's own default body.
+    let messages = GrpcMessageStreamResponse {
+        stream: Box::pin(stream::iter(vec![Ok(b"frame".to_vec())])),
+    };
+    let result = StubEgress
+        .call_client_stream(CallStreamRequest {
+            method: "svc/ClientStream".into(),
+            metadata: HashMap::new(),
+            messages,
+        })
+        .await;
+    assert!(
+        matches!(
+            &result,
+            Err(GrpcEgressError::Status(GrpcStatusCode::Unimplemented, _))
+        ),
+        "expected Status(Unimplemented, _), got {:?}",
+        result.err()
+    );
+}
+
+/// @covers: call_client_stream
+#[tokio::test]
+async fn test_call_client_stream_single_frame_edge() {
+    let listener = bind_listener().await;
+    let addr = spawn_echo_server(listener).await;
+
+    ensure_rustls_provider();
+    let client = make_client(addr);
+    let messages = GrpcMessageStreamResponse {
+        stream: Box::pin(stream::iter(vec![Ok(b"only-frame".to_vec())])),
+    };
+    let response = client
+        .call_client_stream(CallStreamRequest {
+            method: "svc/ClientStream".into(),
+            metadata: HashMap::new(),
+            messages,
+        })
+        .await
+        .expect("call_client_stream must succeed with exactly one request frame");
+    assert!(
+        response.body.starts_with(b"only-frame"),
+        "response body must start with the single echoed frame payload, got {:?}",
+        response.body
+    );
+}
+
 /// @covers: call_bidi_stream
 #[tokio::test]
-async fn transport_struct_call_bidi_stream_sends_multiple_frames_and_receives_stream() {
+async fn test_call_bidi_stream_multiple_frames_happy() {
     let listener = bind_listener().await;
     let addr = spawn_echo_server(listener).await;
 
@@ -950,6 +1123,60 @@ async fn transport_struct_call_bidi_stream_sends_multiple_frames_and_receives_st
     assert!(
         stream.next().await.is_none(),
         "stream must be exhausted after 2 frames"
+    );
+}
+
+/// @covers: call_bidi_stream
+#[tokio::test]
+async fn test_call_bidi_stream_default_impl_unimplemented_error() {
+    // `StubEgress` does not override `call_bidi_stream` or `call_stream` (the
+    // default `call_bidi_stream` body delegates to `call_stream`), so this
+    // exercises both defaults chained together.
+    let messages = GrpcMessageStreamResponse {
+        stream: Box::pin(stream::iter(Vec::<Result<Vec<u8>, GrpcEgressError>>::new())),
+    };
+    let result = StubEgress
+        .call_bidi_stream(CallStreamRequest {
+            method: "svc/Bidi".into(),
+            metadata: HashMap::new(),
+            messages,
+        })
+        .await;
+    assert!(
+        matches!(
+            &result,
+            Err(GrpcEgressError::Status(GrpcStatusCode::Unimplemented, _))
+        ),
+        "expected Status(Unimplemented, _), got {:?}",
+        result.err()
+    );
+}
+
+/// @covers: call_bidi_stream
+#[tokio::test]
+async fn test_call_bidi_stream_empty_frame_list_edge() {
+    let listener = bind_listener().await;
+    let addr = spawn_echo_server(listener).await;
+
+    ensure_rustls_provider();
+    let client = make_client(addr);
+    let messages = GrpcMessageStreamResponse {
+        stream: Box::pin(stream::iter(Vec::<Result<Vec<u8>, GrpcEgressError>>::new())),
+    };
+    let mut stream = client
+        .call_bidi_stream(CallStreamRequest {
+            method: "svc/Bidi".into(),
+            metadata: HashMap::new(),
+            messages,
+        })
+        .await
+        .expect("call_bidi_stream must succeed against echo server even with zero frames")
+        .stream;
+
+    use futures::StreamExt;
+    assert!(
+        stream.next().await.is_none(),
+        "an empty request stream must yield an empty response stream"
     );
 }
 

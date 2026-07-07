@@ -59,3 +59,59 @@ fn test_default_config_builder_repeated_calls_are_independent_edge() {
     // not affect the other.
     assert_eq!(a.build().is_err(), b.build().is_err());
 }
+
+// ── ResilienceValidator::validate_config (real impl: ResilienceConfig) ──────
+
+fn valid_config() -> ResilienceConfig {
+    ResilienceConfig {
+        max_attempts: 3,
+        initial_backoff_ms: 100,
+        backoff_multiplier: 2.0,
+        jitter_factor: 0.1,
+        max_backoff_ms: 2_000,
+        rate_limit_max_attempts: 2,
+        rate_limit_initial_backoff_ms: 1_000,
+        rate_limit_max_backoff_ms: 10_000,
+        failure_threshold: 5,
+        cool_down_seconds: 10,
+        half_open_probe_count: 1,
+    }
+}
+
+/// @covers: validate_config
+#[test]
+fn test_validate_config_valid_config_happy() {
+    let config = valid_config();
+    config
+        .validate_config(ConfigValidationRequest {
+            config: config.clone(),
+        })
+        .expect("a fully valid config must be accepted");
+}
+
+/// @covers: validate_config
+#[test]
+fn test_validate_config_zero_max_attempts_error() {
+    let mut config = valid_config();
+    config.max_attempts = 0;
+    let err = config
+        .validate_config(ConfigValidationRequest {
+            config: config.clone(),
+        })
+        .expect_err("max_attempts == 0 must be rejected");
+    assert!(matches!(err, GrpcChannelConfigError::Config(_)));
+}
+
+/// @covers: validate_config
+#[test]
+fn test_validate_config_ignores_receiver_uses_request_config_edge() {
+    // `validate_config` validates `req.config`, not `self` — proven by
+    // calling it on a valid receiver with an invalid request config.
+    let receiver = valid_config();
+    let mut requested = valid_config();
+    requested.rate_limit_max_attempts = 0;
+    let err = receiver
+        .validate_config(ConfigValidationRequest { config: requested })
+        .expect_err("the request's config must be validated, not the receiver's");
+    assert!(matches!(err, GrpcChannelConfigError::Config(_)));
+}

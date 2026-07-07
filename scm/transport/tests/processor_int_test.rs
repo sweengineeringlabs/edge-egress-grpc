@@ -10,15 +10,25 @@ use swe_edge_egress_grpc_transport::{
     ProcessingRequest, Processor, TransportSvc,
 };
 
-/// Minimal test-double satisfying `Processor`'s two abstract methods, used
-/// only to exercise the trait's default methods
-/// (`default_config_builder` / `default_facade`) from outside the crate.
+/// Test-double satisfying `Processor`'s two abstract methods. `process`
+/// succeeds unless `fail` is set — used to exercise the trait's default
+/// methods (`default_config_builder` / `default_facade`) and `process`
+/// itself from outside the crate.
 // @allow: no_mocks_in_integration — hand-rolled test double, not a mock library.
-struct StubProcessor;
+#[derive(Default)]
+struct StubProcessor {
+    fail: bool,
+}
 
 impl Processor for StubProcessor {
     fn process(&self, _req: ProcessingRequest) -> BoxFuture<'_, Result<(), GrpcEgressError>> {
-        Box::pin(async { Ok(()) })
+        let fail = self.fail;
+        Box::pin(async move {
+            if fail {
+                return Err(GrpcEgressError::Internal("process forced failure".into()));
+            }
+            Ok(())
+        })
     }
 
     fn describe(&self, _req: DescribeRequest) -> Result<DescribeResponse, GrpcEgressError> {
@@ -140,4 +150,41 @@ fn test_default_facade_is_deterministic_edge() {
     let a = <StubProcessor as Processor>::default_facade();
     let b = <StubProcessor as Processor>::default_facade();
     assert_eq!(std::mem::size_of_val(&a), std::mem::size_of_val(&b));
+}
+
+// ── Processor::process ───────────────────────────────────────────────────────
+
+/// @covers: process
+#[tokio::test]
+async fn test_process_succeeds_happy() {
+    let processor = StubProcessor::default();
+    processor
+        .process(ProcessingRequest)
+        .await
+        .expect("process should succeed by default");
+}
+
+/// @covers: process
+#[tokio::test]
+async fn test_process_propagates_forced_failure_error() {
+    let processor = StubProcessor { fail: true };
+    let err = processor
+        .process(ProcessingRequest)
+        .await
+        .expect_err("process must propagate the forced failure");
+    assert!(matches!(err, GrpcEgressError::Internal(_)));
+}
+
+/// @covers: process
+#[tokio::test]
+async fn test_process_repeated_calls_are_independent_edge() {
+    let processor = StubProcessor::default();
+    processor
+        .process(ProcessingRequest)
+        .await
+        .expect("first call");
+    processor
+        .process(ProcessingRequest)
+        .await
+        .expect("second call must not be affected by the first");
 }

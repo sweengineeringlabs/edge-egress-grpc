@@ -1,6 +1,9 @@
 //! Integration tests for `TransportSvc::validate_resilience_config`.
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 
-use swe_edge_egress_grpc_transport::{ResilienceConfig, TransportSvc};
+use swe_edge_egress_grpc_transport::{
+    GrpcChannelConfigError, ResilienceConfig, TransportSvc, ValidationRequest, Validator,
+};
 
 fn valid() -> ResilienceConfig {
     ResilienceConfig {
@@ -44,4 +47,42 @@ fn transport_struct_resilience_config_jitter_out_of_range_rejected_int_test() {
     let mut r = valid();
     r.jitter_factor = 1.5;
     assert!(TransportSvc::validate_resilience_config(&r).is_err());
+}
+
+// ── Validator::validate (real impl: ResilienceConfig) ────────────────────────
+
+/// @covers: validate
+#[test]
+fn test_validate_valid_config_happy() {
+    valid()
+        .validate(ValidationRequest)
+        .expect("a fully valid config must be accepted");
+}
+
+/// @covers: validate
+#[test]
+fn test_validate_rate_limit_max_backoff_less_than_initial_error() {
+    let mut r = valid();
+    r.rate_limit_max_backoff_ms = 500;
+    r.rate_limit_initial_backoff_ms = 1_000;
+    let err = r
+        .validate(ValidationRequest)
+        .expect_err("rate_limit_max_backoff_ms below initial must be rejected");
+    assert!(matches!(err, GrpcChannelConfigError::Config(_)));
+}
+
+/// @covers: validate
+#[test]
+fn test_validate_half_open_probe_count_boundary_edge() {
+    let mut r = valid();
+    r.half_open_probe_count = 0;
+    assert!(
+        r.validate(ValidationRequest).is_err(),
+        "zero half_open_probe_count must be rejected"
+    );
+    r.half_open_probe_count = 1;
+    assert!(
+        r.validate(ValidationRequest).is_ok(),
+        "the minimum valid half_open_probe_count (1) must be accepted"
+    );
 }

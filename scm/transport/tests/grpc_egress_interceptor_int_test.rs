@@ -3,7 +3,7 @@
 
 use swe_edge_egress_grpc_transport::{
     AfterCallRequest, GrpcClientBuilder, GrpcEgressError, GrpcEgressInterceptor,
-    GrpcEgressInterceptorChain, GrpcRequest, TraceContextSource,
+    GrpcEgressInterceptorChain, GrpcRequest, GrpcResponse, TraceContextSource,
 };
 
 #[test]
@@ -11,17 +11,39 @@ fn transport_trait_grpc_egress_interceptor_is_object_safe_int_test() {
     fn _assert(_: &dyn GrpcEgressInterceptor) {}
 }
 
-/// Minimal test-double satisfying the two abstract methods, used only to
-/// exercise the trait's default (`Self: Sized`) methods from outside the crate.
+/// Test-double satisfying the two abstract methods. `before_call` injects a
+/// metadata header (or fails, if `fail_before`); `after_call` injects a
+/// response header (or fails, if `fail_after`) — used both to exercise the
+/// trait's default (`Self: Sized`) methods and `before_call`/`after_call`
+/// themselves from outside the crate.
 // @allow: no_mocks_in_integration — hand-rolled test double, not a mock library.
-struct StubInterceptor;
+#[derive(Default)]
+struct StubInterceptor {
+    fail_before: bool,
+    fail_after: bool,
+}
 
 impl GrpcEgressInterceptor for StubInterceptor {
-    fn before_call(&self, _req: &mut GrpcRequest) -> Result<(), GrpcEgressError> {
+    fn before_call(&self, req: &mut GrpcRequest) -> Result<(), GrpcEgressError> {
+        if self.fail_before {
+            return Err(GrpcEgressError::Internal(
+                "before_call forced failure".into(),
+            ));
+        }
+        req.metadata
+            .insert("x-stub-injected".to_string(), "1".to_string());
         Ok(())
     }
 
-    fn after_call(&self, _req: AfterCallRequest<'_>) -> Result<(), GrpcEgressError> {
+    fn after_call(&self, req: AfterCallRequest<'_>) -> Result<(), GrpcEgressError> {
+        if self.fail_after {
+            return Err(GrpcEgressError::Internal(
+                "after_call forced failure".into(),
+            ));
+        }
+        req.response
+            .metadata
+            .insert("x-stub-observed".to_string(), "1".to_string());
         Ok(())
     }
 }
@@ -83,7 +105,7 @@ fn test_describe_chain_len_empty_chain_is_zero_happy() {
 #[test]
 fn test_describe_chain_len_registered_interceptor_counts_one_error() {
     use std::sync::Arc;
-    let chain = GrpcEgressInterceptorChain::new().push(Arc::new(StubInterceptor));
+    let chain = GrpcEgressInterceptorChain::new().push(Arc::new(StubInterceptor::default()));
     assert_eq!(
         <StubInterceptor as GrpcEgressInterceptor>::describe_chain_len(&chain),
         1
@@ -95,9 +117,9 @@ fn test_describe_chain_len_registered_interceptor_counts_one_error() {
 fn test_describe_chain_len_multiple_interceptors_edge() {
     use std::sync::Arc;
     let chain = GrpcEgressInterceptorChain::new()
-        .push(Arc::new(StubInterceptor))
-        .push(Arc::new(StubInterceptor))
-        .push(Arc::new(StubInterceptor));
+        .push(Arc::new(StubInterceptor::default()))
+        .push(Arc::new(StubInterceptor::default()))
+        .push(Arc::new(StubInterceptor::default()));
     assert_eq!(
         <StubInterceptor as GrpcEgressInterceptor>::describe_chain_len(&chain),
         3
@@ -170,5 +192,109 @@ fn test_default_client_builder_is_the_real_marker_type_error() {
     assert_eq!(
         size, 0,
         "the returned value must unify with the genuine zero-sized GrpcClientBuilder, not a look-alike"
+    );
+}
+
+// ── before_call ───────────────────────────────────────────────────────────────
+
+/// @covers: before_call
+#[test]
+fn test_before_call_injects_metadata_happy() {
+    let interceptor = StubInterceptor::default();
+    let mut req = GrpcRequest::new("svc/Method", Vec::new(), std::time::Duration::from_secs(5));
+    interceptor
+        .before_call(&mut req)
+        .expect("before_call should succeed");
+    assert_eq!(req.metadata.get("x-stub-injected"), Some(&"1".to_string()));
+}
+
+/// @covers: before_call
+#[test]
+fn test_before_call_propagates_forced_failure_error() {
+    let interceptor = StubInterceptor {
+        fail_before: true,
+        fail_after: false,
+    };
+    let mut req = GrpcRequest::new("svc/Method", Vec::new(), std::time::Duration::from_secs(5));
+    let err = interceptor
+        .before_call(&mut req)
+        .expect_err("before_call must propagate the forced failure");
+    assert!(matches!(err, GrpcEgressError::Internal(_)));
+}
+
+/// @covers: before_call
+#[test]
+fn test_before_call_does_not_overwrite_existing_metadata_edge() {
+    let interceptor = StubInterceptor::default();
+    let mut req = GrpcRequest::new("svc/Method", Vec::new(), std::time::Duration::from_secs(5));
+    req.metadata
+        .insert("x-caller-set".to_string(), "original".to_string());
+    interceptor
+        .before_call(&mut req)
+        .expect("before_call should succeed");
+    assert_eq!(
+        req.metadata.get("x-caller-set"),
+        Some(&"original".to_string()),
+        "before_call must not clobber metadata set by the caller"
+    );
+    assert_eq!(req.metadata.get("x-stub-injected"), Some(&"1".to_string()));
+}
+
+// ── after_call ────────────────────────────────────────────────────────────────
+
+/// @covers: after_call
+#[test]
+fn test_after_call_injects_response_metadata_happy() {
+    let interceptor = StubInterceptor::default();
+    let mut response = GrpcResponse {
+        body: Vec::new(),
+        metadata: std::collections::HashMap::new(),
+    };
+    interceptor
+        .after_call(AfterCallRequest {
+            response: &mut response,
+        })
+        .expect("after_call should succeed");
+    assert_eq!(
+        response.metadata.get("x-stub-observed"),
+        Some(&"1".to_string())
+    );
+}
+
+/// @covers: after_call
+#[test]
+fn test_after_call_propagates_forced_failure_error() {
+    let interceptor = StubInterceptor {
+        fail_before: false,
+        fail_after: true,
+    };
+    let mut response = GrpcResponse {
+        body: Vec::new(),
+        metadata: std::collections::HashMap::new(),
+    };
+    let err = interceptor
+        .after_call(AfterCallRequest {
+            response: &mut response,
+        })
+        .expect_err("after_call must propagate the forced failure");
+    assert!(matches!(err, GrpcEgressError::Internal(_)));
+}
+
+/// @covers: after_call
+#[test]
+fn test_after_call_preserves_response_body_edge() {
+    let interceptor = StubInterceptor::default();
+    let mut response = GrpcResponse {
+        body: b"original-body".to_vec(),
+        metadata: std::collections::HashMap::new(),
+    };
+    interceptor
+        .after_call(AfterCallRequest {
+            response: &mut response,
+        })
+        .expect("after_call should succeed");
+    assert_eq!(
+        response.body, b"original-body",
+        "after_call must not mutate the response body, only metadata"
     );
 }
