@@ -703,6 +703,9 @@ impl GrpcEgress for TonicGrpcClient {
     }
 }
 
+#[cfg(feature = "prost")]
+impl crate::api::GrpcEgressProstCodec for TonicGrpcClient {}
+
 impl TonicGrpcClientProtocol {
     /// Compile-time guard: `GrpcRequest::new` MUST require a `Duration`.
     #[doc(hidden)]

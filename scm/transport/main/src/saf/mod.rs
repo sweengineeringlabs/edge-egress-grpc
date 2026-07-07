@@ -19,6 +19,6 @@ pub use resilient_grpc_client_port_svc_factory::ResilientGrpcClientPortFactory;
 pub use validator_svc_factory::ValidatorFactory;
 
 #[cfg(feature = "prost")]
-mod grpc_egress_prost_codec;
+mod grpc_egress_prost_codec_svc_factory;
 #[cfg(feature = "prost")]
-pub use grpc_egress_prost_codec::GrpcEgressProstCodec;
+pub use grpc_egress_prost_codec_svc_factory::GrpcEgressProstCodec;

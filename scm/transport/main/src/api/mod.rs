@@ -17,6 +17,8 @@ pub use error::{GrpcChannelConfigError, GrpcEgressError};
 pub use traits::grpc_egress_interceptor::GrpcEgressInterceptor;
 pub use traits::resilience_validator::ResilienceValidator;
 pub use traits::resilient_grpc_client_port::ResilientGrpcClientPort;
+#[cfg(feature = "prost")]
+pub use traits::GrpcEgressProstCodec;
 pub use traits::{GrpcEgress, Processor, Validator};
 pub use types::ApplicationConfigBuilder;
 pub use types::{

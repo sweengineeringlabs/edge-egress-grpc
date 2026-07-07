@@ -16,7 +16,7 @@ mod prost_tests {
 
     use swe_edge_egress_grpc_transport::{
         GrpcEgress, GrpcEgressError, GrpcEgressProstCodec, GrpcEgressResult, GrpcRequest,
-        GrpcResponse, HealthCheckRequest,
+        GrpcResponse, HealthCheckRequest, TransportSvc,
     };
 
     // ── prost message types under test ─────────────────────────────────────────
@@ -59,6 +59,7 @@ mod prost_tests {
             Box::pin(async { Ok(()) })
         }
     }
+    impl GrpcEgressProstCodec for DoublingEgress {}
 
     /// Always fails at the transport level.
     struct UnavailableEgress;
@@ -73,6 +74,7 @@ mod prost_tests {
             Box::pin(async { Ok(()) })
         }
     }
+    impl GrpcEgressProstCodec for UnavailableEgress {}
 
     /// Returns an undecodable response body (truncated varint).
     struct GarbageEgress;
@@ -92,22 +94,23 @@ mod prost_tests {
             Box::pin(async { Ok(()) })
         }
     }
+    impl GrpcEgressProstCodec for GarbageEgress {}
 
     // ── _happy: typed request encoded, response decoded ────────────────────────
 
-    /// @covers: GrpcEgressProstCodec::call_unary_typed
+    /// @covers: TransportSvc::call_unary_typed
     #[tokio::test]
     async fn test_call_unary_typed_roundtrips_prost_message_happy() {
         let client = DoublingEgress;
 
-        let out: Pong = client
-            .call_unary_typed(
-                "/pkg.Echo/Double",
-                &Ping { value: 21 },
-                Duration::from_secs(5),
-            )
-            .await
-            .unwrap();
+        let out: Pong = TransportSvc::call_unary_typed(
+            &client,
+            "/pkg.Echo/Double",
+            &Ping { value: 21 },
+            Duration::from_secs(5),
+        )
+        .await
+        .unwrap();
 
         assert_eq!(
             out.value, 42,
@@ -117,18 +120,18 @@ mod prost_tests {
 
     // ── _error: transport error propagates unchanged ───────────────────────────
 
-    /// @covers: GrpcEgressProstCodec::call_unary_typed
+    /// @covers: TransportSvc::call_unary_typed
     #[tokio::test]
     async fn test_call_unary_typed_propagates_transport_error() {
         let client = UnavailableEgress;
 
-        let result: GrpcEgressResult<Pong> = client
-            .call_unary_typed(
-                "/pkg.Echo/Double",
-                &Ping { value: 1 },
-                Duration::from_secs(5),
-            )
-            .await;
+        let result: GrpcEgressResult<Pong> = TransportSvc::call_unary_typed(
+            &client,
+            "/pkg.Echo/Double",
+            &Ping { value: 1 },
+            Duration::from_secs(5),
+        )
+        .await;
 
         assert!(
             matches!(result, Err(GrpcEgressError::Unavailable(_))),
@@ -138,20 +141,20 @@ mod prost_tests {
 
     // ── _edge: undecodable response → Internal (client-side) ───────────────────
 
-    /// @covers: GrpcEgressProstCodec::call_unary_typed
+    /// @covers: TransportSvc::call_unary_typed
     /// A response body that cannot be decoded is an unexpected client-side
     /// condition, mapped to `GrpcEgressError::Internal` — not silently dropped.
     #[tokio::test]
     async fn test_call_unary_typed_undecodable_response_maps_to_internal_edge() {
         let client = GarbageEgress;
 
-        let result: GrpcEgressResult<Pong> = client
-            .call_unary_typed(
-                "/pkg.Echo/Double",
-                &Ping { value: 1 },
-                Duration::from_secs(5),
-            )
-            .await;
+        let result: GrpcEgressResult<Pong> = TransportSvc::call_unary_typed(
+            &client,
+            "/pkg.Echo/Double",
+            &Ping { value: 1 },
+            Duration::from_secs(5),
+        )
+        .await;
 
         match result {
             Err(GrpcEgressError::Internal(msg)) => {
@@ -162,5 +165,55 @@ mod prost_tests {
             }
             other => panic!("expected Internal decode error, got {other:?}"),
         }
+    }
+
+    // ── GrpcEgressProstCodec::call_unary_encoded (byte-oriented passthrough) ──
+
+    /// @covers: call_unary_encoded
+    #[tokio::test]
+    async fn test_call_unary_encoded_delegates_to_call_unary_happy() {
+        let client = DoublingEgress;
+        let req = GrpcRequest::new(
+            "/pkg.Echo/Double",
+            Ping { value: 21 }.encode_to_vec(),
+            Duration::from_secs(5),
+        );
+        let resp = client
+            .call_unary_encoded(req)
+            .await
+            .expect("call must succeed");
+        let pong = Pong::decode(resp.body.as_slice()).expect("response must decode");
+        assert_eq!(pong.value, 42);
+    }
+
+    /// @covers: call_unary_encoded
+    #[tokio::test]
+    async fn test_call_unary_encoded_propagates_transport_error_error() {
+        let client = UnavailableEgress;
+        let req = GrpcRequest::new(
+            "/pkg.Echo/Double",
+            Ping { value: 1 }.encode_to_vec(),
+            Duration::from_secs(5),
+        );
+        let result = client.call_unary_encoded(req).await;
+        assert!(matches!(result, Err(GrpcEgressError::Unavailable(_))));
+    }
+
+    /// @covers: call_unary_encoded
+    #[tokio::test]
+    async fn test_call_unary_encoded_returns_raw_undecoded_body_edge() {
+        let client = GarbageEgress;
+        let req = GrpcRequest::new(
+            "/pkg.Echo/Double",
+            Ping { value: 1 }.encode_to_vec(),
+            Duration::from_secs(5),
+        );
+        // `call_unary_encoded` is byte-oriented — it does not attempt to
+        // decode, so even a garbage body comes back as `Ok` with the raw bytes.
+        let resp = client
+            .call_unary_encoded(req)
+            .await
+            .expect("call must succeed");
+        assert_eq!(resp.body, vec![0x08, 0x80]);
     }
 }

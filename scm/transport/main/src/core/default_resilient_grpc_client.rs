@@ -75,6 +75,9 @@ impl GrpcEgress for DefaultResilientGrpcClient {
     }
 }
 
+#[cfg(feature = "prost")]
+impl crate::api::GrpcEgressProstCodec for DefaultResilientGrpcClient {}
+
 impl ResilientGrpcClientPort for DefaultResilientGrpcClient {
     fn circuit_state(
         &self,

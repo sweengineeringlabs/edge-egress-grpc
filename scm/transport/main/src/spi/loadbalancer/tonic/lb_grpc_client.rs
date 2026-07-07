@@ -222,6 +222,9 @@ impl GrpcEgress for TonicLbGrpcClient {
     }
 }
 
+#[cfg(feature = "prost")]
+impl crate::api::GrpcEgressProstCodec for TonicLbGrpcClient {}
+
 #[cfg(test)]
 mod tests {
     use std::time::Duration;
