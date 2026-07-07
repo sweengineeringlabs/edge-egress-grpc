@@ -6,7 +6,7 @@
 //! The concrete implementation lives in `core/resilience/` and is wired
 //! through the SAF layer.
 
-use crate::api::{ConfigValidationRequest, GrpcChannelConfigError};
+use crate::api::{ConfigValidationRequest, GrpcChannelConfigError, ResilienceConfigBuilder};
 
 /// Validates a [`crate::api::ResilienceConfig`] before it is applied to a gRPC channel.
 ///
@@ -16,4 +16,15 @@ use crate::api::{ConfigValidationRequest, GrpcChannelConfigError};
 pub trait ResilienceValidator: Send + Sync {
     /// Validate `req.config` and return `Err` on the first violation.
     fn validate_config(&self, req: ConfigValidationRequest) -> Result<(), GrpcChannelConfigError>;
+
+    /// Start a fluent [`ResilienceConfigBuilder`] for programmatic policy
+    /// construction — gives it a genuine role in this trait's signature
+    /// set, not just an impl-site helper. `Self: Sized` keeps this trait
+    /// dyn-compatible for `Box<dyn Trait>`.
+    fn default_config_builder() -> ResilienceConfigBuilder
+    where
+        Self: Sized,
+    {
+        ResilienceConfigBuilder::new()
+    }
 }

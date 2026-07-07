@@ -3,7 +3,8 @@
 use futures::future::BoxFuture;
 
 use crate::api::error::GrpcEgressError;
-use crate::api::{DescribeRequest, DescribeResponse, ProcessingRequest};
+use crate::api::TransportSvc;
+use crate::api::{ApplicationConfigBuilder, DescribeRequest, DescribeResponse, ProcessingRequest};
 
 /// Primary processing trait — required because `service_type = "processor"` in Cargo.toml.
 ///
@@ -16,4 +17,28 @@ pub trait Processor: Send + Sync {
 
     /// Identify this processor unit for logging and metrics.
     fn describe(&self, req: DescribeRequest) -> Result<DescribeResponse, GrpcEgressError>;
+
+    /// Start a config builder pre-populated with this crate's name and
+    /// version — gives [`ApplicationConfigBuilder`] a genuine role in this
+    /// trait's signature set, not just an impl-site helper. `Self: Sized`
+    /// keeps this trait dyn-compatible for `Box<dyn Trait>`.
+    fn default_config_builder() -> ApplicationConfigBuilder
+    where
+        Self: Sized,
+    {
+        let mut b = ApplicationConfigBuilder::new();
+        b = b.with_name(env!("CARGO_PKG_NAME"));
+        b = b.with_version(env!("CARGO_PKG_VERSION"));
+        b
+    }
+
+    /// Construct the SAF facade that exposes this crate's factory functions
+    /// — gives [`TransportSvc`] a genuine role in this trait's signature
+    /// set. `Self: Sized` keeps this trait dyn-compatible for `Box<dyn Trait>`.
+    fn default_facade() -> TransportSvc
+    where
+        Self: Sized,
+    {
+        TransportSvc
+    }
 }

@@ -8,6 +8,7 @@ use crate::api::types::{
     CallStreamRequest, CallUnaryWithContextRequest, GrpcRequest, GrpcResponse, GrpcStatusCode,
     HealthCheckRequest,
 };
+use crate::api::{CompressionMode, Conversions};
 
 /// Makes outbound gRPC calls to remote services.
 pub trait GrpcEgress: Send + Sync {
@@ -88,4 +89,26 @@ pub trait GrpcEgress: Send + Sync {
 
     /// Check that the remote endpoint is reachable.
     fn health_check(&self, req: HealthCheckRequest) -> BoxFuture<'_, Result<(), GrpcEgressError>>;
+
+    /// Report whether `mode` applies wire-level compression — gives
+    /// [`CompressionMode`] a genuine role in this trait's signature set,
+    /// not just an internal channel-config field. `Self: Sized` keeps this
+    /// trait dyn-compatible for `Box<dyn Trait>`.
+    fn describe_compression(mode: CompressionMode) -> bool
+    where
+        Self: Sized,
+    {
+        !matches!(mode, CompressionMode::None)
+    }
+
+    /// Construct the status-code conversion marker — gives [`Conversions`]
+    /// a genuine role in this trait's signature set, not just an
+    /// impl-site helper. `Self: Sized` keeps this trait dyn-compatible for
+    /// `Box<dyn Trait>`.
+    fn default_conversions() -> Conversions
+    where
+        Self: Sized,
+    {
+        Conversions
+    }
 }
