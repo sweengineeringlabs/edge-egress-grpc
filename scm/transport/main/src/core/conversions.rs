@@ -4,10 +4,7 @@
 //! All 17 standard gRPC status codes are covered.  Adding or removing a
 //! variant on either side will fail to compile here.
 
-use crate::api::GrpcStatusCode;
-
-/// Namespace for gRPC status-code conversion methods.
-pub(crate) struct Conversions;
+use crate::api::{Conversions, GrpcStatusCode};
 
 impl Conversions {
     /// Convert a [`tonic::Code`] into [`GrpcStatusCode`].  Covers all 17 variants.

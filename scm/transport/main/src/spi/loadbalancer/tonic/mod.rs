@@ -1,3 +1,3 @@
 //! Tonic-backed load-balancer SPI adapter.
 pub(crate) mod lb_grpc_client;
-pub use lb_grpc_client::TonicLbGrpcClient;
+pub(crate) use lb_grpc_client::TonicLbGrpcClient;

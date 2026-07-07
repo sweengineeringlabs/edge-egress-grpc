@@ -3,6 +3,12 @@
 //! Feature-gated extension trait so the core [`GrpcEgress`] contract stays
 //! byte-oriented and codec-free. Available only under the `prost` feature; the
 //! default build gains no `prost` dependency.
+//!
+//! Declared here (not `api/`) despite being `pub`: this is a generic,
+//! blanket-implemented ergonomics trait, not a port contract — its generic
+//! method can't satisfy the Request/Response/object-safety shape the other
+//! `api/traits/` rules enforce. See `.arch-exclude` for the `pub_types_in_api_only`
+//! rationale.
 
 use std::time::Duration;
 

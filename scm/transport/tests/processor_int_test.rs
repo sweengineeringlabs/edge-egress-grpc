@@ -1,6 +1,6 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
-//! Integration tests verifying `TonicGrpcClient` satisfies the `Processor` contract
-//! through the `TransportSvc` SAF factory.
+//! Integration tests verifying the concrete transport client satisfies the
+//! `Processor` contract through the `TransportSvc` SAF factory.
 
 use swe_edge_egress_grpc_transport::{GrpcChannelConfig, TransportSvc};
 

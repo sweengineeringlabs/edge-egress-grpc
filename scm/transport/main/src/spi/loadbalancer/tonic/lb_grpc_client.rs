@@ -15,8 +15,8 @@ use swe_edge_loadbalancer::{
     LoadbalancerConfig, Outcome,
 };
 
+use crate::api::Conversions as StatusConversions;
 use crate::api::{GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcRequest, GrpcResponse};
-use crate::core::conversions::Conversions as StatusConversions;
 
 const DEFAULT_TIMEOUT: Duration = Duration::from_secs(30);
 
@@ -28,7 +28,7 @@ const DEFAULT_TIMEOUT: Duration = Duration::from_secs(30);
 /// through tonic's built-in load-balancer channel, and reports success or
 /// failure back to the pool so downstream calls can avoid degraded backends.
 #[derive(Debug)]
-pub struct TonicLbGrpcClient {
+pub(crate) struct TonicLbGrpcClient {
     pub(crate) channel: tonic::transport::Channel,
     pub(crate) pool: Arc<BackendPoolInstance>,
     pub(crate) timeout: Duration,
@@ -42,7 +42,7 @@ impl TonicLbGrpcClient {
     /// Returns [`GrpcEgressError::Unavailable`] when:
     /// - The config has no backends.
     /// - Any backend URL is not a valid URI.
-    pub fn from_config(config: LoadbalancerConfig) -> Result<Self, GrpcEgressError> {
+    pub(crate) fn from_config(config: LoadbalancerConfig) -> Result<Self, GrpcEgressError> {
         if config.backends.is_empty() {
             return Err(GrpcEgressError::Unavailable(
                 "load-balancer config has no backends".to_string(),
@@ -75,14 +75,16 @@ impl TonicLbGrpcClient {
 
     /// Override the per-call timeout (default: 30 seconds).
     #[must_use]
-    pub fn with_timeout(mut self, timeout: Duration) -> Self {
+    #[cfg_attr(
+        not(test),
+        expect(
+            dead_code,
+            reason = "only exercised in this crate's own tests; production wiring pending"
+        )
+    )]
+    pub(crate) fn with_timeout(mut self, timeout: Duration) -> Self {
         self.timeout = timeout;
         self
-    }
-
-    /// Return the configured per-call timeout.
-    pub fn timeout(&self) -> Duration {
-        self.timeout
     }
 }
 
@@ -288,16 +290,27 @@ mod tests {
                 .unwrap()
                 .with_timeout(Duration::from_secs(5))
         });
-        assert_eq!(client.timeout(), Duration::from_secs(5));
+        assert_eq!(client.timeout, Duration::from_secs(5));
     }
 
-    /// @covers: timeout
+    /// @covers: from_config
     #[test]
-    fn test_timeout_returns_default_when_not_overridden() {
+    fn test_from_config_defaults_timeout_when_not_overridden() {
         let rt = tokio::runtime::Runtime::new().expect("runtime");
         let client = rt.block_on(async {
             TonicLbGrpcClient::from_config(one_backend("http://localhost:50051")).unwrap()
         });
-        assert_eq!(client.timeout(), DEFAULT_TIMEOUT);
+        assert_eq!(client.timeout, DEFAULT_TIMEOUT);
+    }
+
+    /// @covers: health_check
+    #[tokio::test]
+    async fn test_health_check_with_healthy_pool_returns_ok() {
+        use crate::api::{GrpcEgress, HealthCheckRequest};
+        let client = TonicLbGrpcClient::from_config(one_backend("http://localhost:50051"))
+            .expect("valid config");
+        // Pool has one healthy backend — health_check only probes pool membership,
+        // no network call is made.
+        assert!(client.health_check(HealthCheckRequest).await.is_ok());
     }
 }

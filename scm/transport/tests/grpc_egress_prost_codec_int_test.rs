@@ -16,7 +16,7 @@ mod prost_tests {
 
     use swe_edge_egress_grpc_transport::{
         GrpcEgress, GrpcEgressError, GrpcEgressProstCodec, GrpcEgressResult, GrpcRequest,
-        GrpcResponse,
+        GrpcResponse, HealthCheckRequest,
     };
 
     // ── prost message types under test ─────────────────────────────────────────
@@ -55,7 +55,7 @@ mod prost_tests {
                 })
             })
         }
-        fn health_check(&self) -> BoxFuture<'_, GrpcEgressResult<()>> {
+        fn health_check(&self, _req: HealthCheckRequest) -> BoxFuture<'_, GrpcEgressResult<()>> {
             Box::pin(async { Ok(()) })
         }
     }
@@ -69,7 +69,7 @@ mod prost_tests {
         ) -> BoxFuture<'_, GrpcEgressResult<GrpcResponse>> {
             Box::pin(async { Err(GrpcEgressError::Unavailable("remote down".into())) })
         }
-        fn health_check(&self) -> BoxFuture<'_, GrpcEgressResult<()>> {
+        fn health_check(&self, _req: HealthCheckRequest) -> BoxFuture<'_, GrpcEgressResult<()>> {
             Box::pin(async { Ok(()) })
         }
     }
@@ -88,7 +88,7 @@ mod prost_tests {
                 })
             })
         }
-        fn health_check(&self) -> BoxFuture<'_, GrpcEgressResult<()>> {
+        fn health_check(&self, _req: HealthCheckRequest) -> BoxFuture<'_, GrpcEgressResult<()>> {
             Box::pin(async { Ok(()) })
         }
     }

@@ -28,8 +28,6 @@ pub use saf::{
     GrpcEgressFactory, GrpcEgressInterceptorFactory, ProcessorFactory, ResilienceValidatorFactory,
     ResilientGrpcClientPortFactory, ValidatorFactory,
 };
-pub use spi::client::tonic::{TonicGrpcClient, TonicGrpcClientBuilder};
-pub use spi::loadbalancer::tonic::TonicLbGrpcClient;
 pub use swe_edge_loadbalancer::{BackendConfig, BackendPoolInstance, LoadbalancerConfig, Strategy};
 
 #[cfg(feature = "prost")]

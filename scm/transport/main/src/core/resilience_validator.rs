@@ -3,13 +3,6 @@
 use crate::api::Validator;
 use crate::api::{GrpcChannelConfigError, ResilienceConfig, ValidationRequest};
 
-/// Zero-size marker identifying this as the `Validator` implementation site.
-#[expect(
-    dead_code,
-    reason = "SEA structural marker — impl site anchor, not instantiated"
-)]
-pub(crate) struct ResilienceValidator;
-
 impl Validator for ResilienceConfig {
     fn validate(&self, _req: ValidationRequest) -> Result<(), GrpcChannelConfigError> {
         if self.max_attempts == 0 {

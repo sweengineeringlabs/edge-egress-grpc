@@ -16,12 +16,12 @@ use http_body_util::{BodyExt as _, Full};
 use tokio_util::sync::CancellationToken;
 
 use super::tonic_grpc_client::TonicGrpcClient;
+use crate::api::Conversions as StatusConversions;
 use crate::api::{
     CompressionMode, GrpcChannelConfig, GrpcChannelConfigError, GrpcEgress, GrpcEgressError,
     GrpcEgressInterceptorChain, GrpcEgressResult, GrpcMessageStreamResponse, GrpcRequest,
     GrpcResponse, GrpcStatusCode, DEFAULT_MAX_MESSAGE_BYTES,
 };
-use crate::core::conversions::Conversions as StatusConversions;
 
 const SANITIZED_INTERNAL_MSG: &str = "internal client error";
 

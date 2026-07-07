@@ -4,8 +4,8 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use crate::api::{
-    GrpcChannelConfig, GrpcChannelConfigError, GrpcEgress, GrpcEgressError, ResilienceConfig,
-    TransportSvc, ValidationRequest, Validator, DEFAULT_REQUEST_TIMEOUT_SECS,
+    GrpcChannelConfig, GrpcChannelConfigError, GrpcEgress, GrpcEgressError, Processor,
+    ResilienceConfig, TransportSvc, ValidationRequest, Validator, DEFAULT_REQUEST_TIMEOUT_SECS,
 };
 use crate::spi::client::tonic::{TonicGrpcClient, TonicGrpcClientProtocol};
 use crate::spi::loadbalancer::tonic::TonicLbGrpcClient;
@@ -29,10 +29,16 @@ impl TransportSvc {
         Ok(transport)
     }
 
-    /// Construct a concrete [`TonicGrpcClient`] from a validated [`GrpcChannelConfig`].
+    /// Construct a concrete [`GrpcEgress`] + [`Processor`] transport from a
+    /// validated [`GrpcChannelConfig`].
+    ///
+    /// Returns an opaque `impl GrpcEgress + Processor` rather than naming the
+    /// concrete adapter type directly (see SEA rule `pub_types_in_api_only`);
+    /// callers that need to compose further (e.g. wrapping in a retry/breaker
+    /// decorator) can still do so generically.
     pub fn create_tonic_client_from_config(
         config: &GrpcChannelConfig,
-    ) -> Result<TonicGrpcClient, GrpcChannelConfigError> {
+    ) -> Result<impl GrpcEgress + Processor, GrpcChannelConfigError> {
         if config.tls_required && TonicGrpcClientProtocol::is_plaintext_endpoint(&config.endpoint) {
             return Err(GrpcChannelConfigError::PlaintextRejected(
                 config.endpoint.clone(),
