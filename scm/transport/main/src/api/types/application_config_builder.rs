@@ -1,4 +1,8 @@
-//! Config builder type alias for `swe_edge_egress_grpc_transport`.
+//! Config builder for `swe_edge_egress_grpc_transport`.
 
-/// Type alias for the crate-level config builder.
-pub type ApplicationConfigBuilder = swe_edge_configbuilder::ConfigBuilderImpl;
+use swe_edge_configbuilder::ConfigBuilderImpl;
+
+/// Wraps the external `swe_edge_configbuilder::ConfigBuilderImpl` so api/
+/// never references a foreign crate type directly — conversions and the
+/// delegating `build_loader` method live in `core/`.
+pub struct ApplicationConfigBuilder(pub(crate) ConfigBuilderImpl);

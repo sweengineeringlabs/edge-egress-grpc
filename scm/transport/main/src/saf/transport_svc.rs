@@ -4,8 +4,9 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use crate::api::{
-    GrpcChannelConfig, GrpcChannelConfigError, GrpcEgress, GrpcEgressError, Processor,
-    ResilienceConfig, TransportSvc, ValidationRequest, Validator, DEFAULT_REQUEST_TIMEOUT_SECS,
+    ApplicationConfigBuilder, GrpcChannelConfig, GrpcChannelConfigError, GrpcEgress,
+    GrpcEgressError, Processor, ResilienceConfig, TransportSvc, ValidationRequest, Validator,
+    DEFAULT_REQUEST_TIMEOUT_SECS,
 };
 use crate::spi::client::tonic::{TonicGrpcClient, TonicGrpcClientProtocol};
 use crate::spi::loadbalancer::tonic::TonicLbGrpcClient;
@@ -13,11 +14,11 @@ use swe_edge_loadbalancer::LoadbalancerConfig;
 
 impl TransportSvc {
     /// Create a config builder pre-populated with this crate's name and version.
-    pub fn create_config_builder() -> swe_edge_configbuilder::ConfigBuilderImpl {
+    pub fn create_config_builder() -> ApplicationConfigBuilder {
         let mut b = swe_edge_configbuilder::ConfigBuilderImpl::new();
         b = b.with_name(env!("CARGO_PKG_NAME"));
         b = b.with_version(env!("CARGO_PKG_VERSION"));
-        b
+        ApplicationConfigBuilder(b)
     }
 
     /// Construct a boxed [`GrpcEgress`] from a validated [`GrpcChannelConfig`].

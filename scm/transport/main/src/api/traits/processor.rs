@@ -26,10 +26,9 @@ pub trait Processor: Send + Sync {
     where
         Self: Sized,
     {
-        let mut b = ApplicationConfigBuilder::new();
-        b = b.with_name(env!("CARGO_PKG_NAME"));
-        b = b.with_version(env!("CARGO_PKG_VERSION"));
-        b
+        ApplicationConfigBuilder::default()
+            .with_name(env!("CARGO_PKG_NAME"))
+            .with_version(env!("CARGO_PKG_VERSION"))
     }
 
     /// Construct the SAF facade that exposes this crate's factory functions

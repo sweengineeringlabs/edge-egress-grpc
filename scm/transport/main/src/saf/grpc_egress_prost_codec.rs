@@ -5,10 +5,13 @@
 //! default build gains no `prost` dependency.
 //!
 //! Declared here (not `api/`) despite being `pub`: this is a generic,
-//! blanket-implemented ergonomics trait, not a port contract — its generic
-//! method can't satisfy the Request/Response/object-safety shape the other
-//! `api/traits/` rules enforce. See `.arch-exclude` for the `pub_types_in_api_only`
-//! rationale.
+//! blanket-implemented ergonomics trait, not a port contract. Its generic
+//! `call_unary_typed<Req, Resp>` method can't satisfy the api/ trait rules
+//! that assume object-safe, concrete Request/Response shapes — moving it to
+//! api/ trips `no_foreign_type` (the `prost::Message` bound), `api_method_returns_result`,
+//! `api_method_takes_request`, and `core_api_module_correspondence` simultaneously
+//! (verified by direct experiment). This is the accepted, documented exception
+//! for `pub_types_in_api_only`.
 
 use std::time::Duration;
 

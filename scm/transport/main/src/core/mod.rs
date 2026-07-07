@@ -1,4 +1,5 @@
 //! gRPC core adapter implementations.
+pub(crate) mod application_config_builder;
 pub(crate) mod compression_mode;
 pub(crate) mod conversions;
 pub(crate) mod default_resilient_grpc_client;
