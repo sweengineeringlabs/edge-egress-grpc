@@ -1,6 +1,6 @@
 //! Request for [`crate::api::GrpcEgress::call_unary_with_context`].
 
-use edge_domain::SecurityContext;
+use edge_application::SecurityContext;
 
 use super::grpc_request::GrpcRequest;
 
