@@ -5,7 +5,7 @@
 //! The node is the internal state container for `GrpcBreakerClient`.
 //! This stub exercises the public type that owns it.
 
-use swe_edge_egress_grpc_breaker::{BreakerState, GrpcBreakerClient, GrpcBreakerConfig};
+use edge_transport_grpc_egress_breaker::{BreakerState, GrpcBreakerClient, GrpcBreakerConfig};
 
 /// @covers: BreakerNode (internal) — GrpcBreakerClient owns the node
 #[test]

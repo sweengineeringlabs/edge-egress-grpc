@@ -1,5 +1,5 @@
-//! `swe-edge-egress-grpc-auth-bearer` — JWT bearer
-//! [`GrpcEgressInterceptor`](swe_edge_egress_grpc::GrpcEgressInterceptor)
+//! `edge-transport-grpc-egress-auth-bearer` — JWT bearer
+//! [`GrpcEgressInterceptor`](edge_transport_grpc_egress::GrpcEgressInterceptor)
 //! for the gRPC egress stack.
 //!
 //! [`BearerEgressInterceptor`] signs a JWT from configured claims
@@ -7,7 +7,7 @@
 //! `authorization` request metadata on every outgoing call.
 //!
 //! For the inbound (server-side) bearer validation counterpart see
-//! `swe-edge-ingress-grpc-auth-bearer`.
+//! `edge-transport-grpc-ingress-auth-bearer`.
 //!
 //! Constant-time comparisons (`subtle`) are used for any symmetric
 //! shared-secret material in the configuration loaders.

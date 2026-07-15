@@ -1,7 +1,7 @@
 //! Integration tests for `LastErrorRequest`.
 #![allow(clippy::default_constructed_unit_structs)] // the point of these tests is verifying ::default() matches the literal
 
-use swe_edge_egress_grpc_transport::LastErrorRequest;
+use edge_transport_grpc_egress_transport::LastErrorRequest;
 
 /// @covers: LastErrorRequest
 #[test]

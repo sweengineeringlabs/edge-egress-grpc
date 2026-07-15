@@ -1,7 +1,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Integration tests for the `Processor` trait contract on `GrpcBreakerSvc`.
 
-use swe_edge_egress_grpc_breaker::{DescribeRequest, GrpcBreakerSvc, Processor};
+use edge_transport_grpc_egress_breaker::{DescribeRequest, GrpcBreakerSvc, Processor};
 
 /// @covers: Processor — trait is object-safe
 #[test]

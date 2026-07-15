@@ -1,6 +1,6 @@
 //! Integration tests for `api/value/compression_mode.rs`.
 
-use swe_edge_egress_grpc_transport::CompressionMode;
+use edge_transport_grpc_egress_transport::CompressionMode;
 
 #[test]
 fn transport_struct_default_is_none_compression_int_test() {

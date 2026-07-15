@@ -1,5 +1,5 @@
-//! `swe_edge_egress_grpc_breaker` — circuit-breaker decorator
-//! around any [`GrpcEgress`](swe_edge_egress_grpc::GrpcEgress).
+//! `edge_transport_grpc_egress_breaker` — circuit-breaker decorator
+//! around any [`GrpcEgress`](edge_transport_grpc_egress::GrpcEgress).
 //!
 //! ## State machine
 //!

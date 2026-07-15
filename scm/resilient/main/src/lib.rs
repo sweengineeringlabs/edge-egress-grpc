@@ -1,10 +1,10 @@
-//! `swe_edge_egress_grpc_resilient` — assembled resilient gRPC transport.
+//! `edge_transport_grpc_egress_resilient` — assembled resilient gRPC transport.
 //!
 //! Use [`GrpcResilientFacade::create_resilient_transport_from_config`] to build a
-//! [`swe_edge_egress_grpc::TonicGrpcClient`] and, when
-//! [`swe_edge_egress_grpc::GrpcChannelConfig::resilience`] is `Some`,
-//! wraps it in a [`swe_edge_egress_grpc_retry::GrpcRetryClient`] then a
-//! [`swe_edge_egress_grpc_breaker::GrpcBreakerClient`].
+//! [`edge_transport_grpc_egress::TonicGrpcClient`] and, when
+//! [`edge_transport_grpc_egress::GrpcChannelConfig::resilience`] is `Some`,
+//! wraps it in a [`edge_transport_grpc_egress_retry::GrpcRetryClient`] then a
+//! [`edge_transport_grpc_egress_breaker::GrpcBreakerClient`].
 //!
 //! Call-stack with resilience active:
 //! ```text

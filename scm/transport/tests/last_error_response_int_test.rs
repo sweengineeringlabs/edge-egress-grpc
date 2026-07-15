@@ -1,6 +1,6 @@
 //! Integration tests for `LastErrorResponse`.
 
-use swe_edge_egress_grpc_transport::{GrpcEgressError, LastErrorResponse};
+use edge_transport_grpc_egress_transport::{GrpcEgressError, LastErrorResponse};
 
 /// @covers: LastErrorResponse
 #[test]

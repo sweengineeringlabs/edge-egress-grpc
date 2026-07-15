@@ -12,7 +12,7 @@ use subtle::ConstantTimeEq;
 /// # Examples
 ///
 /// ```rust
-/// use swe_edge_egress_grpc_auth_bearer::BearerSecret;
+/// use edge_transport_grpc_egress_auth_bearer::BearerSecret;
 ///
 /// let s1 = BearerSecret::Hs256 { secret: b"my-secret".to_vec() };
 /// let s2 = BearerSecret::Hs256 { secret: b"my-secret".to_vec() };

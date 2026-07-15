@@ -13,7 +13,7 @@ use crate::api::types::bearer_secret::BearerSecret;
 /// # Examples
 ///
 /// ```rust
-/// use swe_edge_egress_grpc_auth_bearer::{BearerEgressConfig, BearerSecret};
+/// use edge_transport_grpc_egress_auth_bearer::{BearerEgressConfig, BearerSecret};
 ///
 /// let config = BearerEgressConfig {
 ///     secret: BearerSecret::Hs256 { secret: b"my-secret-key".to_vec() },

@@ -1,7 +1,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
-//! Integration tests covering jwt_claims and swe-edge-egress-grpc dependency.
+//! Integration tests covering jwt_claims and edge-transport-grpc-egress dependency.
 
-use swe_edge_egress_grpc_auth_bearer::BearerAuthError;
+use edge_transport_grpc_egress_auth_bearer::BearerAuthError;
 
 /// @covers: BearerAuthError::InvalidSystemTime
 #[test]
@@ -11,15 +11,15 @@ fn test_bearer_auth_error_implements_std_error() {
     let _: &dyn std::error::Error = &e;
 }
 
-/// @covers: GrpcEgressInterceptor (swe-edge-egress-grpc dependency coverage)
+/// @covers: GrpcEgressInterceptor (edge-transport-grpc-egress dependency coverage)
 #[test]
-fn test_swe_edge_egress_grpc_interceptor_trait_is_reachable() {
-    use std::time::Duration;
-    use swe_edge_egress_grpc::GrpcEgressInterceptor;
-    use swe_edge_egress_grpc::GrpcRequest;
-    use swe_edge_egress_grpc_auth_bearer::{
+fn test_edge_transport_grpc_egress_interceptor_trait_is_reachable() {
+    use edge_transport_grpc_egress::GrpcEgressInterceptor;
+    use edge_transport_grpc_egress::GrpcRequest;
+    use edge_transport_grpc_egress_auth_bearer::{
         BearerEgressConfig, BearerEgressInterceptor, BearerSecret,
     };
+    use std::time::Duration;
 
     let config = BearerEgressConfig {
         secret: BearerSecret::Hs256 {

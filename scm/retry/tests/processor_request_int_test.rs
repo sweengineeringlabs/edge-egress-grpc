@@ -1,7 +1,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Integration tests for [`ProcessorRequest`].
 
-use swe_edge_egress_grpc_retry::{GrpcRetryConfig, ProcessorFactory, ProcessorRequest};
+use edge_transport_grpc_egress_retry::{GrpcRetryConfig, ProcessorFactory, ProcessorRequest};
 
 /// @covers: ProcessorRequest
 #[test]

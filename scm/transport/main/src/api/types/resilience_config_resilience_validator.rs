@@ -23,9 +23,9 @@ use serde::{Deserialize, Serialize};
 
 /// Resilience policy for a single outbound gRPC channel.
 ///
-/// Used by `swe_edge_egress_grpc_resilient::create_resilient_transport_from_config`
-/// to compose a [`swe_edge_egress_grpc_retry::GrpcRetryClient`] and
-/// [`swe_edge_egress_grpc_breaker::GrpcBreakerClient`] around the bare
+/// Used by `edge_transport_grpc_egress_resilient::create_resilient_transport_from_config`
+/// to compose a [`edge_transport_grpc_egress_retry::GrpcRetryClient`] and
+/// [`edge_transport_grpc_egress_breaker::GrpcBreakerClient`] around the bare
 /// [`GrpcEgress`](crate::api::traits::GrpcEgress) transport client when present
 /// on a [`super::GrpcChannelConfig`].
 ///

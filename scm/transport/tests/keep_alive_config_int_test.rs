@@ -1,7 +1,7 @@
 //! Integration tests for `KeepAliveConfig`.
 
+use edge_transport_grpc_egress_transport::KeepAliveConfig;
 use std::time::Duration;
-use swe_edge_egress_grpc_transport::KeepAliveConfig;
 
 /// @covers: KeepAliveConfig::default — uses recommended gRPC keep-alive intervals
 #[test]

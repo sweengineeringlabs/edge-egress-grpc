@@ -1,4 +1,4 @@
-//! Primary trait declarations for `swe_edge_egress_grpc_retry`.
+//! Primary trait declarations for `edge_transport_grpc_egress_retry`.
 //!
 //! | Trait | Contract |
 //! |---|---|

@@ -1,6 +1,6 @@
 //! Integration tests for metadata key constants.
 
-use swe_edge_egress_grpc_auth_bearer::{AUTHORIZATION_HEADER, EXTRACTED_BEARER_SUBJECT};
+use edge_transport_grpc_egress_auth_bearer::{AUTHORIZATION_HEADER, EXTRACTED_BEARER_SUBJECT};
 
 /// @covers: AUTHORIZATION_HEADER
 #[test]

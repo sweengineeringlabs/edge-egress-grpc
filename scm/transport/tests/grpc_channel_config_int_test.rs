@@ -6,7 +6,7 @@
 
 use std::sync::Arc;
 
-use swe_edge_egress_grpc_transport::{
+use edge_transport_grpc_egress_transport::{
     AfterCallRequest, CompressionMode, GrpcChannelConfig, GrpcChannelConfigError, GrpcEgress,
     GrpcEgressError, GrpcEgressInterceptor, GrpcEgressInterceptorChain, GrpcRequest, GrpcResponse,
     GrpcStatusCode, TraceContextGrpcEgressInterceptor, TransportConstruction,
@@ -55,7 +55,7 @@ async fn transport_struct_channel_config_from_config_accepts_plaintext_with_opt_
     // Nothing listens on 127.0.0.1:50051 in the test environment, so a real
     // call must genuinely fail — proves this is a connectable client, not a stub.
     let health = transport
-        .health_check(swe_edge_egress_grpc_transport::HealthCheckRequest)
+        .health_check(edge_transport_grpc_egress_transport::HealthCheckRequest)
         .await;
     assert!(
         matches!(health, Err(GrpcEgressError::Unavailable(_))),
@@ -123,7 +123,7 @@ async fn transport_struct_channel_config_interceptor_short_circuits_int_test() {
             mut req: GrpcRequest,
         ) -> futures::future::BoxFuture<
             '_,
-            swe_edge_egress_grpc_transport::GrpcEgressResult<GrpcResponse>,
+            edge_transport_grpc_egress_transport::GrpcEgressResult<GrpcResponse>,
         > {
             Box::pin(async move {
                 self.chain.run_before(&mut req)?;
@@ -132,9 +132,11 @@ async fn transport_struct_channel_config_interceptor_short_circuits_int_test() {
         }
         fn health_check(
             &self,
-            req: swe_edge_egress_grpc_transport::HealthCheckRequest,
-        ) -> futures::future::BoxFuture<'_, swe_edge_egress_grpc_transport::GrpcEgressResult<()>>
-        {
+            req: edge_transport_grpc_egress_transport::HealthCheckRequest,
+        ) -> futures::future::BoxFuture<
+            '_,
+            edge_transport_grpc_egress_transport::GrpcEgressResult<()>,
+        > {
             self.inner.health_check(req)
         }
     }

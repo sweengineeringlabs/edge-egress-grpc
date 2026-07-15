@@ -4,7 +4,7 @@
 #[test]
 fn retry_struct_grpc_retry_svc_is_accessible_int_test() {
     assert_eq!(
-        std::mem::size_of::<swe_edge_egress_grpc_retry::GrpcRetrySvc>(),
+        std::mem::size_of::<edge_transport_grpc_egress_retry::GrpcRetrySvc>(),
         0,
         "GrpcRetrySvc is a namespace marker for factory fns and must carry no instance state"
     );

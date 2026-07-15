@@ -1,6 +1,6 @@
 //! Error type for the resilient transport factory.
 
-use swe_edge_egress_grpc::GrpcChannelConfigError;
+use edge_transport_grpc_egress::GrpcChannelConfigError;
 
 /// Error produced by [`crate::create_resilient_transport_from_config`].
 #[derive(Debug, thiserror::Error)]

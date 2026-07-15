@@ -2,8 +2,8 @@
 
 use std::time::Duration;
 
-use swe_edge_egress_grpc::{GrpcEgressError, GrpcStatusCode};
-use swe_edge_egress_grpc_retry::{ResourceExhaustedContext, RetryDecision};
+use edge_transport_grpc_egress::{GrpcEgressError, GrpcStatusCode};
+use edge_transport_grpc_egress_retry::{ResourceExhaustedContext, RetryDecision};
 
 // ── ResourceExhaustedContext::classify ──────────────────────────────────────
 

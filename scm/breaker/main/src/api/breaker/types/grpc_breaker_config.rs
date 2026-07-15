@@ -17,7 +17,7 @@ use serde::Deserialize;
 /// # Examples
 ///
 /// ```rust
-/// use swe_edge_egress_grpc_breaker::GrpcBreakerConfig;
+/// use edge_transport_grpc_egress_breaker::GrpcBreakerConfig;
 /// use std::time::Duration;
 ///
 /// // SWE baseline: 5 failures, 30s cool-down, 1 probe to close.

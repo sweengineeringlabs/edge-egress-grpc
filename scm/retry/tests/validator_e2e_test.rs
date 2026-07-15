@@ -1,7 +1,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! End-to-end tests for [`Validator`] via a test-double implementation.
 
-use swe_edge_egress_grpc_retry::{Error, GrpcRetryConfig, ValidationRequest, Validator};
+use edge_transport_grpc_egress_retry::{Error, GrpcRetryConfig, ValidationRequest, Validator};
 
 struct MockValidator;
 

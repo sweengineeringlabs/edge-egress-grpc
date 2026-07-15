@@ -1,7 +1,7 @@
 //! Integration tests for `GrpcEgressFactory`.
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 
-use swe_edge_egress_grpc_transport::{
+use edge_transport_grpc_egress_transport::{
     GrpcChannelConfig, GrpcChannelConfigError, GrpcEgressError, GrpcEgressFactory,
     HealthCheckRequest,
 };

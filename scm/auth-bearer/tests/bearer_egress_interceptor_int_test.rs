@@ -3,11 +3,11 @@
 
 use std::time::Duration;
 
-use jsonwebtoken::{decode, Algorithm, DecodingKey, Validation};
-use swe_edge_egress_grpc::GrpcRequest;
-use swe_edge_egress_grpc_auth_bearer::{
+use edge_transport_grpc_egress::GrpcRequest;
+use edge_transport_grpc_egress_auth_bearer::{
     BearerEgressConfig, BearerEgressInterceptor, BearerSecret, AUTHORIZATION_HEADER,
 };
+use jsonwebtoken::{decode, Algorithm, DecodingKey, Validation};
 
 fn hs256_config(secret: &[u8]) -> BearerEgressConfig {
     BearerEgressConfig {
@@ -30,7 +30,7 @@ fn test_from_config_constructs_interceptor() {
 /// @covers: BearerEgressInterceptor::before_call
 #[test]
 fn test_before_call_injects_bearer_authorization_header() {
-    use swe_edge_egress_grpc::GrpcEgressInterceptor;
+    use edge_transport_grpc_egress::GrpcEgressInterceptor;
 
     let interceptor = BearerEgressInterceptor::from_config(hs256_config(b"sec"));
     let mut req = GrpcRequest::new("/svc/M", vec![], Duration::from_secs(1));
@@ -55,8 +55,8 @@ fn test_before_call_injects_bearer_authorization_header() {
 /// @covers: BearerEgressInterceptor::sign_token (via before_call round-trip with swe-edge-configbuilder and jsonwebtoken)
 #[test]
 fn test_sign_token_round_trips_through_jsonwebtoken_verifier() {
+    use edge_transport_grpc_egress::GrpcEgressInterceptor;
     use serde::{Deserialize, Serialize};
-    use swe_edge_egress_grpc::GrpcEgressInterceptor;
 
     #[derive(Debug, Serialize, Deserialize)]
     struct Claims {
@@ -105,7 +105,7 @@ fn test_subtle_constant_time_eq_used_for_hs256_comparison() {
 /// @covers: swe-edge-configbuilder integration
 #[test]
 fn test_config_builder_can_be_created_via_saf() {
-    use swe_edge_egress_grpc_auth_bearer::GrpcAuthBearerSvc;
+    use edge_transport_grpc_egress_auth_bearer::GrpcAuthBearerSvc;
     let builder = GrpcAuthBearerSvc::create_config_builder();
     // The builder is properly seeded — just verify it constructs without panic.
     let _ = builder;

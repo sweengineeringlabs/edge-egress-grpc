@@ -1,6 +1,6 @@
 //! Integration tests for the `traits` module (`Processor`, `Validator`).
 
-use swe_edge_egress_grpc_transport::{GrpcEgress, Processor, Validator};
+use edge_transport_grpc_egress_transport::{GrpcEgress, Processor, Validator};
 
 /// @covers: GrpcEgress is object-safe
 #[test]

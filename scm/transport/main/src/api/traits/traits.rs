@@ -1,4 +1,4 @@
-//! SEA interface contract — primary traits for `swe-edge-egress-grpc`.
+//! SEA interface contract — primary traits for `edge-transport-grpc-egress`.
 //!
 //! | Trait | Contract |
 //! |---|---|

@@ -1,5 +1,5 @@
 [package]
-name = "swe-edge-egress-grpc-auth-bearer"
+name = "edge-transport-grpc-egress-auth-bearer"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -26,7 +26,7 @@ name = "auth_bearer"
 path = "examples/auth_bearer.rs"
 
 [dependencies]
-swe-edge-egress-grpc = { workspace = true }
+edge-transport-grpc-egress = { workspace = true }
 swe-edge-security = { workspace = true }
 thiserror    = { workspace = true }
 serde         = { workspace = true }

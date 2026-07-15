@@ -1,4 +1,4 @@
-# swe-edge-egress-grpc
+# edge-transport-grpc-egress
 
 ## WHAT
 

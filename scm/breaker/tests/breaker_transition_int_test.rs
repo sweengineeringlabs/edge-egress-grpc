@@ -3,7 +3,7 @@
 //! `BreakerTransition` trait is `pub(crate)` — not part of the public API.
 //! This file exercises the public types that the transition logic operates on.
 
-use swe_edge_egress_grpc_breaker::{BreakerState, GrpcBreakerClient, GrpcBreakerConfig};
+use edge_transport_grpc_egress_breaker::{BreakerState, GrpcBreakerClient, GrpcBreakerConfig};
 
 /// @covers: BreakerTransition (internal) — config fields used by admit/record
 #[test]

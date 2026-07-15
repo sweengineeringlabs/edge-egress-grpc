@@ -8,7 +8,7 @@ edition      = "2021"
 license      = "MIT OR Apache-2.0"
 rust-version = "1.95"
 authors      = ["SWE Engineering Labs"]
-repository   = "https://github.com/sweengineeringlabs/edge-egress-grpc"
+repository   = "https://github.com/sweengineeringlabs/edge-transport-grpc-egress"
 
 [workspace.lints.rust]
 unsafe_code  = "deny"
@@ -24,11 +24,11 @@ swe-edge-configbuilder = { git = "https://github.com/sweengineeringlabs/edge-con
 swe-edge-security      = { git = "https://github.com/sweengineeringlabs/edge-security.git", tag = "v0.3.4" }
 swe-observ-metrics     = { package = "swe_justobserv_metrics", git = "ssh://git@github.com/sweengineeringlabs/justobserv.git", tag = "v0.2.1" }
 swe_justobserv_context = { git = "ssh://git@github.com/sweengineeringlabs/justobserv.git", tag = "v0.2.1" }
-swe-edge-egress-grpc             = { package = "swe-edge-egress-grpc-transport", path = "transport" }
-swe-edge-egress-grpc-auth-bearer = { path = "auth-bearer" }
-swe-edge-egress-grpc-breaker     = { path = "breaker" }
-swe-edge-egress-grpc-resilient   = { path = "resilient" }
-swe-edge-egress-grpc-retry       = { path = "retry" }
+edge-transport-grpc-egress             = { package = "edge-transport-grpc-egress-transport", path = "transport" }
+edge-transport-grpc-egress-auth-bearer = { path = "auth-bearer" }
+edge-transport-grpc-egress-breaker     = { path = "breaker" }
+edge-transport-grpc-egress-resilient   = { path = "resilient" }
+edge-transport-grpc-egress-retry       = { path = "retry" }
 swe-edge-loadbalancer  = { git = "https://github.com/sweengineeringlabs/edge-loadbalancer.git", tag = "v0.2.0" }
 serde       = { version = "1.0", features = ["derive"] }
 thiserror   = "2"

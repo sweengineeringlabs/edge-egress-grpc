@@ -14,7 +14,7 @@ use serde::{Deserialize, Serialize};
 /// # Examples
 ///
 /// ```rust
-/// use swe_edge_egress_grpc_auth_bearer::JwtClaims;
+/// use edge_transport_grpc_egress_auth_bearer::JwtClaims;
 ///
 /// let claims = JwtClaims {
 ///     iss: "my-service".to_string(),

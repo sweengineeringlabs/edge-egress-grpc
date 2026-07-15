@@ -1,7 +1,7 @@
 //! Coverage stub for `src/api/error/resilient_transport_error.rs`.
 
-use swe_edge_egress_grpc::GrpcChannelConfigError;
-use swe_edge_egress_grpc_resilient::ResilientTransportError;
+use edge_transport_grpc_egress::GrpcChannelConfigError;
+use edge_transport_grpc_egress_resilient::ResilientTransportError;
 
 /// @covers: ResilientTransportError::ChannelConfig — wraps and displays the source error
 #[test]

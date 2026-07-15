@@ -4,7 +4,7 @@
 #[test]
 fn resilient_struct_grpc_resilient_svc_is_accessible_int_test() {
     assert_eq!(
-        std::mem::size_of::<swe_edge_egress_grpc_resilient::GrpcResilientSvcProcessor>(),
+        std::mem::size_of::<edge_transport_grpc_egress_resilient::GrpcResilientSvcProcessor>(),
         0,
         "GrpcResilientSvcProcessor is a namespace marker for factory fns and must carry no instance state"
     );

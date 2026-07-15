@@ -1,4 +1,4 @@
-//! Domain error types for `swe_edge_egress_grpc_breaker`.
+//! Domain error types for `edge_transport_grpc_egress_breaker`.
 
 pub mod breaker_domain_error;
 #[allow(clippy::module_inception)]

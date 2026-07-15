@@ -1,6 +1,6 @@
 //! Integration tests for [`ClassifyResponse`].
 
-use swe_edge_egress_grpc_breaker::{ClassifyResponse, Outcome};
+use edge_transport_grpc_egress_breaker::{ClassifyResponse, Outcome};
 
 /// @covers: ClassifyResponse
 #[test]

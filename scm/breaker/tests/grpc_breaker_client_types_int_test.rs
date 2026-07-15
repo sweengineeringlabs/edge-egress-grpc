@@ -3,7 +3,7 @@
 //! This file declares the `GrpcBreakerClient<T>` type alias that the SAF
 //! return types trace to (SEA rule 211).
 
-use swe_edge_egress_grpc_breaker::{GrpcBreakerClient, GrpcBreakerConfig};
+use edge_transport_grpc_egress_breaker::{GrpcBreakerClient, GrpcBreakerConfig};
 
 /// @covers: api/types/grpc/grpc_breaker_client — type alias resolves
 #[test]

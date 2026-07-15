@@ -1,6 +1,6 @@
-//! Integration tests for the `Processor` trait contract in `swe-edge-egress-grpc-retry`.
+//! Integration tests for the `Processor` trait contract in `edge-transport-grpc-egress-retry`.
 
-use swe_edge_egress_grpc_retry::{Error, GrpcRetryConfig, Processor, ProcessorRequest};
+use edge_transport_grpc_egress_retry::{Error, GrpcRetryConfig, Processor, ProcessorRequest};
 
 struct AlwaysOk;
 

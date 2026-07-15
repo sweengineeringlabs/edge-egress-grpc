@@ -1,13 +1,13 @@
 //! Minimal usage: inspect the default retry policy.
 //!
 //! Wrapping a real `GrpcEgress` requires a transport (see
-//! `swe-edge-egress-grpc`'s `TonicGrpcClient`); this example shows
+//! `edge-transport-grpc-egress`'s `TonicGrpcClient`); this example shows
 //! only the configuration step that doesn't need a server.
 
 fn main() {
-    let cfg = swe_edge_egress_grpc_retry::GrpcRetryConfig::default();
+    let cfg = edge_transport_grpc_egress_retry::GrpcRetryConfig::default();
     println!(
-        "swe_edge_egress_grpc_retry default: \
+        "edge_transport_grpc_egress_retry default: \
          max_attempts={}, initial_backoff_ms={}, multiplier={}, jitter={}, max_backoff_ms={}",
         cfg.max_attempts,
         cfg.initial_backoff_ms,

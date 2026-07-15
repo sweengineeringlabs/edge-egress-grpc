@@ -1,7 +1,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Coverage stub for `src/api/types/grpc/grpc_retry_config.rs`.
 
-use swe_edge_egress_grpc_retry::GrpcRetryConfig;
+use edge_transport_grpc_egress_retry::GrpcRetryConfig;
 
 /// @covers: GrpcRetryConfig — type is accessible and holds real fields (not zero-sized)
 #[test]

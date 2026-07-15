@@ -3,14 +3,14 @@
 
 use std::collections::HashMap;
 
-use futures::future::BoxFuture;
-use swe_edge_egress_grpc::{
+use edge_transport_grpc_egress::{
     CallStreamRequest, GrpcEgress, GrpcEgressResult, GrpcMessageStreamResponse, GrpcRequest,
     GrpcResponse, HealthCheckRequest,
 };
-use swe_edge_egress_grpc_breaker::{
+use edge_transport_grpc_egress_breaker::{
     BreakerDecoratorFactory, GrpcBreakerConfig, WrapBreakerRequest,
 };
+use futures::future::BoxFuture;
 
 struct EchoGrpcEgress;
 impl GrpcEgress for EchoGrpcEgress {

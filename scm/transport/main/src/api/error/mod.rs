@@ -1,4 +1,4 @@
-//! Domain error types for `swe_edge_egress_grpc_transport`.
+//! Domain error types for `edge_transport_grpc_egress_transport`.
 
 pub mod grpc_channel_config_error;
 pub mod grpc_egress_error;

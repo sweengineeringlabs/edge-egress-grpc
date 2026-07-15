@@ -2,7 +2,7 @@
 
 use std::collections::HashMap;
 
-use swe_edge_egress_grpc_transport::GrpcResponse;
+use edge_transport_grpc_egress_transport::GrpcResponse;
 
 #[test]
 fn transport_struct_grpc_response_holds_body_bytes_int_test() {

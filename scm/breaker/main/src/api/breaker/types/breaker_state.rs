@@ -17,7 +17,7 @@ use std::time::Instant;
 /// # Examples
 ///
 /// ```rust
-/// use swe_edge_egress_grpc_breaker::BreakerState;
+/// use edge_transport_grpc_egress_breaker::BreakerState;
 ///
 /// assert_eq!(BreakerState::Closed, BreakerState::Closed);
 /// assert_ne!(BreakerState::Closed, BreakerState::HalfOpen);

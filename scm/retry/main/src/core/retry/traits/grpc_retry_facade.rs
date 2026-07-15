@@ -2,7 +2,7 @@
 //! implementations directly (no saf/ dependency, keeping core/ → saf/
 //! import-free per the SEA dependency direction).
 
-use swe_edge_egress_grpc::GrpcEgress;
+use edge_transport_grpc_egress::GrpcEgress;
 
 use crate::api::{
     ApplicationConfigBuilder, ConfigBuilderProvider, ConfigBuilderRequest, Error, GrpcRetryClient,

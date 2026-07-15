@@ -1,4 +1,4 @@
-# Threat Model — swe-edge-egress-grpc-auth-bearer
+# Threat Model — edge-transport-grpc-egress-auth-bearer
 
 STRIDE analysis for the symmetric JWT bearer interceptors.
 

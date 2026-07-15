@@ -2,7 +2,7 @@
 
 use std::collections::HashMap;
 
-use swe_edge_egress_grpc_transport::{AfterCallRequest, GrpcResponse};
+use edge_transport_grpc_egress_transport::{AfterCallRequest, GrpcResponse};
 
 /// @covers: AfterCallRequest
 #[test]

@@ -1,6 +1,6 @@
 //! Integration tests for `api/value/mtls_config.rs`.
 
-use swe_edge_egress_grpc_transport::MtlsConfig;
+use edge_transport_grpc_egress_transport::MtlsConfig;
 
 #[test]
 fn transport_struct_new_leaves_pinned_ca_unset_int_test() {

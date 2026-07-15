@@ -1,7 +1,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! End-to-end tests for [`RetryInspector`] via a test-double implementation.
 
-use swe_edge_egress_grpc_retry::{
+use edge_transport_grpc_egress_retry::{
     Error, ResourceExhaustedContext, RetryDecision, RetryInspectRequest, RetryInspector,
 };
 
@@ -13,11 +13,11 @@ impl RetryInspector for MockInspector {
     fn describe(
         &self,
         _req: RetryInspectRequest,
-    ) -> Result<swe_edge_egress_grpc_retry::RetryInspectResponse, Error> {
+    ) -> Result<edge_transport_grpc_egress_retry::RetryInspectResponse, Error> {
         if self.fail {
             return Err(Error::InvalidConfig("mock inspector forced failure".into()));
         }
-        Ok(swe_edge_egress_grpc_retry::RetryInspectResponse {
+        Ok(edge_transport_grpc_egress_retry::RetryInspectResponse {
             label: "mock-inspector",
         })
     }

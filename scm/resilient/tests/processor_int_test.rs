@@ -1,7 +1,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Integration tests for the `Processor` trait contract on `GrpcResilientSvcProcessor`.
 
-use swe_edge_egress_grpc_resilient::{DescribeRequest, GrpcResilientSvcProcessor, Processor};
+use edge_transport_grpc_egress_resilient::{DescribeRequest, GrpcResilientSvcProcessor, Processor};
 
 /// @covers: Processor — trait is object-safe
 #[test]

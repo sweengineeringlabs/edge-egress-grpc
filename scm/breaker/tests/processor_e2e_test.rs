@@ -1,7 +1,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! End-to-end tests for [`Processor`] via a test-double implementation.
 
-use swe_edge_egress_grpc_breaker::{DescribeRequest, DescribeResponse, Error, Processor};
+use edge_transport_grpc_egress_breaker::{DescribeRequest, DescribeResponse, Error, Processor};
 
 struct MockProcessor {
     label: &'static str,

@@ -1,7 +1,7 @@
 # grpc-retry
 
 gRPC-aware retry decorator wrapping any
-[`GrpcOutbound`](https://docs.rs/swe-edge-egress-grpc) implementor.
+[`GrpcOutbound`](https://docs.rs/edge-transport-grpc-egress) implementor.
 
 ## Build
 

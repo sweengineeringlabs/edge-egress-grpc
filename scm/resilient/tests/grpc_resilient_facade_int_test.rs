@@ -1,7 +1,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Integration tests for [`GrpcResilientFacade`].
 
-use swe_edge_egress_grpc_resilient::{DescribeRequest, GrpcResilientFacade, Processor};
+use edge_transport_grpc_egress_resilient::{DescribeRequest, GrpcResilientFacade, Processor};
 
 /// @covers: default_facade
 #[test]
@@ -12,8 +12,8 @@ fn test_default_facade_is_the_same_type_as_facade_happy() {
             &self,
             _req: DescribeRequest,
         ) -> Result<
-            swe_edge_egress_grpc_resilient::DescribeResponse,
-            swe_edge_egress_grpc_resilient::ResilientTransportError,
+            edge_transport_grpc_egress_resilient::DescribeResponse,
+            edge_transport_grpc_egress_resilient::ResilientTransportError,
         > {
             unreachable!("not exercised by this test")
         }
@@ -33,8 +33,8 @@ fn test_default_facade_is_zero_sized_error() {
             &self,
             _req: DescribeRequest,
         ) -> Result<
-            swe_edge_egress_grpc_resilient::DescribeResponse,
-            swe_edge_egress_grpc_resilient::ResilientTransportError,
+            edge_transport_grpc_egress_resilient::DescribeResponse,
+            edge_transport_grpc_egress_resilient::ResilientTransportError,
         > {
             unreachable!("not exercised by this test")
         }
@@ -54,8 +54,8 @@ fn test_default_facade_is_deterministic_edge() {
             &self,
             _req: DescribeRequest,
         ) -> Result<
-            swe_edge_egress_grpc_resilient::DescribeResponse,
-            swe_edge_egress_grpc_resilient::ResilientTransportError,
+            edge_transport_grpc_egress_resilient::DescribeResponse,
+            edge_transport_grpc_egress_resilient::ResilientTransportError,
         > {
             unreachable!("not exercised by this test")
         }

@@ -1,6 +1,6 @@
 //! Integration tests for the `Validator` trait contract.
 
-use swe_edge_egress_grpc_breaker::Validator;
+use edge_transport_grpc_egress_breaker::Validator;
 
 /// @covers: Validator — trait is object-safe
 #[test]

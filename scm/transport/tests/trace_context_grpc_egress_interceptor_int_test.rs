@@ -3,12 +3,12 @@
 //!
 //! Tests that access the `pub(crate)` field `interceptor.source` are omitted.
 
-use std::collections::HashMap;
-use std::time::Duration;
-use swe_edge_egress_grpc_transport::GrpcEgressInterceptor;
-use swe_edge_egress_grpc_transport::{
+use edge_transport_grpc_egress_transport::GrpcEgressInterceptor;
+use edge_transport_grpc_egress_transport::{
     AfterCallRequest, GrpcRequest, GrpcResponse, TraceContextGrpcEgressInterceptor,
 };
+use std::collections::HashMap;
+use std::time::Duration;
 
 fn req() -> GrpcRequest {
     GrpcRequest::new("svc/M", vec![], Duration::from_secs(1))

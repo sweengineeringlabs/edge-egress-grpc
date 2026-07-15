@@ -2,8 +2,8 @@
 
 use std::collections::HashMap;
 
+use edge_transport_grpc_egress_transport::{CallStreamRequest, GrpcMessageStreamResponse};
 use futures::stream;
-use swe_edge_egress_grpc_transport::{CallStreamRequest, GrpcMessageStreamResponse};
 
 /// @covers: CallStreamRequest
 #[test]
@@ -15,7 +15,7 @@ fn test_call_stream_request_carries_method_and_metadata_happy() {
         metadata: metadata.clone(),
         messages: GrpcMessageStreamResponse {
             stream: Box::pin(stream::iter(Vec::<
-                swe_edge_egress_grpc_transport::GrpcEgressResult<Vec<u8>>,
+                edge_transport_grpc_egress_transport::GrpcEgressResult<Vec<u8>>,
             >::new())),
         },
     };
@@ -31,7 +31,7 @@ fn test_call_stream_request_empty_method_error() {
         metadata: HashMap::new(),
         messages: GrpcMessageStreamResponse {
             stream: Box::pin(stream::iter(Vec::<
-                swe_edge_egress_grpc_transport::GrpcEgressResult<Vec<u8>>,
+                edge_transport_grpc_egress_transport::GrpcEgressResult<Vec<u8>>,
             >::new())),
         },
     };
@@ -49,7 +49,7 @@ fn test_call_stream_request_empty_metadata_edge() {
         metadata: HashMap::new(),
         messages: GrpcMessageStreamResponse {
             stream: Box::pin(stream::iter(Vec::<
-                swe_edge_egress_grpc_transport::GrpcEgressResult<Vec<u8>>,
+                edge_transport_grpc_egress_transport::GrpcEgressResult<Vec<u8>>,
             >::new())),
         },
     };

@@ -4,12 +4,12 @@
 use std::sync::atomic::{AtomicU32, Ordering};
 use std::sync::Arc;
 
-use futures::future::BoxFuture;
-use swe_edge_egress_grpc::{
+use edge_transport_grpc_egress::{
     CallStreamRequest, GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcMessageStreamResponse,
     GrpcRequest, GrpcResponse, HealthCheckRequest,
 };
-use swe_edge_egress_grpc_breaker::{BreakerDecorator, GrpcBreakerConfig, GrpcBreakerFacade};
+use edge_transport_grpc_egress_breaker::{BreakerDecorator, GrpcBreakerConfig, GrpcBreakerFacade};
+use futures::future::BoxFuture;
 
 struct CountingEgress(Arc<AtomicU32>);
 impl GrpcEgress for CountingEgress {
@@ -110,10 +110,10 @@ fn test_default_facade_is_the_same_type_as_facade_edge() {
     impl<T> BreakerDecorator<T> for AnyDecorator {
         fn wrap(
             &self,
-            _req: swe_edge_egress_grpc_breaker::WrapBreakerRequest<T>,
+            _req: edge_transport_grpc_egress_breaker::WrapBreakerRequest<T>,
         ) -> Result<
-            swe_edge_egress_grpc_breaker::WrapBreakerResponse<T>,
-            swe_edge_egress_grpc_breaker::Error,
+            edge_transport_grpc_egress_breaker::WrapBreakerResponse<T>,
+            edge_transport_grpc_egress_breaker::Error,
         > {
             unreachable!("not exercised by this test")
         }

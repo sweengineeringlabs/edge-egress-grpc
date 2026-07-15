@@ -1,10 +1,10 @@
 //! [`GrpcEgress`] impl for [`GrpcBreakerClient`].
 
-use futures::future::BoxFuture;
-use swe_edge_egress_grpc::{
+use edge_transport_grpc_egress::{
     CallStreamRequest, GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcMessageStreamResponse,
     GrpcRequest, GrpcResponse, HealthCheckRequest,
 };
+use futures::future::BoxFuture;
 
 use crate::api::{
     Admission, AdmitRequest, BreakerTransition, GrpcBreakerClient, RecordOutcomeRequest,

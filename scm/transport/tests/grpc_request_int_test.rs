@@ -6,7 +6,7 @@ use std::time::Duration;
 
 use tokio_util::sync::CancellationToken;
 
-use swe_edge_egress_grpc_transport::GrpcRequest;
+use edge_transport_grpc_egress_transport::GrpcRequest;
 
 #[test]
 fn transport_struct_new_stores_method_body_and_deadline_int_test() {

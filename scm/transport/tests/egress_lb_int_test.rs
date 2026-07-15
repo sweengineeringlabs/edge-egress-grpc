@@ -6,7 +6,7 @@
 //! only what's reachable from the crate's public surface.
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 
-use swe_edge_egress_grpc_transport::TransportConstruction;
+use edge_transport_grpc_egress_transport::TransportConstruction;
 use swe_edge_loadbalancer::{BackendConfig, LoadbalancerConfig, Strategy};
 
 fn one_backend_config(url: &str) -> LoadbalancerConfig {
@@ -32,6 +32,6 @@ async fn test_create_lb_transport_from_config_returns_dyn_egress() {
 
 #[test]
 fn test_grpc_egress_trait_is_object_safe() {
-    use swe_edge_egress_grpc_transport::GrpcEgress;
+    use edge_transport_grpc_egress_transport::GrpcEgress;
     fn _assert(_: &dyn GrpcEgress) {}
 }

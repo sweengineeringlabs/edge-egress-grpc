@@ -3,7 +3,7 @@
 //! `BreakerEgress` is a `pub(crate)` trait — not part of the public API.
 //! The public surface that depends on it is `GrpcBreakerClient`.
 
-use swe_edge_egress_grpc_breaker::{GrpcBreakerClient, GrpcBreakerConfig};
+use edge_transport_grpc_egress_breaker::{GrpcBreakerClient, GrpcBreakerConfig};
 
 /// @covers: BreakerEgress (internal) — GrpcBreakerClient is the public face
 #[test]

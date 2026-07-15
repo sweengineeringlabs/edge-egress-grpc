@@ -1,7 +1,9 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! End-to-end tests for [`Validator`] via a test-double implementation.
 
-use swe_edge_egress_grpc_breaker::{ConfigValidationRequest, Error, GrpcBreakerConfig, Validator};
+use edge_transport_grpc_egress_breaker::{
+    ConfigValidationRequest, Error, GrpcBreakerConfig, Validator,
+};
 
 struct MockValidator;
 

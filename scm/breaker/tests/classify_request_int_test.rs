@@ -1,6 +1,6 @@
 //! Integration tests for [`ClassifyRequest`].
 
-use swe_edge_egress_grpc_breaker::ClassifyRequest;
+use edge_transport_grpc_egress_breaker::ClassifyRequest;
 
 /// @covers: ClassifyRequest
 #[test]

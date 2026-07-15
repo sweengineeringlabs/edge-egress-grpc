@@ -1,7 +1,9 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Integration tests for [`DescribePolicyRequest`].
 
-use swe_edge_egress_grpc_retry::{DescribePolicyRequest, GrpcRetryConfig, RetryDecoratorFactory};
+use edge_transport_grpc_egress_retry::{
+    DescribePolicyRequest, GrpcRetryConfig, RetryDecoratorFactory,
+};
 
 /// @covers: DescribePolicyRequest
 #[test]

@@ -4,7 +4,7 @@
 //! `pub(crate)` — not part of the public API.  This stub exercises the
 //! public types the transition contract is defined over.
 
-use swe_edge_egress_grpc_breaker::{BreakerState, GrpcBreakerClient, GrpcBreakerConfig};
+use edge_transport_grpc_egress_breaker::{BreakerState, GrpcBreakerClient, GrpcBreakerConfig};
 
 /// @covers: api::transitions::BreakerTransition (internal) — config fields
 #[test]

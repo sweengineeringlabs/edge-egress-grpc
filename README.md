@@ -1,4 +1,4 @@
-# swe-edge-egress-grpc
+# edge-transport-grpc-egress
 
 > **TLDR:** Outbound gRPC client for swe-edge — Tonic-backed with trace propagation, retry, and circuit-breaker decorators behind one `GrpcEgress` trait. See [Overview](scm/docs/README.md) for details.
 
@@ -11,7 +11,7 @@ chain with a built-in `TraceContextInterceptor`.
 ## Usage
 
 ```rust
-use swe_edge_egress_grpc::{GrpcChannelConfig, create_transport_from_config};
+use edge_transport_grpc_egress::{GrpcChannelConfig, create_transport_from_config};
 
 let config    = GrpcChannelConfig::new("https://api.example.com:443");
 let transport = create_transport_from_config(&config).await?;
@@ -35,11 +35,11 @@ Auth, mTLS, and authorisation interceptors live in sibling crates under
 
 | Crate | Purpose |
 |-------|---------|
-| `swe-edge-egress-grpc-auth-bearer` | Outbound bearer token injection |
-| `swe-edge-egress-grpc-auth-mtls` | Mutual TLS client certificates |
-| `swe-edge-egress-grpc-authz` | Method-level ACL policy |
-| `swe-edge-egress-grpc-retry` | Retry with exponential backoff |
-| `swe-edge-egress-grpc-breaker` | Circuit breaker |
+| `edge-transport-grpc-egress-auth-bearer` | Outbound bearer token injection |
+| `edge-transport-grpc-egress-auth-mtls` | Mutual TLS client certificates |
+| `edge-transport-grpc-egress-authz` | Method-level ACL policy |
+| `edge-transport-grpc-egress-retry` | Retry with exponential backoff |
+| `edge-transport-grpc-egress-breaker` | Circuit breaker |
 
 ## Crate layout (SEA)
 

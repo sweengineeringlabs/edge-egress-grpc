@@ -15,7 +15,7 @@ use http_body::Frame;
 use http_body_util::{BodyExt as _, Full, StreamBody};
 
 use edge_application::SecurityContext;
-use swe_edge_egress_grpc_transport::{
+use edge_transport_grpc_egress_transport::{
     CallStreamRequest, CallUnaryWithContextRequest, GrpcChannelConfig, GrpcEgress, GrpcEgressError,
     GrpcMessageStreamResponse, GrpcRequest, GrpcResponse, GrpcStatusCode, HealthCheckRequest,
     TransportConstruction,
@@ -1213,7 +1213,7 @@ impl GrpcEgress for StubEgress {
 /// @covers: describe_compression
 #[test]
 fn test_describe_compression_none_is_disabled_happy() {
-    use swe_edge_egress_grpc_transport::CompressionMode;
+    use edge_transport_grpc_egress_transport::CompressionMode;
     assert!(!<StubEgress as GrpcEgress>::describe_compression(
         CompressionMode::None
     ));
@@ -1222,7 +1222,7 @@ fn test_describe_compression_none_is_disabled_happy() {
 /// @covers: describe_compression
 #[test]
 fn test_describe_compression_gzip_is_enabled_error() {
-    use swe_edge_egress_grpc_transport::CompressionMode;
+    use edge_transport_grpc_egress_transport::CompressionMode;
     assert!(<StubEgress as GrpcEgress>::describe_compression(
         CompressionMode::Gzip
     ));
@@ -1231,7 +1231,7 @@ fn test_describe_compression_gzip_is_enabled_error() {
 /// @covers: describe_compression
 #[test]
 fn test_describe_compression_zstd_is_enabled_edge() {
-    use swe_edge_egress_grpc_transport::CompressionMode;
+    use edge_transport_grpc_egress_transport::CompressionMode;
     assert!(<StubEgress as GrpcEgress>::describe_compression(
         CompressionMode::Zstd
     ));
@@ -1247,7 +1247,7 @@ fn test_default_conversions_returns_zero_sized_marker_happy() {
 /// @covers: default_conversions
 #[test]
 fn test_default_conversions_is_the_real_marker_type_error() {
-    use swe_edge_egress_grpc_transport::Conversions;
+    use edge_transport_grpc_egress_transport::Conversions;
     fn assert_type(marker: Conversions) -> usize {
         std::mem::size_of_val(&marker)
     }

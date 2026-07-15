@@ -1,7 +1,7 @@
 //! Integration tests for `GrpcMessageStreamResponse`.
 
+use edge_transport_grpc_egress_transport::{GrpcEgressResult, GrpcMessageStreamResponse};
 use futures::StreamExt as _;
-use swe_edge_egress_grpc_transport::{GrpcEgressResult, GrpcMessageStreamResponse};
 
 /// @covers: GrpcMessageStreamResponse — can be constructed from an empty stream and
 /// genuinely yields no items when polled, proving it's a real Stream, not a

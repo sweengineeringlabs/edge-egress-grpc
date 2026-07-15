@@ -6,14 +6,14 @@ use std::sync::atomic::{AtomicU32, Ordering};
 use std::sync::Arc;
 use std::time::Duration;
 
-use futures::future::BoxFuture;
-use swe_edge_egress_grpc::{
+use edge_transport_grpc_egress::{
     GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcRequest, GrpcResponse, GrpcStatusCode,
     HealthCheckRequest,
 };
-use swe_edge_egress_grpc_breaker::{
+use edge_transport_grpc_egress_breaker::{
     BreakerState, GrpcBreakerClient, GrpcBreakerConfig, GrpcBreakerFacade,
 };
+use futures::future::BoxFuture;
 
 /// Stub `GrpcEgress` whose outcome the test toggles at runtime.
 ///

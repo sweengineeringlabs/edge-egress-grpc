@@ -1,7 +1,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Integration tests for [`BreakerTransitionFactory`].
 
-use swe_edge_egress_grpc_breaker::{
+use edge_transport_grpc_egress_breaker::{
     Admission, AdmitRequest, BreakerState, BreakerTransitionFactory, GrpcBreakerConfig,
 };
 

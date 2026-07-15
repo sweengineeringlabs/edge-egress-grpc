@@ -1,7 +1,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Integration tests for [`ScheduleResponse`].
 
-use swe_edge_egress_grpc_retry::{
+use edge_transport_grpc_egress_retry::{
     BackoffScheduleRequest, BackoffSchedulerFactory, BackoffTrack, GrpcRetryConfig,
 };
 
@@ -48,10 +48,10 @@ fn test_schedule_response_differs_across_attempts_error() {
 /// @covers: ScheduleResponse
 #[test]
 fn test_schedule_response_equality_is_by_value_edge() {
-    let a = swe_edge_egress_grpc_retry::ScheduleResponse {
+    let a = edge_transport_grpc_egress_retry::ScheduleResponse {
         sleep: std::time::Duration::from_millis(100),
     };
-    let b = swe_edge_egress_grpc_retry::ScheduleResponse {
+    let b = edge_transport_grpc_egress_retry::ScheduleResponse {
         sleep: std::time::Duration::from_millis(100),
     };
     assert_eq!(a, b);

@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to `swe-edge-egress-grpc-transport` are documented here.
+All notable changes to `edge-transport-grpc-egress-transport` are documented here.
 
 ## Unreleased
 

@@ -1,6 +1,6 @@
 //! Composition site for [`BreakerDecorator`] — one file per trait keeps wiring focused.
 
-use swe_edge_egress_grpc::GrpcEgress;
+use edge_transport_grpc_egress::GrpcEgress;
 
 use crate::api::BreakerDecorator;
 use crate::core::breaker::breaker_decorator::DefaultBreakerDecorator;

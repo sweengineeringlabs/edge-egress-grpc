@@ -1,4 +1,4 @@
-//! Primary trait declarations for `swe-edge-egress-grpc-resilient`.
+//! Primary trait declarations for `edge-transport-grpc-egress-resilient`.
 //!
 //! | Trait | Contract |
 //! |---|---|

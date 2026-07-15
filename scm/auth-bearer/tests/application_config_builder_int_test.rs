@@ -1,6 +1,6 @@
 //! Integration tests for [`ApplicationConfigBuilder`].
 
-use swe_edge_egress_grpc_auth_bearer::GrpcAuthBearerSvc;
+use edge_transport_grpc_egress_auth_bearer::GrpcAuthBearerSvc;
 
 /// @covers: ApplicationConfigBuilder (via GrpcAuthBearerSvc::create_config_builder)
 #[test]

@@ -3,7 +3,7 @@
 //! Exercises the `classify` method that discriminates `RESOURCE_EXHAUSTED`
 //! gRPC status messages into Capacity / RateLimit / HardQuota contexts.
 
-use swe_edge_egress_grpc_retry::ResourceExhaustedContext;
+use edge_transport_grpc_egress_retry::ResourceExhaustedContext;
 
 /// @covers: ResourceExhaustedContext::classify — quota message classifies as HardQuota
 #[test]

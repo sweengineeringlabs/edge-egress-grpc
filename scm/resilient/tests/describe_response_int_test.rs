@@ -1,6 +1,6 @@
 //! Integration tests for [`DescribeResponse`].
 
-use swe_edge_egress_grpc_resilient::DescribeResponse;
+use edge_transport_grpc_egress_resilient::DescribeResponse;
 
 /// @covers: DescribeResponse
 #[test]

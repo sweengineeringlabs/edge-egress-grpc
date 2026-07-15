@@ -1,7 +1,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Integration tests for [`RetryInspectResponse`].
 
-use swe_edge_egress_grpc_retry::{RetryInspectRequest, RetryInspectorFactory};
+use edge_transport_grpc_egress_retry::{RetryInspectRequest, RetryInspectorFactory};
 
 /// @covers: RetryInspectResponse
 #[test]
@@ -26,7 +26,7 @@ fn test_retry_inspect_response_deterministic_across_instances_error() {
 /// @covers: RetryInspectResponse
 #[test]
 fn test_retry_inspect_response_equality_is_by_value_edge() {
-    let a = swe_edge_egress_grpc_retry::RetryInspectResponse { label: "same" };
-    let b = swe_edge_egress_grpc_retry::RetryInspectResponse { label: "same" };
+    let a = edge_transport_grpc_egress_retry::RetryInspectResponse { label: "same" };
+    let b = edge_transport_grpc_egress_retry::RetryInspectResponse { label: "same" };
     assert_eq!(a, b);
 }

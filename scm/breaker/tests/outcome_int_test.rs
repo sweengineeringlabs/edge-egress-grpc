@@ -8,11 +8,11 @@
 use std::collections::HashMap;
 use std::time::Duration;
 
-use futures::future::BoxFuture;
-use swe_edge_egress_grpc::{
+use edge_transport_grpc_egress::{
     GrpcEgress, GrpcEgressResult, GrpcRequest, GrpcResponse, HealthCheckRequest,
 };
-use swe_edge_egress_grpc_breaker::{BreakerState, GrpcBreakerClient, GrpcBreakerConfig};
+use edge_transport_grpc_egress_breaker::{BreakerState, GrpcBreakerClient, GrpcBreakerConfig};
+use futures::future::BoxFuture;
 
 /// Always-succeeding inner client so a real `Outcome::Success` is recorded.
 struct AlwaysOk;

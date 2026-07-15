@@ -7,7 +7,7 @@
 //! consistent with the gRPC spec by exercising the public SAF surface that
 //! internally uses `tonic::Code`.
 
-use swe_edge_egress_grpc_transport::GrpcStatusCode;
+use edge_transport_grpc_egress_transport::GrpcStatusCode;
 
 /// All 17 gRPC status codes as `(tonic::Code, GrpcStatusCode, wire_int)` triples.
 ///

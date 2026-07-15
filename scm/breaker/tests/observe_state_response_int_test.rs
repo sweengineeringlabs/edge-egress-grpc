@@ -1,6 +1,6 @@
 //! Integration tests for [`ObserveStateResponse`].
 
-use swe_edge_egress_grpc_breaker::{BreakerState, ObserveStateResponse};
+use edge_transport_grpc_egress_breaker::{BreakerState, ObserveStateResponse};
 
 /// @covers: ObserveStateResponse
 #[test]

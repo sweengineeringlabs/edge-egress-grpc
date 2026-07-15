@@ -1,8 +1,8 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Integration tests for `ResilientTransportError`.
 
-use swe_edge_egress_grpc::GrpcChannelConfig;
-use swe_edge_egress_grpc_resilient::{GrpcResilientFacade, ResilientTransportError};
+use edge_transport_grpc_egress::GrpcChannelConfig;
+use edge_transport_grpc_egress_resilient::{GrpcResilientFacade, ResilientTransportError};
 
 /// @covers: ResilientTransportError::ChannelConfig
 #[test]
@@ -21,7 +21,7 @@ fn test_error_channel_config_variant_produced_on_plaintext_rejection() {
 /// @covers: ResilientTransportError::InvalidResilience
 #[test]
 fn test_error_invalid_resilience_variant_produced_on_bad_config() {
-    use swe_edge_egress_grpc::ResilienceConfigResilienceValidator;
+    use edge_transport_grpc_egress::ResilienceConfigResilienceValidator;
     rustls::crypto::aws_lc_rs::default_provider()
         .install_default()
         .ok();

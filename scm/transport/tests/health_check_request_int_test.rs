@@ -1,6 +1,6 @@
 //! Integration tests for `HealthCheckRequest`.
 
-use swe_edge_egress_grpc_transport::HealthCheckRequest;
+use edge_transport_grpc_egress_transport::HealthCheckRequest;
 
 /// @covers: HealthCheckRequest
 #[test]

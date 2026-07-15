@@ -1,5 +1,5 @@
 [package]
-name         = "swe-edge-egress-grpc-resilient"
+name         = "edge-transport-grpc-egress-resilient"
 version.workspace      = true
 edition.workspace      = true
 license.workspace      = true
@@ -22,9 +22,9 @@ service_type     = "processor"
 path = "main/src/lib.rs"
 
 [dependencies]
-swe-edge-egress-grpc         = { workspace = true }
-swe-edge-egress-grpc-retry   = { workspace = true }
-swe-edge-egress-grpc-breaker = { workspace = true }
+edge-transport-grpc-egress         = { workspace = true }
+edge-transport-grpc-egress-retry   = { workspace = true }
+edge-transport-grpc-egress-breaker = { workspace = true }
 thiserror              = { workspace = true }
 swe-edge-configbuilder = { workspace = true }
 

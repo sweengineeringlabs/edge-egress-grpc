@@ -1,7 +1,9 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! End-to-end tests for [`RetryDecorator`] via a test-double implementation.
 
-use swe_edge_egress_grpc_retry::{DescribePolicyRequest, Error, GrpcRetryConfig, RetryDecorator};
+use edge_transport_grpc_egress_retry::{
+    DescribePolicyRequest, Error, GrpcRetryConfig, RetryDecorator,
+};
 
 struct MockDecorator {
     fail: bool,
@@ -11,11 +13,11 @@ impl RetryDecorator for MockDecorator {
     fn describe_policy(
         &self,
         req: DescribePolicyRequest,
-    ) -> Result<swe_edge_egress_grpc_retry::DescribePolicyResponse, Error> {
+    ) -> Result<edge_transport_grpc_egress_retry::DescribePolicyResponse, Error> {
         if self.fail {
             return Err(Error::InvalidConfig("mock decorator forced failure".into()));
         }
-        Ok(swe_edge_egress_grpc_retry::DescribePolicyResponse {
+        Ok(edge_transport_grpc_egress_retry::DescribePolicyResponse {
             summary: format!("max_attempts={}", req.config.max_attempts),
         })
     }

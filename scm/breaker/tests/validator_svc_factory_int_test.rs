@@ -1,7 +1,9 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Integration tests for [`ValidatorFactory`].
 
-use swe_edge_egress_grpc_breaker::{ConfigValidationRequest, GrpcBreakerConfig, ValidatorFactory};
+use edge_transport_grpc_egress_breaker::{
+    ConfigValidationRequest, GrpcBreakerConfig, ValidatorFactory,
+};
 
 /// @covers: create
 #[test]

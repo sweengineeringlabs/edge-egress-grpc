@@ -1,5 +1,5 @@
-//! `swe_edge_egress_grpc_retry` — decorator that wraps a
-//! [`GrpcEgress`](swe_edge_egress_grpc::GrpcEgress) with
+//! `edge_transport_grpc_egress_retry` — decorator that wraps a
+//! [`GrpcEgress`](edge_transport_grpc_egress::GrpcEgress) with
 //! exponential-backoff-with-jitter retry on gRPC-canonical
 //! retryable status codes.
 //!
@@ -18,7 +18,7 @@
 //! ## Deadline budget
 //!
 //! Total retries are bounded by the caller's deadline carried
-//! on [`GrpcRequest::deadline`](swe_edge_egress_grpc::GrpcRequest).
+//! on [`GrpcRequest::deadline`](edge_transport_grpc_egress::GrpcRequest).
 //! Even if the configured `max_attempts` allows more tries, the
 //! loop stops when the elapsed time + next backoff would
 //! overrun the deadline.

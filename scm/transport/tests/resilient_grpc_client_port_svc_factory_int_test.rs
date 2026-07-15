@@ -1,7 +1,7 @@
 //! Integration tests for `ResilientGrpcClientPortFactory`.
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 
-use swe_edge_egress_grpc_transport::{
+use edge_transport_grpc_egress_transport::{
     CircuitStateRequest, ConsecutiveFailuresRequest, GrpcChannelConfig,
     ResilientGrpcClientPortFactory, TransportConstruction,
 };
@@ -14,7 +14,7 @@ fn ensure_rustls_provider() {
     });
 }
 
-fn inner() -> std::sync::Arc<dyn swe_edge_egress_grpc_transport::GrpcEgress> {
+fn inner() -> std::sync::Arc<dyn edge_transport_grpc_egress_transport::GrpcEgress> {
     ensure_rustls_provider();
     let cfg = GrpcChannelConfig::new("http://127.0.0.1:50999").allow_plaintext();
     TransportConstruction::create_transport_from_config(&cfg).expect("create transport")

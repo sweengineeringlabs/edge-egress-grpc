@@ -4,7 +4,7 @@
 //! The jitter is applied internally during backoff computation.
 //! This stub verifies the public types that depend on it compile.
 
-use swe_edge_egress_grpc_retry::GrpcRetryConfig;
+use edge_transport_grpc_egress_retry::GrpcRetryConfig;
 
 /// @covers: JitterRng (internal) — GrpcRetryConfig.jitter_factor is the public knob
 #[test]

@@ -1,1 +1,1 @@
-# swe-edge-egress-grpc-resilient
+# edge-transport-grpc-egress-resilient

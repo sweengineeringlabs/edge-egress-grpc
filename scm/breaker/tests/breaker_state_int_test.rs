@@ -2,7 +2,7 @@
 
 use std::time::{Duration, Instant};
 
-use swe_edge_egress_grpc_breaker::BreakerState;
+use edge_transport_grpc_egress_breaker::BreakerState;
 
 /// @covers: BreakerState — Debug is derived and names the variant
 #[test]

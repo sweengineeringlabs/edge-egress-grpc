@@ -1,6 +1,6 @@
 //! Integration tests for `api/client/grpc_client_builder.rs`.
 
-use swe_edge_egress_grpc_transport::GrpcClientBuilder;
+use edge_transport_grpc_egress_transport::GrpcClientBuilder;
 
 /// @covers: GrpcClientBuilder is a zero-sized marker — the interface
 /// declaration counterpart for the spi/ tonic builder, not itself state.

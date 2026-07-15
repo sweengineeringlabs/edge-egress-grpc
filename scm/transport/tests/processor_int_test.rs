@@ -5,7 +5,7 @@
 
 use futures::future::BoxFuture;
 
-use swe_edge_egress_grpc_transport::{
+use edge_transport_grpc_egress_transport::{
     DescribeRequest, DescribeResponse, GrpcChannelConfig, GrpcChannelConfigError, GrpcEgressError,
     ProcessingRequest, Processor, TransportConstruction,
 };

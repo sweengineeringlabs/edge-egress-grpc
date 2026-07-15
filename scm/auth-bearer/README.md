@@ -1,4 +1,4 @@
-# swe-edge-egress-grpc-auth-bearer
+# edge-transport-grpc-egress-auth-bearer
 
 Symmetric JWT bearer interceptors for the gRPC stack.
 
@@ -6,11 +6,11 @@ Two implementors ship together so a typical service-to-service hop
 can wire the same crate on both ends:
 
 - `BearerOutboundInterceptor` (implements
-  `swe_edge_egress_grpc::GrpcOutboundInterceptor`) — mints a JWT
+  `edge_transport_grpc_egress::GrpcOutboundInterceptor`) — mints a JWT
   from configured claims and attaches `authorization: Bearer <jwt>`
   to every outbound request.
 - `BearerInboundInterceptor` (implements
-  `swe_edge_ingress_grpc::GrpcInboundInterceptor`) — validates the
+  `edge_transport_grpc_ingress::GrpcInboundInterceptor`) — validates the
   bearer token, then republishes the verified `sub` claim under
   the internal metadata key `x-edge-extracted-bearer-subject` for
   downstream authz policies.
@@ -41,8 +41,8 @@ secret material.  Token *content* comparisons are delegated to
 
 ```rust,ignore
 use std::sync::Arc;
-use swe_edge_egress_grpc::{GrpcOutboundInterceptorChain, TonicGrpcClient};
-use swe_edge_egress_grpc_auth_bearer::{
+use edge_transport_grpc_egress::{GrpcOutboundInterceptorChain, TonicGrpcClient};
+use edge_transport_grpc_egress_auth_bearer::{
     BearerOutboundConfig, BearerOutboundInterceptor, BearerSecret,
 };
 
@@ -62,8 +62,8 @@ let client = TonicGrpcClient::new(endpoint).with_interceptors(chain);
 
 ```rust,ignore
 use std::sync::Arc;
-use swe_edge_ingress_grpc::{GrpcInboundInterceptorChain, TonicGrpcServer};
-use swe_edge_egress_grpc_auth_bearer::{
+use edge_transport_grpc_ingress::{GrpcInboundInterceptorChain, TonicGrpcServer};
+use edge_transport_grpc_egress_auth_bearer::{
     BearerInboundConfig, BearerInboundInterceptor, BearerSecret,
 };
 

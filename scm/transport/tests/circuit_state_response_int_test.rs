@@ -1,6 +1,6 @@
 //! Integration tests for `CircuitStateResponse`.
 
-use swe_edge_egress_grpc_transport::CircuitStateResponse;
+use edge_transport_grpc_egress_transport::CircuitStateResponse;
 
 /// @covers: CircuitStateResponse
 #[test]

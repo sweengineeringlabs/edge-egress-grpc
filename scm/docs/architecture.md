@@ -1,4 +1,4 @@
-# Architecture — edge-egress-grpc
+# Architecture — edge-transport-grpc-egress
 
 ## Sequence
 

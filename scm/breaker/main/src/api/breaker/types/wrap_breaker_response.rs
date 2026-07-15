@@ -3,7 +3,7 @@
 use std::marker::PhantomData;
 use std::sync::Arc;
 
-use swe_edge_egress_grpc::GrpcEgress;
+use edge_transport_grpc_egress::GrpcEgress;
 
 /// Output of [`crate::api::BreakerDecorator::wrap`] — the
 /// constructed circuit-breaker decorator, type-erased to its `GrpcEgress`

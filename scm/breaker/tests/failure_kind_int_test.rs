@@ -5,7 +5,7 @@
 //! in `breaker_int_test.rs`.  This stub verifies the public types it
 //! operates on are accessible.
 
-use swe_edge_egress_grpc_breaker::GrpcBreakerConfig;
+use edge_transport_grpc_egress_breaker::GrpcBreakerConfig;
 
 /// @covers: FailureClassifier (internal) — GrpcBreakerConfig is the entry point
 #[test]

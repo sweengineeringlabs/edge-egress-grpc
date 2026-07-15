@@ -6,15 +6,15 @@ use std::collections::HashMap;
 use std::marker::PhantomData;
 use std::sync::Arc;
 
-use futures::future::BoxFuture;
-use swe_edge_egress_grpc::{
+use edge_transport_grpc_egress::{
     CallStreamRequest, GrpcEgress, GrpcEgressResult, GrpcMessageStreamResponse, GrpcRequest,
     GrpcResponse, HealthCheckRequest,
 };
-use swe_edge_egress_grpc_breaker::{
+use edge_transport_grpc_egress_breaker::{
     BreakerDecorator, Error, GrpcBreakerConfig, GrpcBreakerFacade, WrapBreakerRequest,
     WrapBreakerResponse,
 };
+use futures::future::BoxFuture;
 
 struct StubEgress;
 impl GrpcEgress for StubEgress {

@@ -1,4 +1,4 @@
-//! Primary trait contracts for `swe-edge-egress-grpc-transport`.
+//! Primary trait contracts for `edge-transport-grpc-egress-transport`.
 
 #[allow(clippy::module_inception)]
 pub mod traits;

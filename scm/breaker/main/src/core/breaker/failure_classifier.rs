@@ -25,7 +25,7 @@
 //! - `Timeout(_)` — caller's own deadline, not a breaker condition.
 //! - `Cancelled(_)` — caller cancelled.
 
-use swe_edge_egress_grpc::{GrpcEgressError, GrpcStatusCode};
+use edge_transport_grpc_egress::{GrpcEgressError, GrpcStatusCode};
 use tracing::trace;
 
 use crate::api::{

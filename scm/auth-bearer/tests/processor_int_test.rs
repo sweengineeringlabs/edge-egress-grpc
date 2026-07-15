@@ -1,6 +1,6 @@
 //! Integration tests for the `Processor` trait contract on `BearerEgressInterceptor`.
 
-use swe_edge_egress_grpc_auth_bearer::{
+use edge_transport_grpc_egress_auth_bearer::{
     BearerEgressConfig, BearerEgressInterceptor, BearerSecret, Processor,
 };
 

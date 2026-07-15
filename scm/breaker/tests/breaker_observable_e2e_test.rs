@@ -2,11 +2,11 @@
 //! End-to-end tests for [`BreakerObservable`] via a test-double
 //! implementation.
 
-use futures::future::BoxFuture;
-use swe_edge_egress_grpc_breaker::{
+use edge_transport_grpc_egress_breaker::{
     BreakerObservable, BreakerState, Error, GrpcBreakerClient, GrpcBreakerConfig,
     ObserveStateRequest, ObserveStateResponse,
 };
+use futures::future::BoxFuture;
 
 struct MockObservable {
     state: BreakerState,

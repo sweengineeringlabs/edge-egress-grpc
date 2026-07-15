@@ -1,7 +1,7 @@
 //! `DefaultResilientGrpcClientPort` — structural implementor of `ResilientGrpcClientPort`.
 //!
 //! Genuine circuit-breaker/retry composition is provided by the sibling
-//! `swe-edge-egress-grpc-resilient` crate; this wrapper delegates every
+//! `edge-transport-grpc-egress-resilient` crate; this wrapper delegates every
 //! `GrpcEgress` call to `inner` unchanged and always reports a closed circuit.
 
 use std::sync::Arc;

@@ -1,8 +1,8 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Coverage stub for `src/api/types/application_config_builder.rs`.
 
+use edge_transport_grpc_egress_resilient::GrpcResilientFacade;
 use swe_edge_configbuilder::SectionLoaderImpl;
-use swe_edge_egress_grpc_resilient::GrpcResilientFacade;
 
 #[derive(serde::Deserialize, Default, PartialEq, Debug)]
 struct AbsentSectionProbe {

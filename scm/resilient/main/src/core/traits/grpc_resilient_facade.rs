@@ -4,9 +4,9 @@
 
 use std::sync::Arc;
 
-use swe_edge_egress_grpc::{GrpcChannelConfig, GrpcEgress, TransportConstruction};
-use swe_edge_egress_grpc_breaker::{GrpcBreakerClient, GrpcBreakerConfig};
-use swe_edge_egress_grpc_retry::{GrpcRetryClient, GrpcRetryConfig};
+use edge_transport_grpc_egress::{GrpcChannelConfig, GrpcEgress, TransportConstruction};
+use edge_transport_grpc_egress_breaker::{GrpcBreakerClient, GrpcBreakerConfig};
+use edge_transport_grpc_egress_retry::{GrpcRetryClient, GrpcRetryConfig};
 
 use crate::api::{
     ApplicationConfigBuilder, ConfigBuilderProvider, ConfigBuilderRequest, ConfigValidationRequest,

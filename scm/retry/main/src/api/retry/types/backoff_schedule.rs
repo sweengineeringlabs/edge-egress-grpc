@@ -18,7 +18,7 @@ use std::time::Duration;
 ///
 /// ```rust
 /// use std::time::Duration;
-/// use swe_edge_egress_grpc_retry::BackoffSchedule;
+/// use edge_transport_grpc_egress_retry::BackoffSchedule;
 ///
 /// let schedule = BackoffSchedule::from_duration(Duration::from_millis(200));
 /// assert_eq!(schedule.sleep, Duration::from_millis(200));

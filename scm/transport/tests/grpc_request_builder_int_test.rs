@@ -1,9 +1,9 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Integration tests for `GrpcRequestBuilder`.
 
+use edge_transport_grpc_egress_transport::GrpcRequestBuilder;
 use std::collections::HashMap;
 use std::time::Duration;
-use swe_edge_egress_grpc_transport::GrpcRequestBuilder;
 
 /// @covers: GrpcRequestBuilder::build — valid request returns Ok
 #[test]

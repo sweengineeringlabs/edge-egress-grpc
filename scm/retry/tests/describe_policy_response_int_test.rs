@@ -1,7 +1,9 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Integration tests for [`DescribePolicyResponse`].
 
-use swe_edge_egress_grpc_retry::{DescribePolicyRequest, GrpcRetryConfig, RetryDecoratorFactory};
+use edge_transport_grpc_egress_retry::{
+    DescribePolicyRequest, GrpcRetryConfig, RetryDecoratorFactory,
+};
 
 /// @covers: DescribePolicyResponse
 #[test]
@@ -39,10 +41,10 @@ fn test_describe_policy_response_differs_for_different_configs_error() {
 /// @covers: DescribePolicyResponse
 #[test]
 fn test_describe_policy_response_equality_is_by_value_edge() {
-    let a = swe_edge_egress_grpc_retry::DescribePolicyResponse {
+    let a = edge_transport_grpc_egress_retry::DescribePolicyResponse {
         summary: "same".to_string(),
     };
-    let b = swe_edge_egress_grpc_retry::DescribePolicyResponse {
+    let b = edge_transport_grpc_egress_retry::DescribePolicyResponse {
         summary: "same".to_string(),
     };
     assert_eq!(a, b);

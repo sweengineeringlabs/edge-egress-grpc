@@ -1,7 +1,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Integration tests for `ResilienceConfigResilienceValidator`.
 
-use swe_edge_egress_grpc_transport::ResilienceConfigResilienceValidator;
+use edge_transport_grpc_egress_transport::ResilienceConfigResilienceValidator;
 
 fn sample() -> ResilienceConfigResilienceValidator {
     ResilienceConfigResilienceValidator {

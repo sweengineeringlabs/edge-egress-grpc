@@ -2,11 +2,11 @@
 
 use std::time::Instant;
 
-use futures::future::BoxFuture;
-use swe_edge_egress_grpc::{
+use edge_transport_grpc_egress::{
     CallStreamRequest, GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcMessageStreamResponse,
     GrpcRequest, GrpcResponse, HealthCheckRequest,
 };
+use futures::future::BoxFuture;
 use tracing::{debug, trace, warn};
 
 use crate::api::{GrpcRetryClient, RetryDecision};

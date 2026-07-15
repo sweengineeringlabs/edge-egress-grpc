@@ -1,1 +1,1 @@
-# swe-edge-egress-grpc-transport
+# edge-transport-grpc-egress-transport

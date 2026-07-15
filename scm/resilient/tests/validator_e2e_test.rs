@@ -1,8 +1,8 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! End-to-end tests for [`Validator`] via a test-double implementation.
 
-use swe_edge_egress_grpc::ResilienceConfigResilienceValidator as ForeignResilienceConfig;
-use swe_edge_egress_grpc_resilient::{
+use edge_transport_grpc_egress::ResilienceConfigResilienceValidator as ForeignResilienceConfig;
+use edge_transport_grpc_egress_resilient::{
     ConfigValidationRequest, ResilienceConfig, ResilientTransportError, Validator,
 };
 

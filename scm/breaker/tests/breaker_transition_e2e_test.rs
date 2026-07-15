@@ -2,7 +2,7 @@
 //! End-to-end tests for [`BreakerTransition`] via a test-double
 //! implementation.
 
-use swe_edge_egress_grpc_breaker::{
+use edge_transport_grpc_egress_breaker::{
     Admission, AdmitRequest, AdmitResponse, BreakerState, BreakerTransition, Error, Outcome,
     RecordOutcomeRequest, RecordOutcomeResponse,
 };
@@ -48,7 +48,7 @@ fn admit_req(state: BreakerState) -> AdmitRequest {
         state,
         consecutive_failures: 0,
         consecutive_successes: 0,
-        config: swe_edge_egress_grpc_breaker::GrpcBreakerConfig::default(),
+        config: edge_transport_grpc_egress_breaker::GrpcBreakerConfig::default(),
     }
 }
 
@@ -94,7 +94,7 @@ fn test_record_success_outcome_happy() {
             state: BreakerState::Closed,
             consecutive_failures: 0,
             consecutive_successes: 0,
-            config: swe_edge_egress_grpc_breaker::GrpcBreakerConfig::default(),
+            config: edge_transport_grpc_egress_breaker::GrpcBreakerConfig::default(),
             outcome: Outcome::Success,
         })
         .expect("happy path");
@@ -110,7 +110,7 @@ fn test_record_propagates_failure_error() {
             state: BreakerState::Closed,
             consecutive_failures: 0,
             consecutive_successes: 0,
-            config: swe_edge_egress_grpc_breaker::GrpcBreakerConfig::default(),
+            config: edge_transport_grpc_egress_breaker::GrpcBreakerConfig::default(),
             outcome: Outcome::Failure,
         })
         .err()
@@ -127,7 +127,7 @@ fn test_record_max_consecutive_failures_edge() {
             state: BreakerState::Closed,
             consecutive_failures: u32::MAX,
             consecutive_successes: 0,
-            config: swe_edge_egress_grpc_breaker::GrpcBreakerConfig::default(),
+            config: edge_transport_grpc_egress_breaker::GrpcBreakerConfig::default(),
             outcome: Outcome::Failure,
         })
         .expect("mock passes counts through unchanged, even at the boundary");

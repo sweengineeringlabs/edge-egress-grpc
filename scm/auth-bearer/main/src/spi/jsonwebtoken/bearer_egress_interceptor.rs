@@ -3,10 +3,10 @@
 
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use jsonwebtoken::{Algorithm, EncodingKey, Header};
-use swe_edge_egress_grpc::{
+use edge_transport_grpc_egress::{
     AfterCallRequest, GrpcEgressError, GrpcEgressInterceptor, GrpcRequest, GrpcStatusCode,
 };
+use jsonwebtoken::{Algorithm, EncodingKey, Header};
 
 use crate::api::{
     BearerAuthError, BearerEgressInterceptor, BearerSecret, JwtClaims, Processor,

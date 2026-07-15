@@ -2,7 +2,7 @@
 //! End-to-end tests for [`ConfigBuilderProvider`] via a test-double
 //! implementation.
 
-use swe_edge_egress_grpc_retry::{
+use edge_transport_grpc_egress_retry::{
     ConfigBuilderProvider, ConfigBuilderRequest, ConfigBuilderResponse, Error, GrpcRetrySvc,
 };
 

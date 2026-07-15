@@ -1,6 +1,6 @@
 //! Integration tests for [`WrapBreakerRequest`].
 
-use swe_edge_egress_grpc_breaker::{GrpcBreakerConfig, WrapBreakerRequest};
+use edge_transport_grpc_egress_breaker::{GrpcBreakerConfig, WrapBreakerRequest};
 
 /// @covers: WrapBreakerRequest
 #[test]

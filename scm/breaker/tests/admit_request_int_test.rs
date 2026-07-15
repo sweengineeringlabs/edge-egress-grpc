@@ -1,6 +1,6 @@
 //! Integration tests for [`AdmitRequest`].
 
-use swe_edge_egress_grpc_breaker::{AdmitRequest, BreakerState, GrpcBreakerConfig};
+use edge_transport_grpc_egress_breaker::{AdmitRequest, BreakerState, GrpcBreakerConfig};
 
 /// @covers: AdmitRequest
 #[test]

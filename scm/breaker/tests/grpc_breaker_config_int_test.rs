@@ -1,6 +1,6 @@
 //! Coverage stub for `src/api/breaker/grpc/grpc_breaker_config.rs`.
 
-use swe_edge_egress_grpc_breaker::GrpcBreakerConfig;
+use edge_transport_grpc_egress_breaker::GrpcBreakerConfig;
 
 /// @covers: GrpcBreakerConfig — type is accessible and holds real fields (not zero-sized)
 #[test]

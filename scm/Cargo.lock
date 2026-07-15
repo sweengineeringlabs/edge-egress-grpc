@@ -645,6 +645,91 @@ dependencies = [
 ]
 
 [[package]]
+name = "edge-transport-grpc-egress-auth-bearer"
+version = "0.5.0"
+dependencies = [
+ "edge-transport-grpc-egress-transport",
+ "jsonwebtoken",
+ "serde",
+ "subtle",
+ "swe-edge-configbuilder 0.3.0 (git+https://github.com/sweengineeringlabs/edge-configbuilder.git?tag=v0.3.0)",
+ "swe-edge-security",
+ "thiserror 2.0.18",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
+name = "edge-transport-grpc-egress-breaker"
+version = "0.5.0"
+dependencies = [
+ "edge-transport-grpc-egress-transport",
+ "futures",
+ "serde",
+ "swe-edge-configbuilder 0.3.0 (git+https://github.com/sweengineeringlabs/edge-configbuilder.git?tag=v0.3.0)",
+ "thiserror 2.0.18",
+ "tokio",
+ "toml",
+ "tracing",
+]
+
+[[package]]
+name = "edge-transport-grpc-egress-resilient"
+version = "0.5.0"
+dependencies = [
+ "edge-transport-grpc-egress-breaker",
+ "edge-transport-grpc-egress-retry",
+ "edge-transport-grpc-egress-transport",
+ "futures",
+ "rustls",
+ "serde",
+ "swe-edge-configbuilder 0.3.0 (git+https://github.com/sweengineeringlabs/edge-configbuilder.git?tag=v0.3.0)",
+ "thiserror 2.0.18",
+ "tokio",
+]
+
+[[package]]
+name = "edge-transport-grpc-egress-retry"
+version = "0.5.0"
+dependencies = [
+ "edge-transport-grpc-egress-transport",
+ "futures",
+ "serde",
+ "swe-edge-configbuilder 0.3.0 (git+https://github.com/sweengineeringlabs/edge-configbuilder.git?tag=v0.3.0)",
+ "thiserror 2.0.18",
+ "tokio",
+ "toml",
+ "tracing",
+]
+
+[[package]]
+name = "edge-transport-grpc-egress-transport"
+version = "0.5.0"
+dependencies = [
+ "bytes",
+ "edge-application",
+ "futures",
+ "http",
+ "http-body",
+ "http-body-util",
+ "hyper",
+ "hyper-rustls",
+ "hyper-util",
+ "prost",
+ "rustls",
+ "serde",
+ "swe-edge-configbuilder 0.3.0 (git+https://github.com/sweengineeringlabs/edge-configbuilder.git?tag=v0.3.0)",
+ "swe-edge-loadbalancer",
+ "thiserror 2.0.18",
+ "tokio",
+ "tokio-util",
+ "toml",
+ "tonic",
+ "tower 0.4.13",
+ "tracing",
+]
+
+[[package]]
 name = "either"
 version = "1.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1616,91 +1701,6 @@ dependencies = [
  "serde",
  "thiserror 2.0.18",
  "toml",
-]
-
-[[package]]
-name = "swe-edge-egress-grpc-auth-bearer"
-version = "0.5.0"
-dependencies = [
- "jsonwebtoken",
- "serde",
- "subtle",
- "swe-edge-configbuilder 0.3.0 (git+https://github.com/sweengineeringlabs/edge-configbuilder.git?tag=v0.3.0)",
- "swe-edge-egress-grpc-transport",
- "swe-edge-security",
- "thiserror 2.0.18",
- "tokio",
- "tracing",
-]
-
-[[package]]
-name = "swe-edge-egress-grpc-breaker"
-version = "0.5.0"
-dependencies = [
- "futures",
- "serde",
- "swe-edge-configbuilder 0.3.0 (git+https://github.com/sweengineeringlabs/edge-configbuilder.git?tag=v0.3.0)",
- "swe-edge-egress-grpc-transport",
- "thiserror 2.0.18",
- "tokio",
- "toml",
- "tracing",
-]
-
-[[package]]
-name = "swe-edge-egress-grpc-resilient"
-version = "0.5.0"
-dependencies = [
- "futures",
- "rustls",
- "serde",
- "swe-edge-configbuilder 0.3.0 (git+https://github.com/sweengineeringlabs/edge-configbuilder.git?tag=v0.3.0)",
- "swe-edge-egress-grpc-breaker",
- "swe-edge-egress-grpc-retry",
- "swe-edge-egress-grpc-transport",
- "thiserror 2.0.18",
- "tokio",
-]
-
-[[package]]
-name = "swe-edge-egress-grpc-retry"
-version = "0.5.0"
-dependencies = [
- "futures",
- "serde",
- "swe-edge-configbuilder 0.3.0 (git+https://github.com/sweengineeringlabs/edge-configbuilder.git?tag=v0.3.0)",
- "swe-edge-egress-grpc-transport",
- "thiserror 2.0.18",
- "tokio",
- "toml",
- "tracing",
-]
-
-[[package]]
-name = "swe-edge-egress-grpc-transport"
-version = "0.5.0"
-dependencies = [
- "bytes",
- "edge-application",
- "futures",
- "http",
- "http-body",
- "http-body-util",
- "hyper",
- "hyper-rustls",
- "hyper-util",
- "prost",
- "rustls",
- "serde",
- "swe-edge-configbuilder 0.3.0 (git+https://github.com/sweengineeringlabs/edge-configbuilder.git?tag=v0.3.0)",
- "swe-edge-loadbalancer",
- "thiserror 2.0.18",
- "tokio",
- "tokio-util",
- "toml",
- "tonic",
- "tower 0.4.13",
- "tracing",
 ]
 
 [[package]]

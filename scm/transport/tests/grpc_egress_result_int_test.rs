@@ -1,6 +1,6 @@
 //! Integration tests for `api/port/grpc/grpc_egress_result.rs`.
 
-use swe_edge_egress_grpc_transport::{GrpcEgressError, GrpcEgressResult, GrpcStatusCode};
+use edge_transport_grpc_egress_transport::{GrpcEgressError, GrpcEgressResult, GrpcStatusCode};
 
 #[test]
 fn transport_trait_grpc_egress_result_ok_variant_is_constructable_int_test() {

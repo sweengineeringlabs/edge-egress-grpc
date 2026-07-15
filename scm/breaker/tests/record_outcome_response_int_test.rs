@@ -1,6 +1,6 @@
 //! Integration tests for [`RecordOutcomeResponse`].
 
-use swe_edge_egress_grpc_breaker::{BreakerState, RecordOutcomeResponse};
+use edge_transport_grpc_egress_breaker::{BreakerState, RecordOutcomeResponse};
 
 /// @covers: RecordOutcomeResponse
 #[test]

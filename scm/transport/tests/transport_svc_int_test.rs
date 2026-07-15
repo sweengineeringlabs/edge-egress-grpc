@@ -2,7 +2,7 @@
 //! Integration tests for `TransportSvc` — the api/-declared marker struct and
 //! its core/-implemented construction methods.
 
-use swe_edge_egress_grpc_transport::{
+use edge_transport_grpc_egress_transport::{
     GrpcChannelConfig, GrpcChannelConfigError, GrpcEgressError, HealthCheckRequest,
     ResilienceConfigResilienceValidator, TransportConstruction, TransportSvc,
 };

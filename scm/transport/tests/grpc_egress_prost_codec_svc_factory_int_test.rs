@@ -4,7 +4,7 @@
 
 use std::time::Duration;
 
-use swe_edge_egress_grpc_transport::{
+use edge_transport_grpc_egress_transport::{
     GrpcChannelConfig, GrpcChannelConfigError, GrpcEgressProstCodecFactory, GrpcEgressResult,
     TransportSvc,
 };
@@ -54,7 +54,7 @@ async fn test_create_returns_working_call_unary_encoded_edge() {
     ensure_rustls_provider();
     let cfg = GrpcChannelConfig::new("http://127.0.0.1:50051").allow_plaintext();
     let client = GrpcEgressProstCodecFactory::create(&cfg).expect("valid plaintext config");
-    let request = swe_edge_egress_grpc_transport::GrpcRequest::new(
+    let request = edge_transport_grpc_egress_transport::GrpcRequest::new(
         "svc/Method",
         Vec::new(),
         Duration::from_secs(1),

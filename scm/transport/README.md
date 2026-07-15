@@ -1,4 +1,4 @@
-# swe-edge-egress-grpc-transport
+# edge-transport-grpc-egress-transport
 
 gRPC outbound transport crate for the swe-edge egress layer.
 
@@ -8,7 +8,7 @@ Provides `GrpcEgress` — the outbound port trait for gRPC calls — and the
 ## Usage
 
 ```rust
-use swe_edge_egress_grpc_transport::{create_transport_from_config, GrpcChannelConfig};
+use edge_transport_grpc_egress_transport::{create_transport_from_config, GrpcChannelConfig};
 
 let cfg = GrpcChannelConfig::new("https://service:443");
 let client = create_transport_from_config(&cfg)?;

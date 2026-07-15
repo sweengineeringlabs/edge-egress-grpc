@@ -15,7 +15,7 @@ use std::time::Duration;
 use http_body_util::Full;
 use hyper_util::rt::{TokioExecutor, TokioIo};
 
-use swe_edge_egress_grpc_transport::{
+use edge_transport_grpc_egress_transport::{
     GrpcChannelConfig, GrpcRequest, HealthCheckRequest, TransportConstruction,
 };
 

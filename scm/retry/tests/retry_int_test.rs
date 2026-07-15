@@ -10,12 +10,12 @@ use std::sync::atomic::{AtomicU32, Ordering};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
-use futures::future::BoxFuture;
-use swe_edge_egress_grpc::{
+use edge_transport_grpc_egress::{
     GrpcEgress, GrpcEgressError, GrpcEgressResult, GrpcRequest, GrpcResponse, GrpcStatusCode,
     HealthCheckRequest,
 };
-use swe_edge_egress_grpc_retry::{GrpcRetryClient, GrpcRetryConfig, GrpcRetryFacade};
+use edge_transport_grpc_egress_retry::{GrpcRetryClient, GrpcRetryConfig, GrpcRetryFacade};
+use futures::future::BoxFuture;
 
 /// Stub `GrpcEgress` that returns a scripted sequence of
 /// outcomes and counts how many times `call_unary` was invoked.

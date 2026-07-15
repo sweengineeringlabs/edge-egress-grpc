@@ -1,7 +1,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Integration tests for [`GrpcRetryFacade`].
 
-use swe_edge_egress_grpc_retry::{Error, GrpcRetryFacade, Processor, ProcessorRequest};
+use edge_transport_grpc_egress_retry::{Error, GrpcRetryFacade, Processor, ProcessorRequest};
 
 #[derive(serde::Deserialize, Default, PartialEq, Debug)]
 struct AbsentSectionProbe {

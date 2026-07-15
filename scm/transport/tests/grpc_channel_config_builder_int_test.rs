@@ -1,11 +1,11 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Integration tests for `GrpcChannelConfigBuilder`.
 
-use std::time::Duration;
-use swe_edge_egress_grpc_transport::{
+use edge_transport_grpc_egress_transport::{
     CompressionMode, GrpcChannelConfigBuilder, KeepAliveConfig, MtlsConfig,
     ResilienceConfigResilienceValidator,
 };
+use std::time::Duration;
 
 /// @covers: GrpcChannelConfigBuilder::build — valid endpoint returns Ok
 #[test]

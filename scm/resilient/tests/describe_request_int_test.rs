@@ -1,7 +1,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Integration tests for [`DescribeRequest`].
 
-use swe_edge_egress_grpc_resilient::{DescribeRequest, GrpcResilientSvcProcessor, Processor};
+use edge_transport_grpc_egress_resilient::{DescribeRequest, GrpcResilientSvcProcessor, Processor};
 
 /// @covers: DescribeRequest
 #[test]

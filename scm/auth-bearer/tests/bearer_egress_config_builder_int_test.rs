@@ -1,6 +1,6 @@
 //! Coverage stub for `api/bearer/bearer_egress_config_builder.rs`.
 
-use swe_edge_egress_grpc_auth_bearer::{BearerEgressConfigBuilder, BearerSecret};
+use edge_transport_grpc_egress_auth_bearer::{BearerEgressConfigBuilder, BearerSecret};
 
 /// @covers: BearerEgressConfigBuilder — fluent builder produces valid config
 #[test]

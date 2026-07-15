@@ -1,6 +1,6 @@
 //! Integration tests for `api/interceptor/trace/trace_context_source.rs`.
 
-use swe_edge_egress_grpc_transport::TraceContextSource;
+use edge_transport_grpc_egress_transport::TraceContextSource;
 
 /// @covers: TraceContextSource::PassThrough — Clone preserves the variant
 #[test]

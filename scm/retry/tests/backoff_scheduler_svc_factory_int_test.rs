@@ -1,7 +1,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Integration tests for [`BackoffSchedulerFactory`].
 
-use swe_edge_egress_grpc_retry::{
+use edge_transport_grpc_egress_retry::{
     BackoffScheduleRequest, BackoffSchedulerFactory, BackoffTrack, GrpcRetryConfig,
 };
 

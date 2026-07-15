@@ -5,7 +5,7 @@
 //! it: the circuit-breaker state machine routes through `Admission`
 //! internally on every `call_unary`.
 
-use swe_edge_egress_grpc_breaker::{BreakerState, GrpcBreakerConfig};
+use edge_transport_grpc_egress_breaker::{BreakerState, GrpcBreakerConfig};
 
 /// @covers: Admission (internal) — Closed state admits requests
 #[test]

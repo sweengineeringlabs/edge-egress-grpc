@@ -1,4 +1,4 @@
-//! Config builder for `swe_edge_egress_grpc_transport`.
+//! Config builder for `edge_transport_grpc_egress_transport`.
 
 use swe_edge_configbuilder::ConfigBuilderImpl;
 

@@ -1,4 +1,4 @@
-//! Domain error for `swe_edge_egress_grpc_breaker`.
+//! Domain error for `edge_transport_grpc_egress_breaker`.
 
-/// Domain error type for `swe_edge_egress_grpc_breaker`.
+/// Domain error type for `edge_transport_grpc_egress_breaker`.
 pub type BreakerDomainError = crate::api::breaker::errors::error::Error;

@@ -3,7 +3,7 @@
 
 use std::time::Duration;
 
-use swe_edge_egress_grpc::{GrpcEgressError, GrpcStatusCode};
+use edge_transport_grpc_egress::{GrpcEgressError, GrpcStatusCode};
 
 use crate::api::{ResourceExhaustedContext, RetryDecision};
 

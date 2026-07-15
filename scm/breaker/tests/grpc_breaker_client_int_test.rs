@@ -1,6 +1,6 @@
 //! Coverage stub for `src/api/breaker/grpc/grpc_breaker_client.rs`.
 
-use swe_edge_egress_grpc_breaker::{GrpcBreakerClient, GrpcBreakerConfig};
+use edge_transport_grpc_egress_breaker::{GrpcBreakerClient, GrpcBreakerConfig};
 
 /// @covers: GrpcBreakerClient — type is accessible and holds real state (not zero-sized)
 #[test]

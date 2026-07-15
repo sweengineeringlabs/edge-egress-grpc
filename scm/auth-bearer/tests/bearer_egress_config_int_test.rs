@@ -1,6 +1,6 @@
 //! Integration tests for BearerEgressConfig.
 
-use swe_edge_egress_grpc_auth_bearer::{BearerEgressConfig, BearerSecret};
+use edge_transport_grpc_egress_auth_bearer::{BearerEgressConfig, BearerSecret};
 
 /// @covers: BearerEgressConfig
 #[test]

@@ -1,6 +1,6 @@
 //! Integration tests for [`BearerSecret`].
 
-use swe_edge_egress_grpc_auth_bearer::BearerSecret;
+use edge_transport_grpc_egress_auth_bearer::BearerSecret;
 
 /// @covers: BearerSecret::ct_eq_hs256
 #[test]

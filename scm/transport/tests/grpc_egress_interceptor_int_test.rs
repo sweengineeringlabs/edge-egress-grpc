@@ -1,7 +1,7 @@
 //! Integration tests for `api/interceptor/grpc/grpc_egress_interceptor.rs`.
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 
-use swe_edge_egress_grpc_transport::{
+use edge_transport_grpc_egress_transport::{
     AfterCallRequest, GrpcClientBuilder, GrpcEgressError, GrpcEgressInterceptor,
     GrpcEgressInterceptorChain, GrpcRequest, GrpcResponse, TraceContextSource,
 };

@@ -1,6 +1,6 @@
 //! Integration tests for `api/value/grpc/grpc_status_code.rs`.
 
-use swe_edge_egress_grpc_transport::GrpcStatusCode;
+use edge_transport_grpc_egress_transport::GrpcStatusCode;
 
 #[test]
 fn transport_struct_grpc_status_code_has_17_distinct_variants_int_test() {

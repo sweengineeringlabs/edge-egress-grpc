@@ -14,7 +14,7 @@ mod prost_tests {
     use futures::future::BoxFuture;
     use prost::Message;
 
-    use swe_edge_egress_grpc_transport::{
+    use edge_transport_grpc_egress_transport::{
         GrpcEgress, GrpcEgressError, GrpcEgressProstCodec, GrpcEgressResult, GrpcRequest,
         GrpcResponse, HealthCheckRequest, TransportSvc,
     };

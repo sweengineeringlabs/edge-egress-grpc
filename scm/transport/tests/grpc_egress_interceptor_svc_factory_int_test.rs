@@ -3,7 +3,7 @@
 
 use std::time::Duration;
 
-use swe_edge_egress_grpc_transport::{GrpcEgressInterceptorFactory, GrpcRequest};
+use edge_transport_grpc_egress_transport::{GrpcEgressInterceptorFactory, GrpcRequest};
 
 /// @covers: create
 #[test]

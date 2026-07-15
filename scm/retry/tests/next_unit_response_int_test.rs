@@ -1,6 +1,6 @@
 //! Integration tests for [`NextUnitResponse`].
 
-use swe_edge_egress_grpc_retry::NextUnitResponse;
+use edge_transport_grpc_egress_retry::NextUnitResponse;
 
 /// @covers: NextUnitResponse
 #[test]

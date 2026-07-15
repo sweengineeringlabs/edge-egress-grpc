@@ -1,4 +1,4 @@
-//! `TransportSvc` — SAF service facade type for `swe-edge-egress-grpc-transport`.
+//! `TransportSvc` — SAF service facade type for `edge-transport-grpc-egress-transport`.
 
 /// Service facade for the gRPC transport crate.
 ///

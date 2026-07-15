@@ -1,4 +1,4 @@
-# swe-edge-egress-grpc runtime defaults.
+# edge-transport-grpc-egress runtime defaults.
 #
 # ResilienceConfig fields used by create_transport_from_config() when
 # constructing a retry + circuit-breaker stack from GrpcChannelConfig::resilience.

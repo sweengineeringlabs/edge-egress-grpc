@@ -1,7 +1,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Integration tests for [`ConfigBuilderProviderFactory`].
 
-use swe_edge_egress_grpc_retry::{ConfigBuilderProviderFactory, ConfigBuilderRequest};
+use edge_transport_grpc_egress_retry::{ConfigBuilderProviderFactory, ConfigBuilderRequest};
 
 /// @covers: create
 #[test]

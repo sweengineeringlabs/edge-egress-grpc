@@ -1,7 +1,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Integration tests for [`FailureClassifierFactory`].
 
-use swe_edge_egress_grpc_breaker::{ClassifyRequest, FailureClassifierFactory, Outcome};
+use edge_transport_grpc_egress_breaker::{ClassifyRequest, FailureClassifierFactory, Outcome};
 
 /// @covers: create
 #[test]

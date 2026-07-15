@@ -1,6 +1,6 @@
 //! Integration tests for [`ConfigValidationRequest`].
 
-use swe_edge_egress_grpc_breaker::{ConfigValidationRequest, GrpcBreakerConfig};
+use edge_transport_grpc_egress_breaker::{ConfigValidationRequest, GrpcBreakerConfig};
 
 /// @covers: ConfigValidationRequest
 #[test]

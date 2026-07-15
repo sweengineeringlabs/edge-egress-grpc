@@ -1,5 +1,5 @@
 [package]
-name = "swe-edge-egress-grpc-breaker"
+name = "edge-transport-grpc-egress-breaker"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -22,7 +22,7 @@ service_type = "processor"
 path = "main/src/lib.rs"
 
 [dependencies]
-swe-edge-egress-grpc = { workspace = true }
+edge-transport-grpc-egress = { workspace = true }
 thiserror = { workspace = true }
 futures = { workspace = true }
 # `from_config` loads policy from TOML. `serde` derives the

@@ -6,7 +6,7 @@
 //! `GrpcBreakerClient<T>`.  This stub exercises that impl via the
 //! public type.
 
-use swe_edge_egress_grpc_breaker::{BreakerState, GrpcBreakerClient, GrpcBreakerConfig};
+use edge_transport_grpc_egress_breaker::{BreakerState, GrpcBreakerClient, GrpcBreakerConfig};
 
 /// @covers: core::breaker::client::BreakerEgress — GrpcEgress impl exists
 #[test]

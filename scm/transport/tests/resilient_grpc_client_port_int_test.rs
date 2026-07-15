@@ -5,7 +5,7 @@ use std::collections::HashMap;
 
 use futures::future::BoxFuture;
 
-use swe_edge_egress_grpc_transport::{
+use edge_transport_grpc_egress_transport::{
     CircuitStateRequest, CircuitStateResponse, ConsecutiveFailuresRequest,
     ConsecutiveFailuresResponse, GrpcChannelConfig, GrpcEgress, GrpcEgressError, GrpcRequest,
     GrpcResponse, HealthCheckRequest, KeepAliveConfig, LastErrorRequest, LastErrorResponse,

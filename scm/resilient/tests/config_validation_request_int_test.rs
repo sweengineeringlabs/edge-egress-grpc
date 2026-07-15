@@ -1,7 +1,7 @@
 //! Integration tests for [`ConfigValidationRequest`].
 
-use swe_edge_egress_grpc::ResilienceConfigResilienceValidator as ForeignResilienceConfig;
-use swe_edge_egress_grpc_resilient::{ConfigValidationRequest, ResilienceConfig};
+use edge_transport_grpc_egress::ResilienceConfigResilienceValidator as ForeignResilienceConfig;
+use edge_transport_grpc_egress_resilient::{ConfigValidationRequest, ResilienceConfig};
 
 fn valid() -> ForeignResilienceConfig {
     ForeignResilienceConfig {

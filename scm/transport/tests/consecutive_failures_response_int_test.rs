@@ -1,6 +1,6 @@
 //! Integration tests for `ConsecutiveFailuresResponse`.
 
-use swe_edge_egress_grpc_transport::ConsecutiveFailuresResponse;
+use edge_transport_grpc_egress_transport::ConsecutiveFailuresResponse;
 
 /// @covers: ConsecutiveFailuresResponse
 #[test]

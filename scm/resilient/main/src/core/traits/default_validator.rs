@@ -1,7 +1,7 @@
 //! `impl Validator for DefaultValidator` — delegates to the transport
 //! crate's own `ResilienceConfig::validate` so the two never drift apart.
 
-use swe_edge_egress_grpc::TransportSvc;
+use edge_transport_grpc_egress::TransportSvc;
 
 use crate::api::{ConfigValidationRequest, ResilientTransportError, Validator};
 
@@ -20,8 +20,8 @@ mod tests {
     use super::*;
     use crate::api::ResilienceConfig;
 
-    fn valid() -> swe_edge_egress_grpc::ResilienceConfigResilienceValidator {
-        swe_edge_egress_grpc::ResilienceConfigResilienceValidator {
+    fn valid() -> edge_transport_grpc_egress::ResilienceConfigResilienceValidator {
+        edge_transport_grpc_egress::ResilienceConfigResilienceValidator {
             max_attempts: 3,
             initial_backoff_ms: 10,
             backoff_multiplier: 2.0,

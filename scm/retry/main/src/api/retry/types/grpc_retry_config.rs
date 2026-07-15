@@ -21,7 +21,7 @@ use serde::Deserialize;
 /// # Examples
 ///
 /// ```rust
-/// use swe_edge_egress_grpc_retry::GrpcRetryConfig;
+/// use edge_transport_grpc_egress_retry::GrpcRetryConfig;
 /// use std::time::Duration;
 ///
 /// // SWE baseline defaults.

@@ -1,6 +1,6 @@
 //! Integration tests for `api/status/conversions.rs`.
 
-use swe_edge_egress_grpc_transport::Conversions;
+use edge_transport_grpc_egress_transport::Conversions;
 
 /// @covers: Conversions is a zero-sized marker — the interface declaration
 /// counterpart for core/status/conversions.rs, not itself carrying state.

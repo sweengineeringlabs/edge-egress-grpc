@@ -1,12 +1,12 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Integration tests for [`BackoffScheduleRequest`].
 
-use swe_edge_egress_grpc_retry::{BackoffScheduleRequest, BackoffTrack, GrpcRetryConfig};
+use edge_transport_grpc_egress_retry::{BackoffScheduleRequest, BackoffTrack, GrpcRetryConfig};
 
 /// @covers: BackoffScheduleRequest
 #[test]
 fn test_backoff_schedule_request_used_by_real_scheduler_happy() {
-    let scheduler = swe_edge_egress_grpc_retry::BackoffSchedulerFactory::create();
+    let scheduler = edge_transport_grpc_egress_retry::BackoffSchedulerFactory::create();
     let resp = scheduler
         .schedule(BackoffScheduleRequest {
             config: GrpcRetryConfig::default(),
@@ -23,7 +23,7 @@ fn test_backoff_schedule_request_used_by_real_scheduler_happy() {
 fn test_backoff_schedule_request_rate_limit_track_error() {
     // "error"-flavored scenario: prove the RateLimit variant is a distinct
     // path, not silently treated identically to Standard.
-    let scheduler = swe_edge_egress_grpc_retry::BackoffSchedulerFactory::create();
+    let scheduler = edge_transport_grpc_egress_retry::BackoffSchedulerFactory::create();
     let standard = scheduler
         .schedule(BackoffScheduleRequest {
             config: GrpcRetryConfig::default(),
@@ -48,7 +48,7 @@ fn test_backoff_schedule_request_rate_limit_track_error() {
 /// @covers: BackoffScheduleRequest
 #[test]
 fn test_backoff_schedule_request_zero_attempt_edge() {
-    let scheduler = swe_edge_egress_grpc_retry::BackoffSchedulerFactory::create();
+    let scheduler = edge_transport_grpc_egress_retry::BackoffSchedulerFactory::create();
     let resp = scheduler
         .schedule(BackoffScheduleRequest {
             config: GrpcRetryConfig::default(),

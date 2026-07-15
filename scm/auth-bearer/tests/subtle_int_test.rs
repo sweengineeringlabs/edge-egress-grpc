@@ -7,7 +7,7 @@
 //! This file exercises that path through the public API so the
 //! `subtle` dependency is demonstrably tested, not just linked.
 
-use swe_edge_egress_grpc_auth_bearer::BearerSecret;
+use edge_transport_grpc_egress_auth_bearer::BearerSecret;
 
 /// @covers: subtle::ConstantTimeEq — the dependency's constant-time primitive directly
 #[test]
